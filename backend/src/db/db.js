@@ -463,6 +463,7 @@ async function initializeDatabase() {
         description_vertical_position VARCHAR(20) DEFAULT 'middle',
         image_url VARCHAR(500) NOT NULL,
         page_url VARCHAR(500),
+        display_text VARCHAR(255),
         status ENUM('active', 'inactive') DEFAULT 'active',
         createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -509,6 +510,12 @@ async function initializeDatabase() {
         await pool.query(`
           ALTER TABLE banners 
           ADD COLUMN title_color VARCHAR(7) DEFAULT '#000000'
+        `);
+      }
+      if (!columnNames.includes("display_text")) {
+        await pool.query(`
+          ALTER TABLE banners 
+          ADD COLUMN display_text VARCHAR(255)
         `);
       }
       if (!columnNames.includes("description_color")) {

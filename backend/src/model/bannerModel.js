@@ -44,8 +44,8 @@ async function createBanner(bannerData) {
   const id = uuidv4();
   await pool.query(
     `INSERT INTO banners (
-      id, title, title_color, title_font_size, title_position, title_vertical_position, description, description_color, description_font_size, description_position, description_vertical_position, image_url, page_url, status
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      id, title, title_color, title_font_size, title_position, title_vertical_position, description, description_color, description_font_size, description_position, description_vertical_position, image_url, page_url, display_text, status
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       id,
       bannerData.title,
@@ -60,6 +60,7 @@ async function createBanner(bannerData) {
       bannerData.description_vertical_position || "middle",
       bannerData.image_url,
       bannerData.page_url || null,
+      bannerData.display_text !== undefined ? bannerData.display_text : null,
       bannerData.status || "active",
     ]
   );
@@ -94,6 +95,7 @@ async function updateBanner(id, bannerData) {
     "description_vertical_position",
     "image_url",
     "page_url",
+    "display_text",
     "status",
   ];
 

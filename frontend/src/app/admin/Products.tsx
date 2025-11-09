@@ -503,7 +503,7 @@ export const Products = () => {
                       // Remove /api from base URL if present, since static files are served directly
                       const baseUrl = (
                         import.meta.env.VITE_API_URL ||
-                        "http://localhost:4000/api"
+                        "http://localhost:8888/api"
                       ).replace(/\/api$/, "");
 
                       // Ensure imagePath starts with /

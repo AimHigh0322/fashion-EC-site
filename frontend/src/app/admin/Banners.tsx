@@ -15,6 +15,7 @@ interface Banner {
   description_color?: string;
   image_url: string;
   page_url?: string;
+  display_text?: string;
   status: "active" | "inactive";
   createdAt?: string;
   updatedAt?: string;
@@ -136,7 +137,7 @@ export const Banners = () => {
     if (imagePath.startsWith("http")) return imagePath;
 
     const baseUrl = (
-      import.meta.env.VITE_API_URL || "http://localhost:4000/api"
+      import.meta.env.VITE_API_URL || "http://localhost:8888/api"
     ).replace(/\/api$/, "");
 
     const path = imagePath.startsWith("/") ? imagePath : `/${imagePath}`;
@@ -311,7 +312,7 @@ export const Banners = () => {
                                   rel="noopener noreferrer"
                                   className="text-blue-600 hover:text-blue-800 hover:underline"
                                 >
-                                  {banner.page_url || banner.link_url}
+                                  {banner.display_text || banner.page_url || banner.link_url}
                                 </a>
                               ) : (
                                 "-"

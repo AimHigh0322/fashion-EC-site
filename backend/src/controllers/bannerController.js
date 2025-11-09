@@ -215,6 +215,7 @@ async function createBanner(req, res) {
         description_vertical_position: req.body.description_vertical_position || "middle",
         image_url: imageUrl,
         page_url: req.body.page_url || req.body.link_url || null,
+        display_text: req.body.display_text !== undefined ? req.body.display_text : null,
         status: req.body.status || (req.body.is_active === "true" || req.body.is_active === true ? "active" : "inactive") || "active",
       };
 
@@ -332,6 +333,7 @@ async function createBanners(req, res) {
             description_vertical_position: bannerInfo.description_vertical_position || "middle",
             image_url: imageUrl,
             page_url: bannerInfo.page_url || null,
+            display_text: bannerInfo.display_text !== undefined ? bannerInfo.display_text : null,
             status: bannerInfo.status || "active",
           };
 
@@ -478,6 +480,7 @@ async function updateBanner(req, res) {
         description_vertical_position: req.body.description_vertical_position,
         image_url: imageUrl,
         page_url: req.body.page_url || req.body.link_url,
+        display_text: req.body.display_text,
         status: req.body.status || (req.body.is_active !== undefined ? (req.body.is_active === "true" || req.body.is_active === true ? "active" : "inactive") : undefined),
       };
 

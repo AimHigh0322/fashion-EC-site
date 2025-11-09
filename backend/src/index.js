@@ -16,11 +16,15 @@ const corsOptions = {
   origin: function (origin, callback) {
     const allowedOrigins = process.env.CORS_ORIGIN
       ? process.env.CORS_ORIGIN.split(",")
-      : ["http://localhost:5173", "http://localhost:3000", "http://127.0.0.1:5173"];
-    
+      : [
+          "http://localhost:5555",
+          "http://localhost:3000",
+          "http://127.0.0.1:5555",
+        ];
+
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
-    
+
     if (process.env.CORS_ORIGIN === "*" || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
@@ -54,7 +58,9 @@ app.get("/api/test", (request, response) => {
     return response.json({ status: "ok", time: Date.now() });
   } catch (error) {
     console.error("Test endpoint error:", error);
-    return response.status(500).json({ error: "サーバーエラーが発生しました。" });
+    return response
+      .status(500)
+      .json({ error: "サーバーエラーが発生しました。" });
   }
 });
 
@@ -79,8 +85,14 @@ app.use("/api/campaigns", campaignRoutes);
 
 // Image routes
 const imageController = require("./controllers/imageController");
-const { authenticateRequest } = require("./middleware/auth-middleware/middleware");
-app.post("/api/images/upload", authenticateRequest, imageController.uploadImage);
+const {
+  authenticateRequest,
+} = require("./middleware/auth-middleware/middleware");
+app.post(
+  "/api/images/upload",
+  authenticateRequest,
+  imageController.uploadImage
+);
 app.get("/api/images", authenticateRequest, imageController.getImages);
 
 // Attribute routes
@@ -99,7 +111,12 @@ app.use((req, res) => {
 // Error handling middleware (must be after routes)
 app.use((err, req, res, next) => {
   console.error("Unhandled error:", err);
-  res.status(500).json({ error: "サーバーエラーが発生しました。しばらくしてから再度お試しください。" });
+  res
+    .status(500)
+    .json({
+      error:
+        "サーバーエラーが発生しました。しばらくしてから再度お試しください。",
+    });
 });
 
 const server = http.createServer(app);
@@ -107,7 +124,11 @@ const io = new Server(server, {
   cors: {
     origin: process.env.CORS_ORIGIN
       ? process.env.CORS_ORIGIN.split(",")
-      : ["http://localhost:5173", "http://localhost:3000", "http://127.0.0.1:5173"],
+      : [
+          "http://localhost:5555",
+          "http://localhost:3000",
+          "http://127.0.0.1:5555",
+        ],
     methods: ["GET", "POST"],
     credentials: true,
   },
@@ -115,7 +136,7 @@ const io = new Server(server, {
 
 configureSocketIo(io);
 
-const port = Number(process.env.PORT || 4000);
+const port = Number(process.env.PORT || 8888);
 
 server.listen(port, () => {
   console.log(`API listening on http://localhost:${port}`);

@@ -17,6 +17,7 @@ interface BannerFormData {
   description_position: string;
   description_vertical_position: string;
   page_url: string;
+  display_text: string;
   status: "active" | "inactive";
   image: File | null;
   preview: string | null;
@@ -28,21 +29,22 @@ export const BannerEdit = () => {
   const { id } = useParams<{ id: string }>();
   const { showToast } = useToast();
   const [banner, setBanner] = useState<BannerFormData>({
-    title: "",
-    title_color: "#000000",
-    title_font_size: "text-4xl",
-    title_position: "left",
-    title_vertical_position: "middle",
-    description: "",
-    description_color: "#000000",
-    description_font_size: "text-lg",
-    description_position: "left",
-    description_vertical_position: "middle",
-    page_url: "",
-    status: "active",
-    image: null,
-    preview: null,
-    existing_image_url: null,
+          title: "",
+          title_color: "#000000",
+          title_font_size: "text-4xl",
+          title_position: "left",
+          title_vertical_position: "middle",
+          description: "",
+          description_color: "#000000",
+          description_font_size: "text-lg",
+          description_position: "left",
+          description_vertical_position: "middle",
+          page_url: "",
+          display_text: "",
+          status: "active",
+          image: null,
+          preview: null,
+          existing_image_url: null,
   });
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -82,6 +84,7 @@ export const BannerEdit = () => {
           description_vertical_position?: string;
           page_url?: string;
           link_url?: string;
+          display_text?: string;
           status?: string;
           is_active?: boolean;
           image_url?: string;
@@ -118,7 +121,7 @@ export const BannerEdit = () => {
         }
 
         const baseUrl = (
-          import.meta.env.VITE_API_URL || "http://localhost:4000/api"
+          import.meta.env.VITE_API_URL || "http://localhost:8888/api"
         ).replace(/\/api$/, "");
 
         let imageUrl = null;
@@ -150,6 +153,7 @@ export const BannerEdit = () => {
           description_position: bannerData.description_position || "left",
           description_vertical_position: verticalPosition,
           page_url: bannerData.page_url || bannerData.link_url || "",
+          display_text: bannerData.display_text || "",
           status: (bannerData.status ||
             (bannerData.is_active ? "active" : "inactive")) as
             | "active"
@@ -238,6 +242,7 @@ export const BannerEdit = () => {
           // 説明の縦位置はタイトルと同じ値に設定
           description_vertical_position: banner.title_vertical_position,
           page_url: banner.page_url,
+          display_text: banner.display_text,
           status: banner.status,
         },
         banner.image || undefined
@@ -665,6 +670,25 @@ export const BannerEdit = () => {
                   placeholder="https://example.com"
                   className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                 />
+              </div>
+
+              {/* Display Text */}
+              <div className="md:col-span-7">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  表示テキスト
+                </label>
+                <input
+                  type="text"
+                  value={banner.display_text}
+                  onChange={(e) =>
+                    handleBannerChange("display_text", e.target.value)
+                  }
+                  placeholder="クリック可能なテキストを入力"
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  このテキストがURLの代わりに表示され、クリックするとページURLに移動します
+                </p>
               </div>
 
               {/* Status */}

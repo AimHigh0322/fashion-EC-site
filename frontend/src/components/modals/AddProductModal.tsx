@@ -201,7 +201,7 @@ export const AddProductModal = ({
 
             // Construct full image URLs
             const baseUrl = (
-              import.meta.env.VITE_API_URL || "http://localhost:4000/api"
+              import.meta.env.VITE_API_URL || "http://localhost:8888/api"
             ).replace(/\/api$/, "");
 
             const imageUrls = sortedImages.map((img: { image_url: string }) => {
@@ -219,7 +219,7 @@ export const AddProductModal = ({
             // If no images array, try main_image_url
             if (productData.main_image_url) {
               const baseUrl = (
-                import.meta.env.VITE_API_URL || "http://localhost:4000/api"
+                import.meta.env.VITE_API_URL || "http://localhost:8888/api"
               ).replace(/\/api$/, "");
               const imagePath = productData.main_image_url;
               const fullUrl = imagePath.startsWith("http")

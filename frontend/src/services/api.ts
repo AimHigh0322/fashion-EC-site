@@ -1,6 +1,6 @@
 // API service for backend communication
 const API_BASE_URL =
-  import.meta.env.VITE_API_URL || "http://localhost:4000/api";
+  import.meta.env.VITE_API_URL || "http://localhost:8888/api";
 
 interface ApiResponse<T> {
   data?: T;
@@ -78,6 +78,7 @@ interface Banner {
   description_vertical_position?: string;
   image_url: string;
   page_url?: string;
+  display_text?: string;
   status: "active" | "inactive";
   createdAt?: string;
   updatedAt?: string;
@@ -523,6 +524,7 @@ class ApiService {
     if (banner.description_vertical_position) formData.append("description_vertical_position", banner.description_vertical_position);
     if (banner.image_url) formData.append("image_url", banner.image_url);
     if (banner.page_url || banner.link_url) formData.append("page_url", banner.page_url || banner.link_url || "");
+    if (banner.display_text !== undefined) formData.append("display_text", banner.display_text || "");
     if (banner.status) formData.append("status", banner.status);
     // Legacy fields for backward compatibility
     if (banner.is_active !== undefined)
@@ -561,6 +563,7 @@ class ApiService {
     if (banner.description_vertical_position) formData.append("description_vertical_position", banner.description_vertical_position);
     if (banner.image_url) formData.append("image_url", banner.image_url);
     if (banner.page_url || banner.link_url) formData.append("page_url", banner.page_url || banner.link_url || "");
+    if (banner.display_text !== undefined) formData.append("display_text", banner.display_text || "");
     if (banner.status) formData.append("status", banner.status);
     // Legacy fields for backward compatibility
     if (banner.is_active !== undefined)

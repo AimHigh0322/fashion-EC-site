@@ -121,7 +121,7 @@ export const ProductDetail = () => {
     if (imagePath.startsWith("http")) return imagePath;
 
     const baseUrl = (
-      import.meta.env.VITE_API_URL || "http://localhost:4000/api"
+      import.meta.env.VITE_API_URL || "http://localhost:8888/api"
     ).replace(/\/api$/, "");
 
     const path = imagePath.startsWith("/") ? imagePath : `/${imagePath}`;

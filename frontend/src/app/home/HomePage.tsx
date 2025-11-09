@@ -28,6 +28,7 @@ export const HomePage = () => {
       title: string;
       description: string;
       page_url?: string;
+      display_text?: string;
       title_color?: string;
       description_color?: string;
       title_font_size?: string;
@@ -250,6 +251,8 @@ export const HomePage = () => {
           name?: string;
           title?: string;
           description?: string;
+          page_url?: string;
+          display_text?: string;
         }> = [];
 
         if (response.data) {
@@ -284,7 +287,7 @@ export const HomePage = () => {
 
         if (bannersData.length > 0) {
           const baseUrl = (
-            import.meta.env.VITE_API_URL || "http://localhost:4000/api"
+            import.meta.env.VITE_API_URL || "http://localhost:8888/api"
           ).replace(/\/api$/, "");
 
           const formattedBanners = bannersData
@@ -296,6 +299,7 @@ export const HomePage = () => {
                 title?: string;
                 description?: string;
                 page_url?: string;
+                display_text?: string;
                 title_color?: string;
                 description_color?: string;
                 title_font_size?: string;
@@ -321,6 +325,7 @@ export const HomePage = () => {
                   title: banner.title || banner.name || "", // Use title first, fallback to name
                   description: banner.description || "",
                   page_url: banner.page_url || "",
+                  display_text: banner.display_text || "",
                   title_color: banner.title_color || "#FFFFFF",
                   description_color: banner.description_color || "#FFFFFF",
                   title_font_size: banner.title_font_size || "text-4xl",
@@ -907,17 +912,23 @@ export const HomePage = () => {
                         className="w-full h-full object-cover"
                       />
                     </div>
-                    {/* Banner URL Below */}
-                    {banner.page_url && (
+                    {/* Banner Display Text Below */}
+                    {banner.display_text && (
                       <div className="mt-2 text-center">
-                        <a
-                          href={banner.page_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-xs sm:text-sm text-blue-600 hover:text-blue-800 underline line-clamp-2 break-all"
-                        >
-                          {banner.page_url}
-                        </a>
+                        {banner.page_url ? (
+                          <a
+                            href={banner.page_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs sm:text-sm text-gray-700 hover:text-blue-600 hover:underline line-clamp-2 break-all transition-colors cursor-pointer"
+                          >
+                            {banner.display_text}
+                          </a>
+                        ) : (
+                          <span className="text-xs sm:text-sm text-gray-700 line-clamp-2 break-all">
+                            {banner.display_text}
+                          </span>
+                        )}
                       </div>
                     )}
                   </div>
@@ -1020,7 +1031,7 @@ export const HomePage = () => {
                         </span>
                       ))}
                     </div>
-                    <button className="w-full bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white text-xs sm:text-sm font-medium py-2 px-4 rounded-lg transition-all duration-200 shadow-sm">
+                    <button className="w-full bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white text-xs sm:text-sm font-medium py-2 px-4 rounded-full transition-all duration-200 shadow-sm">
                       カートに入れる
                     </button>
                   </div>

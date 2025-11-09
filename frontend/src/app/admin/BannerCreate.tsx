@@ -16,6 +16,7 @@ interface BannerFormData {
   description_position: string;
   description_vertical_position: string;
   page_url: string;
+  display_text: string;
   status: "active" | "inactive";
   image: File | null;
   preview: string | null;
@@ -85,6 +86,7 @@ export const BannerCreate = () => {
           description_position: "left",
           description_vertical_position: "middle",
           page_url: "",
+          display_text: "",
           status: "active",
           image: file,
           preview: reader.result as string,
@@ -131,6 +133,7 @@ export const BannerCreate = () => {
         // 説明の縦位置はタイトルと同じ値に設定
         description_vertical_position: banner.title_vertical_position,
         page_url: banner.page_url,
+        display_text: banner.display_text,
         status: banner.status,
       }));
 
@@ -150,7 +153,7 @@ export const BannerCreate = () => {
 
       const response = await fetch(
         `${
-          import.meta.env.VITE_API_URL || "http://localhost:4000/api"
+          import.meta.env.VITE_API_URL || "http://localhost:8888/api"
         }/banners/multiple`,
         {
           method: "POST",
@@ -582,6 +585,25 @@ export const BannerCreate = () => {
                       placeholder="https://example.com"
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
                     />
+                  </div>
+
+                  {/* Display Text */}
+                  <div className="md:col-span-7">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      表示テキスト
+                    </label>
+                    <input
+                      type="text"
+                      value={banner.display_text}
+                      onChange={(e) =>
+                        handleBannerChange(index, "display_text", e.target.value)
+                      }
+                      placeholder="クリック可能なテキストを入力"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      このテキストがURLの代わりに表示され、クリックするとページURLに移動します
+                    </p>
                   </div>
 
                   {/* Status */}
