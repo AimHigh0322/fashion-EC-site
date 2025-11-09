@@ -1,0 +1,186 @@
+import "./App.css";
+import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import { ToastProvider } from "./contexts/ToastContext";
+import { Login } from "./app/user/auth/Login";
+import { Register } from "./app/user/auth/Register";
+import { Dashboard } from "./app/admin/Dashboard";
+import { Products } from "./app/admin/Products";
+import { Orders } from "./app/admin/Orders";
+import { Users } from "./app/admin/Users";
+import { Categories } from "./app/admin/Categories";
+import { Analytics } from "./app/admin/Analytics";
+import { Settings } from "./app/admin/Settings";
+import { ProductDetail } from "./app/admin/ProductDetail";
+import { Banners } from "./app/admin/Banners";
+import { BannerCreate } from "./app/admin/BannerCreate";
+import { BannerEdit } from "./app/admin/BannerEdit";
+import { HomePage } from "./app/home/HomePage";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { useState } from "react";
+
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const { isAuthenticated, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-gray-600">Loading...</div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return <>{children}</>;
+};
+
+const AdminRoute = ({ children }: { children: React.ReactNode }) => {
+  const { isAuthenticated, loading, isAdmin } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-gray-600">Loading...</div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (!isAdmin) {
+    return <Navigate to="/" replace />;
+  }
+
+  return <>{children}</>;
+};
+
+const AuthPages = () => {
+  const [showRegister, setShowRegister] = useState(false);
+
+    return (
+      <>
+        {showRegister ? (
+          <Register onSwitchToLogin={() => setShowRegister(false)} />
+        ) : (
+          <Login onSwitchToRegister={() => setShowRegister(true)} />
+        )}
+      </>
+    );
+};
+
+function App() {
+  return (
+    <ToastProvider>
+      <AuthProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/login" element={<AuthPages />} />
+            <Route
+              path="/"
+              element={
+                <ProtectedRoute>
+                  <HomePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin"
+              element={
+                <AdminRoute>
+                  <Dashboard />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/products"
+              element={
+                <AdminRoute>
+                  <Products />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/products/:id"
+              element={
+                <AdminRoute>
+                  <ProductDetail />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/orders"
+              element={
+                <AdminRoute>
+                  <Orders />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/users"
+              element={
+                <AdminRoute>
+                  <Users />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/categories"
+              element={
+                <AdminRoute>
+                  <Categories />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/analytics"
+              element={
+                <AdminRoute>
+                  <Analytics />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/settings"
+              element={
+                <AdminRoute>
+                  <Settings />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/banners"
+              element={
+                <AdminRoute>
+                  <Banners />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/banners/create"
+              element={
+                <AdminRoute>
+                  <BannerCreate />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/banners/edit/:id"
+              element={
+                <AdminRoute>
+                  <BannerEdit />
+                </AdminRoute>
+              }
+            />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
+    </ToastProvider>
+  );
+}
+
+export default App;
