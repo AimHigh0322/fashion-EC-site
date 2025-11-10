@@ -335,11 +335,11 @@ export const Products = () => {
         <nav className="flex items-center space-x-2 text-sm text-gray-600">
           <Link to="/admin" className="hover:text-purple-600 flex items-center space-x-1">
             <Home className="w-4 h-4" />
-            <span>Dashboard</span>
+            <span>ダッシュボード</span>
           </Link>
           <ChevronRight className="w-4 h-4 text-gray-400" />
           <span className="text-pink-600 font-medium">
-            Products
+            商品管理
           </span>
         </nav>
 

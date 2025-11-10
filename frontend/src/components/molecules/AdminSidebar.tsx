@@ -7,7 +7,6 @@ import {
   Users,
   FolderTree,
   Settings,
-  BarChart3,
   Menu,
   X,
   LogOut,
@@ -23,14 +22,13 @@ interface NavItem {
 }
 
 const navigation: NavItem[] = [
-  { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
-  { name: "Products", href: "/admin/products", icon: Package },
-  { name: "Orders", href: "/admin/orders", icon: ShoppingCart },
-  { name: "Users", href: "/admin/users", icon: Users },
-  { name: "Categories", href: "/admin/categories", icon: FolderTree },
-  { name: "Banners", href: "/admin/banners", icon: ImageIcon },
-  { name: "Analytics", href: "/admin/analytics", icon: BarChart3 },
-  { name: "Settings", href: "/admin/settings", icon: Settings },
+  { name: "ダッシュボード", href: "/admin", icon: LayoutDashboard },
+  { name: "ユーザー管理", href: "/admin/users", icon: Users },
+  { name: "商品管理", href: "/admin/products", icon: Package },
+  { name: "注文管理", href: "/admin/orders", icon: ShoppingCart },
+  { name: "カテゴリ管理", href: "/admin/categories", icon: FolderTree },
+  { name: "バナー管理", href: "/admin/banners", icon: ImageIcon },
+  { name: "設定", href: "/admin/settings", icon: Settings },
 ];
 
 export const AdminSidebar = () => {
@@ -50,7 +48,7 @@ export const AdminSidebar = () => {
       {/* Mobile menu button */}
       <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-white shadow-md">
         <div className="flex items-center justify-between p-4">
-          <h1 className="text-xl font-bold text-gray-900">Admin Panel</h1>
+          <h1 className="text-xl font-bold text-gray-900">管理パネル</h1>
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             className="p-2 rounded-md text-gray-600 hover:bg-gray-100"
@@ -145,7 +143,7 @@ export const AdminSidebar = () => {
               className="flex items-center space-x-3 w-full px-3 py-2 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
             >
               <LogOut className="w-5 h-5" />
-              <span>Logout</span>
+              <span>ログアウト</span>
             </button>
           </div>
         </div>

@@ -55,15 +55,15 @@ export const Categories = () => {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
-              Categories
+              カテゴリ管理
             </h1>
             <p className="text-sm text-gray-600 mt-1">
-              Organize products into categories
+              商品をカテゴリに整理
             </p>
           </div>
           <button className="flex items-center justify-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
             <Plus className="w-5 h-5" />
-            <span>Add Category</span>
+            <span>カテゴリ追加</span>
           </button>
         </div>
 
@@ -71,7 +71,7 @@ export const Categories = () => {
         <div className="bg-white rounded-lg shadow p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Total Categories</p>
+              <p className="text-sm text-gray-600">総カテゴリ数</p>
               <p className="text-2xl font-bold text-gray-900 mt-1">
                 {categories.length}
               </p>
@@ -110,13 +110,13 @@ export const Categories = () => {
               </div>
               <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-200">
                 <div>
-                  <p className="text-xs text-gray-600">Products</p>
+                  <p className="text-xs text-gray-600">商品数</p>
                   <p className="text-lg font-semibold text-gray-900">
                     {category.products}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-600">Subcategories</p>
+                  <p className="text-xs text-gray-600">サブカテゴリ</p>
                   <p className="text-lg font-semibold text-gray-900">
                     {category.subcategories}
                   </p>

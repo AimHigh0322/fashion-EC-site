@@ -191,14 +191,14 @@ export const BannerCreate = () => {
             className="hover:text-purple-600 flex items-center space-x-1"
           >
             <Home className="w-4 h-4" />
-            <span>Dashboard</span>
+            <span>ダッシュボード</span>
           </Link>
           <ChevronRight className="w-4 h-4 text-gray-400" />
           <Link to="/admin/banners" className="hover:text-purple-600">
-            Promotions
+            バナー管理
           </Link>
           <ChevronRight className="w-4 h-4 text-gray-400" />
-          <span className="text-pink-600 font-medium">Create Banner</span>
+          <span className="text-pink-600 font-medium">バナー作成</span>
         </nav>
 
         {/* Header */}

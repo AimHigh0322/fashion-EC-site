@@ -187,6 +187,13 @@ const login = async (req, res) => {
         .json({ error: "メールアドレスが見つかりません。" });
     }
 
+    // Check if user is blocked
+    if (user.status === "blocked") {
+      return res
+        .status(403)
+        .json({ error: "このアカウントはブロックされています。管理者にお問い合わせください。" });
+    }
+
     // Check password
     let match;
     try {

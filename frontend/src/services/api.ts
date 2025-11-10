@@ -127,8 +127,13 @@ class ApiService {
       if (!response.ok) {
         // Return the error message from backend (already in Japanese)
         return {
-          error: data.error || "リクエストに失敗しました。",
+          error: data.error || data.message || "リクエストに失敗しました。",
         };
+      }
+
+      // Handle backend response structure: { success: true, data: ... } or direct data
+      if (data && typeof data === "object" && "success" in data && "data" in data) {
+        return { data: data.data };
       }
 
       return { data };
@@ -591,6 +596,145 @@ class ApiService {
 
   async getActiveBanners() {
     return this.request<Banner[]>(`/banners/active`);
+  }
+
+  // Favorites endpoints
+  async addFavorite(productId: string) {
+    return this.request<{ id: string; user_id: string; product_id: string }>(
+      "/favorites",
+      {
+        method: "POST",
+        body: JSON.stringify({ product_id: productId }),
+      }
+    );
+  }
+
+  async removeFavorite(productId: string) {
+    return this.request<void>(`/favorites/${productId}`, {
+      method: "DELETE",
+    });
+  }
+
+  async getFavorites() {
+    return this.request<
+      Array<{
+        id: string;
+        user_id: string;
+        product_id: string;
+        name: string;
+        sku: string;
+        price: number;
+        main_image_url: string;
+        status: string;
+        createdAt: string;
+      }>
+    >("/favorites", {
+      method: "GET",
+    });
+  }
+
+  async checkFavorite(productId: string) {
+    return this.request<{ is_favorited: boolean }>(
+      `/favorites/check/${productId}`,
+      {
+        method: "GET",
+      }
+    );
+  }
+
+  async getFavoriteStatus(productIds: string[]) {
+    const query = new URLSearchParams();
+    query.append("product_ids", productIds.join(","));
+    return this.request<string[]>(`/favorites/status?${query.toString()}`, {
+      method: "GET",
+    });
+  }
+
+  // User management endpoints
+  async getUsers(params?: {
+    search?: string;
+    role?: string;
+    limit?: number;
+    offset?: number;
+    sortBy?: string;
+    sortOrder?: string;
+  }) {
+    const query = new URLSearchParams();
+    if (params?.search) query.append("search", params.search);
+    if (params?.role) query.append("role", params.role);
+    if (params?.limit) query.append("limit", params.limit.toString());
+    if (params?.offset) query.append("offset", params.offset.toString());
+    if (params?.sortBy) query.append("sortBy", params.sortBy);
+    if (params?.sortOrder) query.append("sortOrder", params.sortOrder);
+    return this.request<{
+      users: Array<{
+        id: string;
+        username: string;
+        email: string;
+        role: string;
+        orders: number;
+        status: string;
+        createdAt: string;
+        updatedAt: string;
+      }>;
+      total: number;
+      limit: number;
+      offset: number;
+    }>(`/users?${query.toString()}`);
+  }
+
+  async getUser(id: string) {
+    return this.request<{
+      id: string;
+      username: string;
+      email: string;
+      role: string;
+      orders: number;
+      status: string;
+      createdAt: string;
+      updatedAt: string;
+    }>(`/users/${id}`);
+  }
+
+  async updateUser(id: string, userData: {
+    username?: string;
+    email?: string;
+    role?: string;
+  }) {
+    return this.request<{
+      message: string;
+      user: {
+        id: string;
+        username: string;
+        email: string;
+        role: string;
+        createdAt: string;
+        updatedAt: string;
+      };
+    }>(`/users/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(userData),
+    });
+  }
+
+  async deleteUser(id: string) {
+    return this.request<{ message: string }>(`/users/${id}`, {
+      method: "DELETE",
+    });
+  }
+
+  async getUserStats() {
+    return this.request<{
+      total: number;
+      active: number;
+      admins: number;
+      orderCounts: Array<{
+        id: string;
+        username: string;
+        email: string;
+        order_count: number;
+      }>;
+    }>("/users/stats");
   }
 }
 

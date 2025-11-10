@@ -12,11 +12,13 @@ import {
   Star,
 } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
+import { useFavorites } from "../../contexts/FavoritesContext";
 import { apiService } from "../../services/api";
 
 export const HomePage = () => {
   const [cartCount] = useState(0);
   const { isAuthenticated, user, logout } = useAuth();
+  const { isFavorited, toggleFavorite } = useFavorites();
   const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [mainBannerIndex, setMainBannerIndex] = useState(0);
@@ -140,71 +142,81 @@ export const HomePage = () => {
     };
   }, [isCategoryDropdownOpen]);
 
-  // おすすめ商品データ
-  const recommendedProducts = [
-    {
-      id: 1,
-      title:
-        "【新作】カジュアルスーツ 2ピース メンズ グレー ビジネスカジュアル対応",
-      price: 19800,
-      rating: 4.8,
-      reviews: 125,
-      image: "/img/model/model (20).jpg",
-      badges: ["送料無料", "サイズ展開豊富"],
-      delivery: "14:00までのご注文で最短翌日にお届け",
-    },
-    {
-      id: 2,
-      title: "レディース ワンピース フレア 春夏 カジュアル お出かけ パーティー",
-      price: 5980,
-      rating: 4.6,
-      reviews: 89,
-      image: "/img/model/model (16).png",
-      badges: ["送料無料", "複数カラー"],
-      delivery: "14:00までのご注文で最短翌日にお届け",
-    },
-    {
-      id: 3,
-      title: "メンズ スニーカー カジュアル コンフォート ウォーキング 通勤",
-      price: 3980,
-      rating: 4.9,
-      reviews: 256,
-      image: "/img/model/model (9).png",
-      badges: ["送料無料", "人気商品"],
-      delivery: "14:00までのご注文で最短翌日にお届け",
-    },
-    {
-      id: 4,
-      title:
-        "レディース トートバッグ レザー風 大容量 ショルダーバッグ お出かけ",
-      price: 2980,
-      rating: 4.7,
-      reviews: 167,
-      image: "/img/model/model (14).png",
-      badges: ["送料無料", "新着"],
-      delivery: "14:00までのご注文で最短翌日にお届け",
-    },
-    {
-      id: 5,
-      title: "メンズ ジャケット アウター 秋冬 カジュアル 防風",
-      price: 12800,
-      rating: 4.5,
-      reviews: 98,
-      image: "/img/model/model (11).jpg",
-      badges: ["送料無料", "人気商品"],
-      delivery: "14:00までのご注文で最短翌日にお届け",
-    },
-    {
-      id: 6,
-      title: "レディース スカート ミディ フレア 春夏 カジュアル",
-      price: 4980,
-      rating: 4.6,
-      reviews: 142,
-      image: "/img/model/model (1).png",
-      badges: ["送料無料", "複数カラー"],
-      delivery: "14:00までのご注文で最短翌日にお届け",
-    },
-  ];
+  // おすすめ商品データ - Load from API
+  const [recommendedProducts, setRecommendedProducts] = useState<
+    Array<{
+      id: string;
+      title: string;
+      price: number;
+      rating: number;
+      reviews: number;
+      image: string;
+      badges: string[];
+      delivery: string;
+      main_image_url?: string;
+      name?: string;
+    }>
+  >([]);
+  const [loadingProducts, setLoadingProducts] = useState(true);
+
+  // Load products from API
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        setLoadingProducts(true);
+        const response = await apiService.getProducts({
+          status: "active",
+          limit: 6,
+        });
+
+        if (response.data && Array.isArray(response.data)) {
+          const baseUrl = (
+            import.meta.env.VITE_API_URL || "http://localhost:8888/api"
+          ).replace(/\/api$/, "");
+
+          const formattedProducts = response.data.map(
+            (product: {
+              id: string;
+              name?: string;
+              title?: string;
+              price?: number;
+              main_image_url?: string;
+              image_url?: string;
+            }) => {
+              let imageUrl = product.main_image_url || product.image_url || "";
+              if (imageUrl && !imageUrl.startsWith("http")) {
+                const cleanPath = imageUrl.startsWith("/")
+                  ? imageUrl
+                  : `/${imageUrl}`;
+                imageUrl = `${baseUrl}${cleanPath}`;
+              }
+
+              return {
+                id: product.id,
+                title: product.name || product.title || "",
+                price: product.price || 0,
+                rating: 4.5, // Default rating (can be added to products table later)
+                reviews: 0, // Default reviews (can be added to products table later)
+                image: imageUrl || "/img/model/model (1).png",
+                badges: ["送料無料"], // Default badge
+                delivery: "14:00までのご注文で最短翌日にお届け",
+              };
+            }
+          );
+
+          setRecommendedProducts(formattedProducts);
+        }
+      } catch (error) {
+        console.error("Failed to load products:", error);
+        // Fallback to empty array or show error
+        setRecommendedProducts([]);
+      } finally {
+        setLoadingProducts(false);
+      }
+    };
+
+    loadProducts();
+  }, []);
 
   // トップピックバナー
   const topPicks = [
@@ -972,72 +984,107 @@ export const HomePage = () => {
             </div>
           </div>
           <div className="relative">
-            <div className="flex space-x-3 sm:space-x-4 overflow-x-auto pb-4 scrollbar-hide">
-              {recommendedProducts.map((product) => (
-                <div
-                  key={product.id}
-                  className="flex-shrink-0 w-[calc((100%-60px)/6)] sm:w-[calc((100%-80px)/6)] min-w-[180px] sm:min-w-[200px] bg-white border border-gray-200 rounded-md overflow-hidden shadow-sm"
-                >
-                  <div className="relative">
-                    <img
-                      src={product.image}
-                      alt={product.title}
-                      className="w-full h-32 sm:h-40 md:h-48 object-cover"
-                    />
-                    <button className="absolute top-2 right-2 text-gray-400 hover:text-red-500 bg-white/80 rounded-full p-1.5">
-                      <Heart className="w-4 h-4 sm:w-5 sm:h-5" />
-                    </button>
-                  </div>
-                  <div className="p-3 sm:p-4">
-                    <h3 className="text-xs sm:text-sm text-gray-800 mb-1 sm:mb-2 line-clamp-2 min-h-[2.5rem] sm:min-h-[2.75rem]">
-                      {product.title}
-                    </h3>
-                    <div className="flex items-center gap-1 mb-1 sm:mb-2">
-                      {[...Array(5)].map((_, index) => (
-                        <Star
-                          key={index}
-                          className={`w-3 h-3 sm:w-4 sm:h-4 ${
-                            product.rating > 0 &&
-                            index < Math.floor(product.rating)
-                              ? "fill-yellow-400 text-yellow-400"
-                              : "fill-none stroke-gray-300 text-gray-300"
+            {loadingProducts ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="text-gray-500">商品を読み込み中...</div>
+              </div>
+            ) : recommendedProducts.length === 0 ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="text-gray-500">商品がありません</div>
+              </div>
+            ) : (
+              <div className="flex space-x-3 sm:space-x-4 overflow-x-auto pb-4 scrollbar-hide">
+                {recommendedProducts.map((product) => (
+                  <div
+                    key={product.id}
+                    className="flex-shrink-0 w-[calc((100%-60px)/6)] sm:w-[calc((100%-80px)/6)] min-w-[180px] sm:min-w-[200px] bg-white border border-gray-200 rounded-md overflow-hidden shadow-sm"
+                  >
+                    <div className="relative">
+                      <img
+                        src={product.image}
+                        alt={product.title}
+                        className="w-full h-32 sm:h-40 md:h-48 object-cover"
+                      />
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          if (isAuthenticated) {
+                            console.log(
+                              "Toggling favorite for product:",
+                              product.id
+                            );
+                            toggleFavorite(product.id);
+                          } else {
+                            console.warn("User not authenticated");
+                          }
+                        }}
+                        className={`absolute top-2 right-2 bg-white/80 rounded-full p-1.5 transition-colors ${
+                          isFavorited(product.id)
+                            ? "text-red-500 hover:text-red-600"
+                            : "text-gray-400 hover:text-red-500"
+                        }`}
+                      >
+                        <Heart
+                          className={`w-4 h-4 sm:w-5 sm:h-5 ${
+                            isFavorited(product.id) ? "fill-current" : ""
                           }`}
                         />
-                      ))}
-                      <span className="text-xs sm:text-sm text-gray-600 ml-1">
-                        ({product.reviews}件)
-                      </span>
+                      </button>
                     </div>
-                    <div className="mb-1 sm:mb-2">
-                      <span className="text-base sm:text-lg font-bold text-red-600">
-                        ¥{product.price.toLocaleString()}
-                      </span>
-                      <span className="text-xs text-gray-500 ml-1">(税込)</span>
-                    </div>
-                    <div className="text-xs text-gray-600 mb-1 sm:mb-2 line-clamp-1">
-                      {product.delivery}
-                    </div>
-                    <div className="flex flex-wrap gap-1 mb-2 sm:mb-3">
-                      {product.badges.map((badge, idx) => (
-                        <span
-                          key={idx}
-                          className={`text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md ${
-                            badge === "送料無料"
-                              ? "bg-blue-600 text-white"
-                              : "bg-gray-600 text-white"
-                          }`}
-                        >
-                          {badge}
+                    <div className="p-3 sm:p-4">
+                      <h3 className="text-xs sm:text-sm text-gray-800 mb-1 sm:mb-2 line-clamp-2 min-h-[2.5rem] sm:min-h-[2.75rem]">
+                        {product.title}
+                      </h3>
+                      <div className="flex items-center gap-1 mb-1 sm:mb-2">
+                        {[...Array(5)].map((_, index) => (
+                          <Star
+                            key={index}
+                            className={`w-3 h-3 sm:w-4 sm:h-4 ${
+                              product.rating > 0 &&
+                              index < Math.floor(product.rating)
+                                ? "fill-yellow-400 text-yellow-400"
+                                : "fill-none stroke-gray-300 text-gray-300"
+                            }`}
+                          />
+                        ))}
+                        <span className="text-xs sm:text-sm text-gray-600 ml-1">
+                          ({product.reviews}件)
                         </span>
-                      ))}
+                      </div>
+                      <div className="mb-1 sm:mb-2">
+                        <span className="text-base sm:text-lg font-bold text-red-600">
+                          ¥{product.price.toLocaleString()}
+                        </span>
+                        <span className="text-xs text-gray-500 ml-1">
+                          (税込)
+                        </span>
+                      </div>
+                      <div className="text-xs text-gray-600 mb-1 sm:mb-2 line-clamp-1">
+                        {product.delivery}
+                      </div>
+                      <div className="flex flex-wrap gap-1 mb-2 sm:mb-3">
+                        {product.badges.map((badge, idx) => (
+                          <span
+                            key={idx}
+                            className={`text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md ${
+                              badge === "送料無料"
+                                ? "bg-blue-600 text-white"
+                                : "bg-gray-600 text-white"
+                            }`}
+                          >
+                            {badge}
+                          </span>
+                        ))}
+                      </div>
+                      <button className="w-full bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white text-xs sm:text-sm font-medium py-2 px-4 rounded-full transition-all duration-200 shadow-sm">
+                        カートに入れる
+                      </button>
                     </div>
-                    <button className="w-full bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white text-xs sm:text-sm font-medium py-2 px-4 rounded-full transition-all duration-200 shadow-sm">
-                      カートに入れる
-                    </button>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 

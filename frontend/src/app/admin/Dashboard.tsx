@@ -14,7 +14,7 @@ export const Dashboard = () => {
 
   const stats = [
     {
-      name: "Total Revenue",
+      name: "総売上",
       value: "¥12,345,678",
       change: "+12.5%",
       changeType: "positive",
@@ -22,7 +22,7 @@ export const Dashboard = () => {
       color: "text-green-600",
     },
     {
-      name: "Total Orders",
+      name: "総注文数",
       value: "1,234",
       change: "+8.2%",
       changeType: "positive",
@@ -30,7 +30,7 @@ export const Dashboard = () => {
       color: "text-blue-600",
     },
     {
-      name: "Total Products",
+      name: "総商品数",
       value: "456",
       change: "+5.1%",
       changeType: "positive",
@@ -38,7 +38,7 @@ export const Dashboard = () => {
       color: "text-purple-600",
     },
     {
-      name: "Total Customers",
+      name: "総顧客数",
       value: "5,678",
       change: "+15.3%",
       changeType: "positive",
@@ -59,10 +59,10 @@ export const Dashboard = () => {
         {/* Header */}
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
-            Dashboard
+            ダッシュボード
           </h1>
           <p className="text-sm text-gray-600 mt-1">
-            Welcome back, {user?.username}!
+            おかえりなさい、{user?.username}さん！
           </p>
         </div>
 
@@ -101,7 +101,7 @@ export const Dashboard = () => {
           {/* User Information */}
           <div className="bg-white rounded-lg shadow p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">
-              User Information
+              ユーザー情報
             </h2>
             <dl className="space-y-3">
               <div>
@@ -123,13 +123,13 @@ export const Dashboard = () => {
                 </dd>
               </div>
               <div>
-                <dt className="text-sm font-medium text-gray-500">User ID</dt>
+                <dt className="text-sm font-medium text-gray-500">ユーザーID</dt>
                 <dd className="text-sm text-gray-900 mt-1">{user?.id}</dd>
               </div>
               {user?.createdAt && (
                 <div>
                   <dt className="text-sm font-medium text-gray-500">
-                    Member Since
+                    登録日
                   </dt>
                   <dd className="text-sm text-gray-900 mt-1">
                     {new Date(user.createdAt).toLocaleDateString()}
@@ -142,7 +142,7 @@ export const Dashboard = () => {
           {/* Recent Orders */}
           <div className="bg-white rounded-lg shadow p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">
-              Recent Orders
+              最近の注文
             </h2>
             <div className="space-y-3">
               {recentOrders.map((order) => (
@@ -169,7 +169,13 @@ export const Dashboard = () => {
                           : "bg-purple-100 text-purple-800"
                       }`}
                     >
-                      {order.status}
+                      {order.status === "pending"
+                        ? "保留中"
+                        : order.status === "processing"
+                        ? "処理中"
+                        : order.status === "shipped"
+                        ? "発送済み"
+                        : order.status}
                     </span>
                   </div>
                 </div>

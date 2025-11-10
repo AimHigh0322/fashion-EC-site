@@ -154,10 +154,10 @@ export const Banners = () => {
             className="hover:text-purple-600 flex items-center space-x-1"
           >
             <Home className="w-4 h-4" />
-            <span>Dashboard</span>
+            <span>ダッシュボード</span>
           </Link>
           <ChevronRight className="w-4 h-4 text-gray-400" />
-          <span className="text-pink-600 font-medium">Promotions</span>
+          <span className="text-pink-600 font-medium">バナー管理</span>
         </nav>
 
         {/* Header */}
@@ -248,20 +248,22 @@ export const Banners = () => {
                           key={banner.id}
                           className="hover:bg-gray-50 transition-colors"
                         >
-                          <td className="px-2 sm:px-4 py-2 sm:py-4 whitespace-nowrap">
+                          <td className="px-2 sm:px-4 py-2 sm:py-4">
                             {imageUrl ? (
-                              <img
-                                src={imageUrl}
-                                alt={banner.name || banner.title || "Banner"}
-                                className="min-w-10 min-h-6 sm:min-w-12 sm:min-h-8 md:min-w-16 md:min-h-10 object-cover rounded border border-gray-200"
-                                onError={(e) => {
-                                  const target = e.target as HTMLImageElement;
-                                  target.src =
-                                    'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="64" height="48"%3E%3Crect width="64" height="48" fill="%23f3f4f6"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%239ca3af" font-size="8"%3E画像なし%3C/text%3E%3C/svg%3E';
-                                }}
-                              />
+                              <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 flex items-center justify-center bg-gray-50 rounded border border-gray-200 overflow-hidden">
+                                <img
+                                  src={imageUrl}
+                                  alt={banner.name || banner.title || "Banner"}
+                                  className="w-full h-full object-contain"
+                                  onError={(e) => {
+                                    const target = e.target as HTMLImageElement;
+                                    target.src =
+                                      'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="64" height="48"%3E%3Crect width="64" height="48" fill="%23f3f4f6"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%239ca3af" font-size="8"%3E画像なし%3C/text%3E%3C/svg%3E';
+                                  }}
+                                />
+                              </div>
                             ) : (
-                              <div className="min-w-10 min-h-6 sm:min-w-12 sm:min-h-8 md:min-w-16 md:min-h-10 bg-gray-100 rounded border border-gray-200 flex items-center justify-center">
+                              <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 bg-gray-100 rounded border border-gray-200 flex items-center justify-center">
                                 <span className="text-[8px] sm:text-[10px] text-gray-400">
                                   画像なし
                                 </span>

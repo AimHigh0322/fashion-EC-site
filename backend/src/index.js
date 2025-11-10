@@ -103,6 +103,14 @@ app.use("/api/attributes", attributeRoutes);
 const bannerRoutes = require("./router/banners/banners");
 app.use("/api/banners", bannerRoutes);
 
+// Favorites routes
+const favoriteRoutes = require("./router/favorites/favorites");
+app.use("/api/favorites", favoriteRoutes);
+
+// User management routes
+const userRoutes = require("./router/users/users");
+app.use("/api/users", userRoutes);
+
 // 404 handler for undefined routes
 app.use((req, res) => {
   res.status(404).json({ error: "エンドポイントが見つかりません。" });
@@ -111,12 +119,9 @@ app.use((req, res) => {
 // Error handling middleware (must be after routes)
 app.use((err, req, res, next) => {
   console.error("Unhandled error:", err);
-  res
-    .status(500)
-    .json({
-      error:
-        "サーバーエラーが発生しました。しばらくしてから再度お試しください。",
-    });
+  res.status(500).json({
+    error: "サーバーエラーが発生しました。しばらくしてから再度お試しください。",
+  });
 });
 
 const server = http.createServer(app);

@@ -31,10 +31,10 @@ export const Settings = () => {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
-              Settings
+              設定
             </h1>
             <p className="text-sm text-gray-600 mt-1">
-              Manage your site settings and preferences
+              サイト設定と環境設定の管理
             </p>
           </div>
           <button
@@ -42,7 +42,7 @@ export const Settings = () => {
             className="flex items-center justify-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
             <Save className="w-5 h-5" />
-            <span>Save Changes</span>
+            <span>変更を保存</span>
           </button>
         </div>
 
@@ -50,12 +50,12 @@ export const Settings = () => {
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex items-center space-x-3 mb-6">
             <Globe className="w-6 h-6 text-blue-600" />
-            <h2 className="text-lg font-semibold text-gray-900">General</h2>
+            <h2 className="text-lg font-semibold text-gray-900">一般設定</h2>
           </div>
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Site Name
+                サイト名
               </label>
               <input
                 type="text"
@@ -68,7 +68,7 @@ export const Settings = () => {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Site Email
+                サイトメール
               </label>
               <input
                 type="email"
@@ -82,7 +82,7 @@ export const Settings = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Currency
+                  通貨
                 </label>
                 <select
                   value={settings.currency}
@@ -98,7 +98,7 @@ export const Settings = () => {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Timezone
+                  タイムゾーン
                 </label>
                 <select
                   value={settings.timezone}
@@ -121,17 +121,17 @@ export const Settings = () => {
           <div className="flex items-center space-x-3 mb-6">
             <Bell className="w-6 h-6 text-blue-600" />
             <h2 className="text-lg font-semibold text-gray-900">
-              Notifications
+              通知設定
             </h2>
           </div>
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-900">
-                  Email Notifications
+                  メール通知
                 </p>
                 <p className="text-xs text-gray-500">
-                  Receive notifications via email
+                  メールで通知を受信
                 </p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
@@ -155,10 +155,10 @@ export const Settings = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-900">
-                  SMS Notifications
+                  SMS通知
                 </p>
                 <p className="text-xs text-gray-500">
-                  Receive notifications via SMS
+                  SMSで通知を受信
                 </p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
@@ -182,10 +182,10 @@ export const Settings = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-900">
-                  Push Notifications
+                  プッシュ通知
                 </p>
                 <p className="text-xs text-gray-500">
-                  Receive push notifications
+                  プッシュ通知を受信
                 </p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
@@ -213,16 +213,16 @@ export const Settings = () => {
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex items-center space-x-3 mb-6">
             <Shield className="w-6 h-6 text-blue-600" />
-            <h2 className="text-lg font-semibold text-gray-900">Security</h2>
+            <h2 className="text-lg font-semibold text-gray-900">セキュリティ</h2>
           </div>
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-900">
-                  Two-Factor Authentication
+                  二要素認証
                 </p>
                 <p className="text-xs text-gray-500">
-                  Add an extra layer of security
+                  セキュリティの追加レイヤー
                 </p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
@@ -245,7 +245,7 @@ export const Settings = () => {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Session Timeout (minutes)
+                セッションタイムアウト（分）
               </label>
               <input
                 type="number"

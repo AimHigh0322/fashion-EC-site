@@ -627,6 +627,22 @@ async function initializeDatabase() {
     `);
     console.log("✅ Audit logs table initialized");
 
+    // Favorites table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS favorites (
+        id VARCHAR(255) PRIMARY KEY,
+        user_id VARCHAR(255) NOT NULL,
+        product_id VARCHAR(255) NOT NULL,
+        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        INDEX idx_user (user_id),
+        INDEX idx_product (product_id),
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+        UNIQUE KEY unique_user_product (user_id, product_id)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    `);
+    console.log("✅ Favorites table initialized");
+
     // Add username column if it doesn't exist (for existing databases)
     try {
       // Check if username column exists
@@ -659,6 +675,38 @@ async function initializeDatabase() {
         console.log("Note: Username column already exists");
       } else {
         console.log("Note: Username column check completed");
+      }
+    }
+
+    // Add status column if it doesn't exist (for existing databases)
+    try {
+      const [statusColumns] = await pool.query(`
+        SELECT COLUMN_NAME 
+        FROM INFORMATION_SCHEMA.COLUMNS 
+        WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = 'users' 
+        AND COLUMN_NAME = 'status'
+      `);
+
+      if (statusColumns.length === 0) {
+        await pool.query(`
+          ALTER TABLE users 
+          ADD COLUMN status ENUM('active', 'blocked') DEFAULT 'active' AFTER role
+        `);
+        await pool.query(`
+          ALTER TABLE users 
+          ADD INDEX idx_status (status)
+        `);
+        console.log("✅ Status column added to users table");
+      }
+    } catch (error) {
+      if (
+        error.message.includes("Duplicate column name") ||
+        error.message.includes("Duplicate key name")
+      ) {
+        console.log("Note: Status column already exists");
+      } else {
+        console.log("Note: Status column check completed");
       }
     }
 

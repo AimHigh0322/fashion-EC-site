@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { Edit, Trash2, ChevronRight, ArrowLeft, X, ZoomIn } from "lucide-react";
+import { Edit, Trash2, ChevronRight, ArrowLeft, X, ZoomIn, LayoutDashboard, Package } from "lucide-react";
 import { AdminLayout } from "../../components/layouts/AdminLayout";
 import { apiService } from "../../services/api";
 import { useToast } from "../../contexts/ToastContext";
@@ -183,16 +183,19 @@ export const ProductDetail = () => {
       <div className="space-y-6">
         {/* Breadcrumb */}
         <nav className="flex items-center space-x-2 text-sm text-gray-600">
-          <Link to="/admin" className="hover:text-gray-900">
-            ダッシュボード
+          <Link to="/admin" className="hover:text-gray-900 flex items-center space-x-1">
+            <LayoutDashboard className="w-4 h-4" />
+            <span>ダッシュボード</span>
           </Link>
-          <ChevronRight className="w-4 h-4" />
-          <Link to="/admin/products" className="hover:text-gray-900">
-            商品管理
+          <ChevronRight className="w-4 h-4 text-gray-400" />
+          <Link to="/admin/products" className="hover:text-gray-900 flex items-center space-x-1">
+            <Package className="w-4 h-4" />
+            <span>商品管理</span>
           </Link>
-          <ChevronRight className="w-4 h-4" />
-          <span className="text-gray-900 truncate max-w-xs">
-            {product.name}
+          <ChevronRight className="w-4 h-4 text-gray-400" />
+          <span className="text-gray-900 font-medium flex items-center space-x-1">
+            <Package className="w-4 h-4" />
+            <span>商品編集</span>
           </span>
         </nav>
 

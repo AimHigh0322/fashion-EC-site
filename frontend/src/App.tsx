@@ -1,5 +1,6 @@
 import "./App.css";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import { FavoritesProvider } from "./contexts/FavoritesContext";
 import { ToastProvider } from "./contexts/ToastContext";
 import { Login } from "./app/user/auth/Login";
 import { Register } from "./app/user/auth/Register";
@@ -8,7 +9,6 @@ import { Products } from "./app/admin/Products";
 import { Orders } from "./app/admin/Orders";
 import { Users } from "./app/admin/Users";
 import { Categories } from "./app/admin/Categories";
-import { Analytics } from "./app/admin/Analytics";
 import { Settings } from "./app/admin/Settings";
 import { ProductDetail } from "./app/admin/ProductDetail";
 import { Banners } from "./app/admin/Banners";
@@ -76,7 +76,8 @@ function App() {
   return (
     <ToastProvider>
       <AuthProvider>
-        <BrowserRouter>
+        <FavoritesProvider>
+          <BrowserRouter>
           <Routes>
             <Route path="/login" element={<AuthPages />} />
             <Route
@@ -136,14 +137,6 @@ function App() {
               }
             />
             <Route
-              path="/admin/analytics"
-              element={
-                <AdminRoute>
-                  <Analytics />
-                </AdminRoute>
-              }
-            />
-            <Route
               path="/admin/settings"
               element={
                 <AdminRoute>
@@ -178,6 +171,7 @@ function App() {
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </BrowserRouter>
+        </FavoritesProvider>
       </AuthProvider>
     </ToastProvider>
   );
