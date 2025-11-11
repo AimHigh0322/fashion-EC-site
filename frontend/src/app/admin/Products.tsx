@@ -1,5 +1,15 @@
 import { useState, useEffect, useCallback } from "react";
-import { Plus, Search, Edit, Trash2, Upload, Download, X, ChevronRight, Home } from "lucide-react";
+import {
+  Plus,
+  Search,
+  Edit,
+  Trash2,
+  Upload,
+  Download,
+  X,
+  ChevronRight,
+  Home,
+} from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
 import { AdminLayout } from "../../components/layouts/AdminLayout";
 import { apiService } from "../../services/api";
@@ -333,14 +343,15 @@ export const Products = () => {
       <div className="space-y-6">
         {/* Breadcrumb */}
         <nav className="flex items-center space-x-2 text-sm text-gray-600">
-          <Link to="/admin" className="hover:text-purple-600 flex items-center space-x-1">
+          <Link
+            to="/admin"
+            className="hover:text-purple-600 flex items-center space-x-1"
+          >
             <Home className="w-4 h-4" />
             <span>ダッシュボード</span>
           </Link>
           <ChevronRight className="w-4 h-4 text-gray-400" />
-          <span className="text-pink-600 font-medium">
-            商品管理
-          </span>
+          <span className="text-pink-600 font-medium">商品管理</span>
         </nav>
 
         {/* Header */}
@@ -428,279 +439,290 @@ export const Products = () => {
           {loading ? (
             <div className="p-8 text-center text-gray-500">読み込み中...</div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase w-12">
-                      <input
-                        type="checkbox"
-                        checked={
-                          products.length > 0 &&
-                          products.every((p) => selectedProducts.has(p.id)) &&
-                          selectedProducts.size > 0
-                        }
-                        onChange={(e) => handleSelectAll(e.target.checked)}
-                        disabled={isSelectingAll}
-                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 disabled:opacity-50"
-                        title={
-                          selectedProducts.size > 0
-                            ? `${selectedProducts.size}件選択中`
-                            : "すべて選択"
-                        }
-                      />
-                      {isSelectingAll && (
-                        <span className="ml-2 text-xs text-gray-500">
-                          読み込み中...
-                        </span>
-                      )}
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      画像
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      商品
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      SKU
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      価格
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      比較価格
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      原価
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      在庫
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      カテゴリ
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      商品URL
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      ステータス
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      作成日
-                    </th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">
-                      操作
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {products.map((product) => {
-                    // Construct image URL - images are served from /uploads, not /api/uploads
-                    const getImageUrl = (imagePath: string | undefined) => {
-                      if (!imagePath) return null;
-                      if (imagePath.startsWith("http")) return imagePath;
-
-                      // Remove /api from base URL if present, since static files are served directly
-                      const baseUrl = (
-                        import.meta.env.VITE_API_URL ||
-                        "http://localhost:8888/api"
-                      ).replace(/\/api$/, "");
-
-                      // Ensure imagePath starts with /
-                      const path = imagePath.startsWith("/")
-                        ? imagePath
-                        : `/${imagePath}`;
-                      return `${baseUrl}${path}`;
-                    };
-
-                    const imageUrl = getImageUrl(product.main_image_url);
-                    const isSelected = selectedProducts.has(product.id);
-                    return (
-                      <tr
-                        key={product.id}
-                        className={`hover:bg-gray-50 ${
-                          isSelected ? "bg-blue-50" : ""
-                        }`}
-                      >
-                        <td className="px-4 py-4 whitespace-nowrap">
+            <div className="overflow-x-auto -mx-4 sm:mx-0">
+              <div className="inline-block min-w-full align-middle sm:px-0">
+                <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-2 sm:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase w-10 sm:w-12">
                           <input
                             type="checkbox"
-                            checked={isSelected}
-                            onChange={() => handleSelectProduct(product.id)}
-                            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                            checked={
+                              products.length > 0 &&
+                              products.every((p) =>
+                                selectedProducts.has(p.id)
+                              ) &&
+                              selectedProducts.size > 0
+                            }
+                            onChange={(e) => handleSelectAll(e.target.checked)}
+                            disabled={isSelectingAll}
+                            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 disabled:opacity-50"
+                            title={
+                              selectedProducts.size > 0
+                                ? `${selectedProducts.size}件選択中`
+                                : "すべて選択"
+                            }
                           />
-                        </td>
-                        <td className="px-4 py-4 whitespace-nowrap">
-                          {imageUrl ? (
-                            <img
-                              src={imageUrl}
-                              alt={product.name}
-                              className="w-16 h-16 object-cover rounded border border-gray-200"
-                              onError={(e) => {
-                                const target = e.target as HTMLImageElement;
-                                target.src =
-                                  'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="64" height="64"%3E%3Crect width="64" height="64" fill="%23f3f4f6"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%239ca3af" font-size="10"%3E画像なし%3C/text%3E%3C/svg%3E';
-                              }}
-                            />
-                          ) : (
-                            <div className="w-16 h-16 bg-gray-100 rounded border border-gray-200 flex items-center justify-center">
-                              <span className="text-xs text-gray-400">
-                                画像なし
-                              </span>
-                            </div>
+                          {isSelectingAll && (
+                            <span className="ml-1 sm:ml-2 text-[10px] sm:text-xs text-gray-500">
+                              読み込み中...
+                            </span>
                           )}
-                        </td>
-                        <td className="px-4 py-4 whitespace-nowrap">
-                          <div>
-                            <div className="text-sm font-medium text-gray-900">
-                              {product.name}
-                            </div>
-                            {product.description && (
-                              <div
-                                className="text-xs text-gray-500 truncate max-w-xs"
-                                title={product.description}
-                              >
-                                {product.description}
-                              </div>
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-4 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">
-                            {product.sku}
-                          </div>
-                        </td>
-                        <td className="px-4 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900">
-                            ¥
-                            {typeof product.price === "number"
-                              ? product.price.toLocaleString()
-                              : parseFloat(
-                                  String(product.price || 0)
-                                ).toLocaleString()}
-                          </div>
-                        </td>
-                        <td className="px-4 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-500">
-                            {product.compare_price
-                              ? `¥${
-                                  typeof product.compare_price === "number"
-                                    ? product.compare_price.toLocaleString()
-                                    : parseFloat(
-                                        String(product.compare_price)
-                                      ).toLocaleString()
-                                }`
-                              : "-"}
-                          </div>
-                        </td>
-                        <td className="px-4 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-500">
-                            {product.cost_price
-                              ? `¥${
-                                  typeof product.cost_price === "number"
-                                    ? product.cost_price.toLocaleString()
-                                    : parseFloat(
-                                        String(product.cost_price)
-                                      ).toLocaleString()
-                                }`
-                              : "-"}
-                          </div>
-                        </td>
-                        <td className="px-4 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">
-                            {product.stock_quantity || 0}
-                          </div>
-                        </td>
-                        <td className="px-4 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">
-                            {product.category_names ? (
-                              <span
-                                className="truncate max-w-xs block"
-                                title={product.category_names}
-                              >
-                                {product.category_names}
-                              </span>
-                            ) : (
-                              "-"
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-4 py-4 whitespace-nowrap">
-                          <div
-                            className="text-sm text-gray-900 truncate max-w-xs"
-                            title={(product.product_url as string) || ""}
-                          >
-                            {product.product_url ? (
-                              <a
-                                href={product.product_url as string}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-blue-600 hover:text-blue-800 hover:underline"
-                              >
-                                {product.product_url as string}
-                              </a>
-                            ) : (
-                              "-"
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-4 py-4 whitespace-nowrap">
-                          <span
-                            className={`px-2 py-1 text-xs font-medium rounded-full ${
-                              product.status === "active"
-                                ? "bg-green-100 text-green-800"
-                                : product.status === "out_of_stock"
-                                ? "bg-red-100 text-red-800"
-                                : product.status === "reservation"
-                                ? "bg-blue-100 text-blue-800"
-                                : product.status === "inactive"
-                                ? "bg-gray-100 text-gray-800"
-                                : "bg-yellow-100 text-yellow-800"
+                        </th>
+                        <th className="px-2 sm:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase hidden sm:table-cell">
+                          画像
+                        </th>
+                        <th className="px-2 sm:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                          商品
+                        </th>
+                        <th className="px-2 sm:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase hidden md:table-cell">
+                          SKU
+                        </th>
+                        <th className="px-2 sm:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                          価格
+                        </th>
+                        <th className="px-2 sm:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase hidden lg:table-cell">
+                          比較価格
+                        </th>
+                        <th className="px-2 sm:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase hidden xl:table-cell">
+                          原価
+                        </th>
+                        <th className="px-2 sm:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                          在庫
+                        </th>
+                        <th className="px-2 sm:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase hidden lg:table-cell">
+                          カテゴリ
+                        </th>
+                        <th className="px-2 sm:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase hidden xl:table-cell">
+                          商品URL
+                        </th>
+                        <th className="px-2 sm:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                          ステータス
+                        </th>
+                        <th className="px-2 sm:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase hidden xl:table-cell">
+                          作成日
+                        </th>
+                        <th className="px-2 sm:px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+                          操作
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {products.map((product) => {
+                        // Construct image URL - images are served from /uploads, not /api/uploads
+                        const getImageUrl = (imagePath: string | undefined) => {
+                          if (!imagePath) return null;
+                          if (imagePath.startsWith("http")) return imagePath;
+
+                          // Remove /api from base URL if present, since static files are served directly
+                          const baseUrl = (
+                            import.meta.env.VITE_API_URL ||
+                            "http://localhost:8888/api"
+                          ).replace(/\/api$/, "");
+
+                          // Ensure imagePath starts with /
+                          const path = imagePath.startsWith("/")
+                            ? imagePath
+                            : `/${imagePath}`;
+                          return `${baseUrl}${path}`;
+                        };
+
+                        const imageUrl = getImageUrl(product.main_image_url);
+                        const isSelected = selectedProducts.has(product.id);
+                        return (
+                          <tr
+                            key={product.id}
+                            className={`hover:bg-gray-50 ${
+                              isSelected ? "bg-blue-50" : ""
                             }`}
                           >
-                            {product.status === "active"
-                              ? "有効（販売中）"
-                              : product.status === "out_of_stock"
-                              ? "在庫不足"
-                              : product.status === "inactive"
-                              ? "非公開（販売停止）"
-                              : product.status === "reservation"
-                              ? "予約受付中"
-                              : "下書き"}
-                          </span>
-                        </td>
-                        <td className="px-4 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-500">
-                            {product.createdAt
-                              ? new Date(product.createdAt).toLocaleDateString(
-                                  "ja-JP"
-                                )
-                              : "-"}
-                          </div>
-                        </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          <div className="flex items-center justify-end space-x-2">
-                            <button
-                              onClick={() => {
-                                navigate(`/admin/products/${product.id}`);
-                              }}
-                              className="text-gray-600 hover:text-gray-900 p-1"
-                            >
-                              <Edit className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => handleDeleteClick(product.id)}
-                              className="text-red-600 hover:text-red-900 p-1"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+                            <td className="px-2 sm:px-4 py-4 whitespace-nowrap">
+                              <input
+                                type="checkbox"
+                                checked={isSelected}
+                                onChange={() => handleSelectProduct(product.id)}
+                                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                              />
+                            </td>
+                            <td className="px-2 sm:px-4 py-4 whitespace-nowrap hidden sm:table-cell">
+                              {imageUrl ? (
+                                <img
+                                  src={imageUrl}
+                                  alt={product.name}
+                                  className="w-12 h-12 sm:w-16 sm:h-16 object-cover rounded border border-gray-200"
+                                  onError={(e) => {
+                                    const target = e.target as HTMLImageElement;
+                                    target.src =
+                                      'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="64" height="64"%3E%3Crect width="64" height="64" fill="%23f3f4f6"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%239ca3af" font-size="10"%3E画像なし%3C/text%3E%3C/svg%3E';
+                                  }}
+                                />
+                              ) : (
+                                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gray-100 rounded border border-gray-200 flex items-center justify-center">
+                                  <span className="text-[10px] sm:text-xs text-gray-400">
+                                    画像なし
+                                  </span>
+                                </div>
+                              )}
+                            </td>
+                            <td className="px-2 sm:px-4 py-4">
+                              <div>
+                                <div className="text-xs sm:text-sm font-medium text-gray-900">
+                                  {product.name}
+                                </div>
+                                {product.description && (
+                                  <div
+                                    className="text-[10px] sm:text-xs text-gray-500 truncate max-w-xs"
+                                    title={product.description}
+                                  >
+                                    {product.description}
+                                  </div>
+                                )}
+                                <div className="md:hidden mt-1">
+                                  <span className="text-[10px] text-gray-500">
+                                    SKU: {product.sku}
+                                  </span>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="px-2 sm:px-4 py-4 whitespace-nowrap hidden md:table-cell">
+                              <div className="text-xs sm:text-sm text-gray-900">
+                                {product.sku}
+                              </div>
+                            </td>
+                            <td className="px-2 sm:px-4 py-4 whitespace-nowrap">
+                              <div className="text-xs sm:text-sm font-medium text-gray-900">
+                                ¥
+                                {typeof product.price === "number"
+                                  ? product.price.toLocaleString()
+                                  : parseFloat(
+                                      String(product.price || 0)
+                                    ).toLocaleString()}
+                              </div>
+                            </td>
+                            <td className="px-2 sm:px-4 py-4 whitespace-nowrap hidden lg:table-cell">
+                              <div className="text-xs sm:text-sm text-gray-500">
+                                {product.compare_price
+                                  ? `¥${
+                                      typeof product.compare_price === "number"
+                                        ? product.compare_price.toLocaleString()
+                                        : parseFloat(
+                                            String(product.compare_price)
+                                          ).toLocaleString()
+                                    }`
+                                  : "-"}
+                              </div>
+                            </td>
+                            <td className="px-2 sm:px-4 py-4 whitespace-nowrap hidden xl:table-cell">
+                              <div className="text-xs sm:text-sm text-gray-500">
+                                {product.cost_price
+                                  ? `¥${
+                                      typeof product.cost_price === "number"
+                                        ? product.cost_price.toLocaleString()
+                                        : parseFloat(
+                                            String(product.cost_price)
+                                          ).toLocaleString()
+                                    }`
+                                  : "-"}
+                              </div>
+                            </td>
+                            <td className="px-2 sm:px-4 py-4 whitespace-nowrap">
+                              <div className="text-xs sm:text-sm text-gray-900">
+                                {product.stock_quantity || 0}
+                              </div>
+                            </td>
+                            <td className="px-2 sm:px-4 py-4 whitespace-nowrap hidden lg:table-cell">
+                              <div className="text-xs sm:text-sm text-gray-900">
+                                {product.category_names ? (
+                                  <span
+                                    className="truncate max-w-xs block"
+                                    title={product.category_names}
+                                  >
+                                    {product.category_names}
+                                  </span>
+                                ) : (
+                                  "-"
+                                )}
+                              </div>
+                            </td>
+                            <td className="px-2 sm:px-4 py-4 whitespace-nowrap hidden xl:table-cell">
+                              <div
+                                className="text-xs sm:text-sm text-gray-900 truncate max-w-xs"
+                                title={(product.product_url as string) || ""}
+                              >
+                                {product.product_url ? (
+                                  <a
+                                    href={product.product_url as string}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-600 hover:text-blue-800 hover:underline"
+                                  >
+                                    {product.product_url as string}
+                                  </a>
+                                ) : (
+                                  "-"
+                                )}
+                              </div>
+                            </td>
+                            <td className="px-2 sm:px-4 py-4 whitespace-nowrap">
+                              <span
+                                className={`px-1.5 sm:px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs font-medium rounded-full ${
+                                  product.status === "active"
+                                    ? "bg-green-100 text-green-800"
+                                    : product.status === "out_of_stock"
+                                    ? "bg-red-100 text-red-800"
+                                    : product.status === "reservation"
+                                    ? "bg-blue-100 text-blue-800"
+                                    : product.status === "inactive"
+                                    ? "bg-gray-100 text-gray-800"
+                                    : "bg-yellow-100 text-yellow-800"
+                                }`}
+                              >
+                                {product.status === "active"
+                                  ? "有効"
+                                  : product.status === "out_of_stock"
+                                  ? "在庫不足"
+                                  : product.status === "inactive"
+                                  ? "非公開"
+                                  : product.status === "reservation"
+                                  ? "予約"
+                                  : "下書き"}
+                              </span>
+                            </td>
+                            <td className="px-2 sm:px-4 py-4 whitespace-nowrap hidden xl:table-cell">
+                              <div className="text-xs sm:text-sm text-gray-500">
+                                {product.createdAt
+                                  ? new Date(
+                                      product.createdAt
+                                    ).toLocaleDateString("ja-JP")
+                                  : "-"}
+                              </div>
+                            </td>
+                            <td className="px-2 sm:px-4 py-4 whitespace-nowrap text-right text-xs sm:text-sm font-medium">
+                              <div className="flex items-center justify-end space-x-1 sm:space-x-2">
+                                <button
+                                  onClick={() => {
+                                    navigate(`/admin/products/${product.id}`);
+                                  }}
+                                  className="text-gray-600 hover:text-gray-900 p-1"
+                                >
+                                  <Edit className="w-3 h-3 sm:w-4 sm:h-4" />
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteClick(product.id)}
+                                  className="text-red-600 hover:text-red-900 p-1"
+                                >
+                                  <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </div>
           )}
           {!loading &&

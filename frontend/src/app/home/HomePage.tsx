@@ -1,26 +1,17 @@
-import { useState, useRef, useEffect, useMemo } from "react";
-import {
-  Search,
-  Heart,
-  ShoppingCart,
-  Menu,
-  ChevronLeft,
-  ChevronRight,
-  User,
-  LogOut,
-  ChevronDown,
-  Star,
-} from "lucide-react";
+import { useState, useEffect, useMemo, useRef } from "react";
+import { Heart, ChevronLeft, ChevronRight, Star } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import { useFavorites } from "../../contexts/FavoritesContext";
+import { useToast } from "../../contexts/ToastContext";
 import { apiService } from "../../services/api";
+import { AddToCartButton } from "../../components/molecules/AddToCartButton";
+import { UserLayout } from "../../components/layouts/UserLayout";
 
 export const HomePage = () => {
-  const [cartCount] = useState(0);
-  const { isAuthenticated, user, logout } = useAuth();
+  const [cartProductIds, setCartProductIds] = useState<Set<string>>(new Set());
+  const { isAuthenticated } = useAuth();
   const { isFavorited, toggleFavorite } = useFavorites();
-  const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const { showToast, success, error } = useToast();
   const [mainBannerIndex, setMainBannerIndex] = useState(0);
   const [thumbnailIndex, setThumbnailIndex] = useState(0);
   const thumbnailCarouselRef = useRef<HTMLDivElement>(null);
@@ -58,7 +49,7 @@ export const HomePage = () => {
     {
       name: "靴",
       image: "/img/product/shoe/shoe (9).jpg",
-      color: "from-orange-500 to-orange-600",
+      color: "bg-[#e2603f]",
     },
     {
       name: "バッグ",
@@ -82,7 +73,7 @@ export const HomePage = () => {
     },
     {
       name: "ズボン",
-      image: "/img/product/top/trousers.jpg",
+      image: "/img/product/trousers/trousers.jpg",
       color: "from-indigo-500 to-indigo-600",
     },
     {
@@ -122,42 +113,61 @@ export const HomePage = () => {
     },
   ];
 
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
-        setIsCategoryDropdownOpen(false);
-      }
-    };
-
-    if (isCategoryDropdownOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [isCategoryDropdownOpen]);
-
   // おすすめ商品データ - Load from API
   const [recommendedProducts, setRecommendedProducts] = useState<
     Array<{
       id: string;
+      sku: string;
       title: string;
+      description: string;
       price: number;
+      compare_price: number | null;
+      stock_quantity: number;
+      status: string;
+      brand_name: string;
       rating: number;
       reviews: number;
       image: string;
       badges: string[];
       delivery: string;
-      main_image_url?: string;
-      name?: string;
+      product_url: string;
+      weight: number | null;
+      dimensions: string | null;
+      category_names: string;
+      createdAt: string;
+      updatedAt: string;
     }>
   >([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
+  const [addingToCart, setAddingToCart] = useState<string | null>(null);
+
+  // Load cart product IDs
+  useEffect(() => {
+    const loadCartData = async () => {
+      if (isAuthenticated) {
+        try {
+          const cartResponse = await apiService.getCart();
+
+          if (cartResponse.data && Array.isArray(cartResponse.data)) {
+            const productIds = new Set(
+              cartResponse.data.map(
+                (item: { product_id: string }) => item.product_id
+              )
+            );
+            setCartProductIds(productIds);
+          } else {
+            setCartProductIds(new Set());
+          }
+        } catch {
+          // Silently fail if not authenticated or cart is empty
+          setCartProductIds(new Set());
+        }
+      } else {
+        setCartProductIds(new Set());
+      }
+    };
+    loadCartData();
+  }, [isAuthenticated]);
 
   // Load products from API
   useEffect(() => {
@@ -177,13 +187,30 @@ export const HomePage = () => {
           const formattedProducts = response.data.map(
             (product: {
               id: string;
+              sku?: string;
               name?: string;
-              title?: string;
+              description?: string;
               price?: number;
+              compare_price?: number;
+              cost_price?: number;
+              stock_quantity?: number;
+              status?: string;
+              brand_id?: string;
+              brand_name?: string;
               main_image_url?: string;
-              image_url?: string;
+              product_url?: string;
+              weight?: number;
+              dimensions?: string;
+              seo_title?: string;
+              seo_description?: string;
+              is_featured?: boolean;
+              category_count?: number;
+              category_names?: string;
+              createdAt?: string;
+              updatedAt?: string;
+              [key: string]: unknown;
             }) => {
-              let imageUrl = product.main_image_url || product.image_url || "";
+              let imageUrl = product.main_image_url || "";
               if (imageUrl && !imageUrl.startsWith("http")) {
                 const cleanPath = imageUrl.startsWith("/")
                   ? imageUrl
@@ -191,15 +218,44 @@ export const HomePage = () => {
                 imageUrl = `${baseUrl}${cleanPath}`;
               }
 
+              // Build badges based on product data
+              const badges: string[] = [];
+              if (product.stock_quantity && product.stock_quantity > 0) {
+                badges.push("送料無料");
+              }
+              if (product.is_featured) {
+                badges.push("おすすめ");
+              }
+              if (
+                product.compare_price &&
+                product.price &&
+                product.compare_price > product.price
+              ) {
+                badges.push("セール");
+              }
+
               return {
                 id: product.id,
-                title: product.name || product.title || "",
+                sku: product.sku || "",
+                title: product.name || "",
+                description: product.description || "",
                 price: product.price || 0,
+                compare_price: product.compare_price || null,
+                stock_quantity: product.stock_quantity || 0,
+                status: product.status || "draft",
+                brand_name: product.brand_name || "",
                 rating: 4.5, // Default rating (can be added to products table later)
                 reviews: 0, // Default reviews (can be added to products table later)
                 image: imageUrl || "/img/model/model (1).png",
-                badges: ["送料無料"], // Default badge
-                delivery: "14:00までのご注文で最短翌日にお届け",
+                badges: badges.length > 0 ? badges : ["送料無料"], // Default badge if none
+                delivery: product.description || "",
+                // Include all product data for future use
+                product_url: product.product_url || "",
+                weight: product.weight || null,
+                dimensions: product.dimensions || null,
+                category_names: product.category_names || "",
+                createdAt: product.createdAt || "",
+                updatedAt: product.updatedAt || "",
               };
             }
           );
@@ -416,9 +472,9 @@ export const HomePage = () => {
     setMainBannerIndex(index);
   };
 
-  // Handle thumbnail carousel navigation (4 images at a time)
+  // Handle thumbnail carousel navigation (5 images at a time)
   const handleThumbnailCarouselPrev = () => {
-    const newIndex = Math.max(0, thumbnailIndex - 4);
+    const newIndex = Math.max(0, thumbnailIndex - 5);
     setThumbnailIndex(newIndex);
     // Scroll to the new position
     if (thumbnailCarouselRef.current) {
@@ -436,7 +492,7 @@ export const HomePage = () => {
   };
 
   const handleThumbnailCarouselNext = () => {
-    const newIndex = Math.min(thumbnailImages.length - 1, thumbnailIndex + 4);
+    const newIndex = Math.min(thumbnailImages.length - 1, thumbnailIndex + 5);
     setThumbnailIndex(newIndex);
     // Scroll to the new position
     if (thumbnailCarouselRef.current) {
@@ -455,20 +511,20 @@ export const HomePage = () => {
 
   // Handle main banner navigation
   const handleMainBannerPrev = () => {
-    // Calculate current group boundaries (4 images per group)
-    const currentGroupStart = Math.floor(mainBannerIndex / 4) * 4;
+    // Calculate current group boundaries (5 images per group)
+    const currentGroupStart = Math.floor(mainBannerIndex / 5) * 5;
     const isFirstInGroup = mainBannerIndex === currentGroupStart;
 
     if (isFirstInGroup) {
       // Move to previous group (or wrap to last group if at the beginning)
-      const prevGroupStart = currentGroupStart - 4;
+      const prevGroupStart = currentGroupStart - 5;
       let newIndex: number;
       if (prevGroupStart < 0) {
         // Wrap to last group's last image
-        const lastGroupStart = Math.floor((thumbnailImages.length - 1) / 4) * 4;
+        const lastGroupStart = Math.floor((thumbnailImages.length - 1) / 5) * 5;
         const lastGroupEnd = Math.min(
           thumbnailImages.length - 1,
-          lastGroupStart + 3
+          lastGroupStart + 4
         );
         newIndex = lastGroupEnd;
       } else {
@@ -498,17 +554,17 @@ export const HomePage = () => {
   };
 
   const handleMainBannerNext = () => {
-    // Calculate current group boundaries (4 images per group)
-    const currentGroupStart = Math.floor(mainBannerIndex / 4) * 4;
+    // Calculate current group boundaries (5 images per group)
+    const currentGroupStart = Math.floor(mainBannerIndex / 5) * 5;
     const currentGroupEnd = Math.min(
       thumbnailImages.length - 1,
-      currentGroupStart + 3
+      currentGroupStart + 4
     );
     const isLastInGroup = mainBannerIndex === currentGroupEnd;
 
     if (isLastInGroup) {
       // Move to next group (or wrap to first group if at the end)
-      const nextGroupStart = currentGroupStart + 4;
+      const nextGroupStart = currentGroupStart + 5;
       const newIndex =
         nextGroupStart >= thumbnailImages.length ? 0 : nextGroupStart;
       setMainBannerIndex(newIndex);
@@ -535,143 +591,15 @@ export const HomePage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Top Header - Indigo/Purple Blue */}
-      <header className="bg-indigo-700 text-white shadow-md">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
-          <div className="flex flex-col lg:flex-row items-center justify-between gap-3 lg:gap-6">
-            {/* Logo Section */}
-            <div className="flex items-center space-x-3 w-full lg:w-auto justify-between lg:justify-start">
-              <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-red-600 flex items-center justify-center shadow-md">
-                  <span className="text-white font-bold text-base sm:text-lg">
-                    Y
-                  </span>
-                </div>
-                <span className="text-lg sm:text-xl font-semibold tracking-wide">
-                  ECサイト
-                </span>
-              </div>
-              {/* Mobile Search Button */}
-              <button className="lg:hidden p-2 hover:bg-white/10 rounded-md transition-colors">
-                <Search className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Search Bar - Hidden on mobile */}
-            <div className="hidden lg:flex flex-1 max-w-3xl mx-6 xl:mx-8">
-              <div className="relative w-full">
-                <input
-                  type="text"
-                  placeholder="キーワードで検索する"
-                  className="w-full px-5 py-2.5 bg-white text-gray-900 placeholder-gray-400 border-none focus:outline-none focus:ring-2 focus:ring-white/20 rounded-lg text-sm shadow-sm"
-                />
-                <button className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors">
-                  <Search className="w-5 h-5" />
-                </button>
-              </div>
-            </div>
-
-            {/* Right Actions */}
-            <div className="flex items-center space-x-3 sm:space-x-4 w-full lg:w-auto justify-between lg:justify-end">
-              {!isAuthenticated ? (
-                <>
-                  <button className="px-4 py-2 bg-indigo-600 hover:bg-indigo-800 text-white text-sm font-medium rounded-lg whitespace-nowrap transition-colors shadow-sm">
-                    新規登録
-                  </button>
-                  <button className="px-4 py-2 bg-indigo-800 hover:bg-indigo-900 text-white text-sm font-medium rounded-lg whitespace-nowrap transition-colors shadow-sm">
-                    ログイン
-                  </button>
-                </>
-              ) : (
-                <>
-                  <div className="hidden md:flex items-center space-x-2.5 px-3 py-2 bg-white/10 rounded-lg">
-                    <button className="flex items-center space-x-2 text-sm font-medium p-2 hover:bg-white/10 rounded-lg transition-colors">
-                      <Heart className="w-5 h-5" />
-                      <span className="hidden sm:inline">お気に入り</span>
-                    </button>
-                    <button className="relative flex items-center space-x-2 text-sm font-medium p-2 hover:bg-white/10 rounded-lg transition-colors">
-                      <ShoppingCart className="w-5 h-5" />
-                      <span className="hidden sm:inline">カート</span>
-                      {cartCount > 0 && (
-                        <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-600 text-white text-xs font-bold flex items-center justify-center rounded-full shadow-md">
-                          {cartCount}
-                        </span>
-                      )}
-                    </button>{" "}
-                    <User className="w-5 h-5" />
-                    <span className="text-sm font-medium truncate max-w-[120px]">
-                      {user?.username || user?.email}
-                    </span>
-                  </div>
-                  <button
-                    onClick={logout}
-                    className="flex items-center space-x-2 px-4 py-2 bg-indigo-800 hover:bg-indigo-900 text-white text-sm font-medium rounded-lg transition-colors shadow-sm"
-                  >
-                    <LogOut className="w-4 h-4" />
-                    <span className="hidden sm:inline">ログアウト</span>
-                  </button>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Secondary Navigation - Light Blue/Purple */}
-      <div className="bg-gradient-to-r from-blue-500 via-indigo-400 to-blue-400 text-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-          <div className="flex items-center justify-between">
-            <div className="relative" ref={dropdownRef}>
-              <button
-                onClick={() =>
-                  setIsCategoryDropdownOpen(!isCategoryDropdownOpen)
-                }
-                className="flex items-center space-x-3 hover:bg-white/15 px-4 py-1 rounded-lg transition-all duration-200 font-medium"
-              >
-                <Menu className="w-6 h-6" />
-                <span className="text-sm sm:text-base">カテゴリから選ぶ</span>
-                <ChevronDown
-                  className={`w-4 h-4 transition-transform duration-200 ${
-                    isCategoryDropdownOpen ? "rotate-180" : ""
-                  }`}
-                />
-              </button>
-
-              {/* Dropdown Menu */}
-              {isCategoryDropdownOpen && (
-                <div className="absolute top-full left-0 mt-2 w-full sm:w-80 bg-white rounded-xl shadow-xl z-50 border border-gray-200 max-h-96 overflow-y-auto">
-                  <div className="p-2">
-                    {categories.map((category, index) => (
-                      <button
-                        key={index}
-                        onClick={() => {
-                          setIsCategoryDropdownOpen(false);
-                          // Handle category selection here
-                        }}
-                        className="w-full flex items-center space-x-3 px-4 py-3 text-left text-gray-800 hover:bg-indigo-50 rounded-lg transition-colors duration-150"
-                      >
-                        <span className="text-sm font-medium">
-                          {category.name}
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-
+    <UserLayout>
       {/* Main Content */}
-      <main className="max-w-[1440px] mx-auto px-4 ">
+      <div className="max-w-[1440px] mx-auto px-4">
         {/* Banner Section - Following Wireframe Design */}
         <div className="mb-8">
           {/* Top Banner Row */}
-          <div className="flex gap-4 mb-4">
+          <div className="flex flex-col lg:flex-row gap-4 mb-4">
             {/* Main Banner Section (Left - 2/3 width) */}
-            <div className="flex-[2] relative bg-gray-100 overflow-hidden">
+            <div className="w-full lg:flex-[2] relative bg-gray-100 overflow-hidden">
               {loadingBanners ? (
                 <div className="w-full aspect-[950/370] flex items-center justify-center">
                   <div className="text-gray-500">読み込み中...</div>
@@ -686,7 +614,7 @@ export const HomePage = () => {
                   />
                   {/* Banner Title and Description Overlay */}
                   <div
-                    className={`absolute inset-0 flex z-10 p-8 md:p-12 ${
+                    className={`absolute inset-0 flex z-10 p-4 sm:p-6 md:p-8 lg:p-12 ${
                       currentBanner.title_vertical_position === "top"
                         ? "items-start"
                         : currentBanner.title_vertical_position === "bottom"
@@ -694,7 +622,7 @@ export const HomePage = () => {
                         : "items-center"
                     }`}
                   >
-                    <div className="w-full space-y-4">
+                    <div className="w-full space-y-2 sm:space-y-3 md:space-y-4">
                       {currentBanner.title && (
                         <div
                           className={`w-full ${
@@ -707,7 +635,8 @@ export const HomePage = () => {
                         >
                           <h2
                             className={`${
-                              currentBanner.title_font_size || "text-4xl"
+                              currentBanner.title_font_size ||
+                              "text-xl sm:text-2xl md:text-3xl lg:text-4xl"
                             } font-bold leading-tight`}
                             style={{
                               color: currentBanner.title_color || "#FFFFFF",
@@ -729,7 +658,8 @@ export const HomePage = () => {
                         >
                           <p
                             className={`${
-                              currentBanner.description_font_size || "text-lg"
+                              currentBanner.description_font_size ||
+                              "text-sm sm:text-base md:text-lg"
                             } leading-relaxed`}
                             style={{
                               color:
@@ -764,130 +694,146 @@ export const HomePage = () => {
                 <>
                   <button
                     onClick={handleMainBannerPrev}
-                    className="absolute left-4 top-1/2 transform -translate-y-1/2 w-10 h-10 bg-white/90 hover:bg-blue-500 rounded-full flex items-center justify-center z-20 shadow-lg transition-all duration-300 hover:scale-110 active:scale-95 group"
+                    className="absolute left-2 sm:left-4 top-1/2 transform -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 bg-white/90 hover:bg-[#e2603f] rounded-full flex items-center justify-center z-20 shadow-lg transition-all duration-300 hover:scale-110 active:scale-95 group"
                   >
-                    <ChevronLeft className="w-5 h-5 text-gray-800 group-hover:text-white transition-all duration-300 group-hover:-translate-x-1" />
+                    <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 text-gray-800 group-hover:text-white transition-all duration-300 group-hover:-translate-x-1" />
                   </button>
                   <button
                     onClick={handleMainBannerNext}
-                    className="absolute right-4 top-1/2 transform -translate-y-1/2 w-10 h-10 bg-white/90 hover:bg-blue-500 rounded-full flex items-center justify-center z-20 shadow-lg transition-all duration-300 hover:scale-110 active:scale-95 group"
+                    className="absolute right-2 sm:right-4 top-1/2 transform -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 bg-white/90 hover:bg-[#e2603f] rounded-full flex items-center justify-center z-20 shadow-lg transition-all duration-300 hover:scale-110 active:scale-95 group"
                   >
-                    <ChevronRight className="w-5 h-5 text-gray-800 group-hover:text-white transition-all duration-300 group-hover:translate-x-1" />
+                    <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-gray-800 group-hover:text-white transition-all duration-300 group-hover:translate-x-1" />
                   </button>
                 </>
               )}
             </div>
 
             {/* Right Side Promotional Sections (Right - 1/3 width) */}
-            <div className="flex-1 grid grid-cols-2 gap-3">
+            <div className="w-full lg:flex-1 grid grid-cols-2 gap-3">
               {/* 01 即日翌日配送 */}
-              <div className="bg-blue-100 rounded-lg p-3 relative overflow-hidden">
-                <div className="flex flex-row gap-2 items-center">
-                  <h2 className="text-3xl font-bold text-blue-800 mb-2">01</h2>
-                  <h3 className="text-xs font-bold text-blue-800 mb-2">
+              <div className="bg-[#f0f7ff] rounded-lg p-2 sm:p-3 relative overflow-hidden">
+                <div className="flex flex-row gap-1 sm:gap-2 items-center">
+                  <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-[#1565c0] mb-1 sm:mb-2">
+                    01
+                  </h2>
+                  <h3 className="text-[10px] sm:text-xs font-bold text-[#1565c0] mb-1 sm:mb-2">
                     即日翌日配送
                   </h3>
                 </div>
-                <div className="relative h-20 mb-2 flex items-center justify-center">
-                  <div className="flex items-center gap-2">
-                    <div className="w-12 h-12 bg-white rounded flex items-center justify-center">
-                      <span className="text-xs">シャツ</span>
+                <div className="relative h-16 sm:h-20 mb-1 sm:mb-2 flex items-center justify-center">
+                  <div className="flex items-center gap-1 sm:gap-2">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 bg-white rounded flex items-center justify-center">
+                      <span className="text-[8px] sm:text-[10px] md:text-xs text-gray-700">
+                        シャツ
+                      </span>
                     </div>
-                    <div className="w-12 h-12 bg-white rounded flex items-center justify-center">
-                      <span className="text-xs">パンツ</span>
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 bg-white rounded flex items-center justify-center">
+                      <span className="text-[8px] sm:text-[10px] md:text-xs text-gray-700">
+                        パンツ
+                      </span>
                     </div>
                   </div>
-                  <div className="absolute top-0 left-0 bg-blue-200 border-2 border-white rounded-lg px-2 py-1 text-white text-[10px]">
+                  <div className="absolute top-0 left-0 bg-[#b3d9ff] border-2 border-white rounded-lg px-1.5 sm:px-2 py-0.5 sm:py-1 text-[#1565c0] text-[8px] sm:text-[10px] font-medium">
                     ファッションアイテムがすぐ届く!
                   </div>
                 </div>
-                <p className="text-[10px] text-blue-800 font-medium">
+                <p className="text-[8px] sm:text-[10px] text-gray-700 font-medium">
                   14時までのご注文で最短翌日にお届け!
                 </p>
               </div>
 
               {/* 02 当日お届け */}
-              <div className="bg-blue-100 rounded-lg p-3 relative overflow-hidden">
-                <div className="flex flex-row gap-2 items-center">
-                  <h2 className="text-3xl font-bold text-blue-800 mb-2">02</h2>
-                  <h3 className="text-xs font-bold text-blue-800 mb-2">
+              <div className="bg-[#f0f7ff] rounded-lg p-2 sm:p-3 relative overflow-hidden">
+                <div className="flex flex-row gap-1 sm:gap-2 items-center">
+                  <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-[#1565c0] mb-1 sm:mb-2">
+                    02
+                  </h2>
+                  <h3 className="text-[10px] sm:text-xs font-bold text-[#1565c0] mb-1 sm:mb-2">
                     当日お届け
                   </h3>
                 </div>
 
-                <div className="relative h-20 mb-2 flex items-center justify-center">
-                  <div className="w-16 h-16 bg-blue-300 rounded-full flex items-center justify-center">
-                    <span className="text-xs text-white">配達員</span>
+                <div className="relative h-16 sm:h-20 mb-1 sm:mb-2 flex items-center justify-center">
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 bg-[#b3d9ff] rounded-full flex items-center justify-center">
+                    <span className="text-[8px] sm:text-[10px] md:text-xs text-[#1565c0] font-medium">
+                      配達員
+                    </span>
                   </div>
-                  <div className="absolute top-2 right-2 bg-blue-200 border-2 border-white rounded-lg px-2 py-1 text-white text-[10px]">
+                  <div className="absolute top-1 sm:top-2 right-1 sm:right-2 bg-[#b3d9ff] border-2 border-white rounded-lg px-1.5 sm:px-2 py-0.5 sm:py-1 text-[#1565c0] text-[8px] sm:text-[10px] font-medium">
                     スタッフがお届け!
                   </div>
                 </div>
-                <p className="text-[10px] text-blue-800 font-medium">
+                <p className="text-[8px] sm:text-[10px] text-gray-700 font-medium">
                   14時までのご注文で最短当日中にお届け!
                 </p>
               </div>
 
               {/* 03 おみせde受取 */}
-              <div className="bg-blue-600 rounded-lg p-3 relative overflow-hidden">
-                <div className="flex flex-row gap-2 items-center">
-                  <h2 className="text-3xl font-bold text-white mb-2">03</h2>
-                  <h3 className="text-xs font-bold text-white mb-2">
+              <div className="bg-[#283593] rounded-lg p-2 sm:p-3 relative overflow-hidden">
+                <div className="flex flex-row gap-1 sm:gap-2 items-center">
+                  <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-1 sm:mb-2">
+                    03
+                  </h2>
+                  <h3 className="text-[10px] sm:text-xs font-bold text-white mb-1 sm:mb-2">
                     おみせde受取
                   </h3>
                 </div>
-                <div className="relative h-20 mb-2 flex items-center justify-center">
-                  <div className="w-16 h-12 bg-blue-800 rounded flex items-center justify-center">
-                    <span className="text-xs text-white">店舗</span>
+                <div className="relative h-16 sm:h-20 mb-1 sm:mb-2 flex items-center justify-center">
+                  <div className="w-12 h-10 sm:w-14 sm:h-12 md:w-16 md:h-12 bg-[#1a237e] rounded flex items-center justify-center">
+                    <span className="text-[8px] sm:text-[10px] md:text-xs text-white">
+                      店舗
+                    </span>
                   </div>
-                  <div className="absolute top-0 right-2 bg-red-500 border-2 border-white rounded-lg px-2 py-1 text-white text-[10px] font-bold">
+                  <div className="absolute top-0 right-1 sm:right-2 bg-[#e2603f] border-2 border-white rounded-lg px-1.5 sm:px-2 py-0.5 sm:py-1 text-white text-[8px] sm:text-[10px] font-bold">
                     新サービス開始!
                   </div>
                 </div>
-                <p className="text-[10px] text-white font-medium">
+                <p className="text-[8px] sm:text-[10px] text-white font-medium">
                   店舗で試着してから受取可能! 詳しくはこちら
                 </p>
               </div>
 
               {/* 04 返品・交換保証 */}
-              <div className="bg-blue-100 rounded-lg p-3 relative overflow-hidden">
-                <div className="flex flex-row gap-2 items-center">
-                  <h2 className="text-3xl font-bold text-blue-800 mb-2">04</h2>
-                  <h3 className="text-xs font-bold text-blue-800 mb-2">
+              <div className="bg-[#f0f7ff] rounded-lg p-2 sm:p-3 relative overflow-hidden">
+                <div className="flex flex-row gap-1 sm:gap-2 items-center">
+                  <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-[#1565c0] mb-1 sm:mb-2">
+                    04
+                  </h2>
+                  <h3 className="text-[10px] sm:text-xs font-bold text-[#1565c0] mb-1 sm:mb-2">
                     返品・交換保証
                   </h3>
                 </div>
 
-                <div className="relative h-20 mb-2 flex items-center justify-center">
-                  <div className="flex flex-col items-center gap-1">
-                    <div className="flex gap-1">
-                      <div className="w-6 h-6 bg-amber-400 rounded flex items-center justify-center text-xs font-bold">
+                <div className="relative h-16 sm:h-20 mb-1 sm:mb-2 flex items-center justify-center">
+                  <div className="flex flex-col items-center gap-0.5 sm:gap-1">
+                    <div className="flex gap-0.5 sm:gap-1">
+                      <div className="w-5 h-5 sm:w-6 sm:h-6 bg-yellow-400 rounded flex items-center justify-center text-[8px] sm:text-xs font-bold text-gray-700">
                         1
                       </div>
-                      <div className="w-6 h-6 bg-amber-400 rounded flex items-center justify-center text-xs font-bold">
+                      <div className="w-5 h-5 sm:w-6 sm:h-6 bg-yellow-400 rounded flex items-center justify-center text-[8px] sm:text-xs font-bold text-gray-700">
                         2
                       </div>
-                      <div className="w-6 h-6 bg-amber-400 rounded flex items-center justify-center text-xs font-bold">
+                      <div className="w-5 h-5 sm:w-6 sm:h-6 bg-yellow-400 rounded flex items-center justify-center text-[8px] sm:text-xs font-bold text-gray-700">
                         3
                       </div>
                     </div>
-                    <div className="flex gap-1">
-                      <div className="w-6 h-6 bg-amber-400 rounded flex items-center justify-center text-xs font-bold">
+                    <div className="flex gap-0.5 sm:gap-1">
+                      <div className="w-5 h-5 sm:w-6 sm:h-6 bg-yellow-400 rounded flex items-center justify-center text-[8px] sm:text-xs font-bold text-gray-700">
                         4
                       </div>
-                      <div className="w-6 h-6 bg-amber-400 rounded flex items-center justify-center text-xs font-bold">
+                      <div className="w-5 h-5 sm:w-6 sm:h-6 bg-yellow-400 rounded flex items-center justify-center text-[8px] sm:text-xs font-bold text-gray-700">
                         5
                       </div>
-                      <div className="w-6 h-6 bg-amber-500 rounded flex items-center justify-center text-xs font-bold">
+                      <div className="w-5 h-5 sm:w-6 sm:h-6 bg-yellow-500 rounded flex items-center justify-center text-[8px] sm:text-xs font-bold text-gray-700">
                         6
                       </div>
                     </div>
                   </div>
-                  <div className="absolute top-0 right-2 bg-blue-200 border-2 border-white rounded-lg px-2 py-1 text-white text-[10px]">
+                  <div className="absolute top-0 right-1 sm:right-2 bg-[#b3d9ff] border-2 border-white rounded-lg px-1.5 sm:px-2 py-0.5 sm:py-1 text-[#1565c0] text-[8px] sm:text-[10px] font-medium">
                     6ヶ月間のあんしん
                   </div>
                 </div>
-                <p className="text-[10px] text-blue-800 font-medium">
+                <p className="text-[8px] sm:text-[10px] text-gray-700 font-medium">
                   サイズが合わない場合も6ヶ月以内なら返品・交換OK!
                 </p>
               </div>
@@ -904,17 +850,13 @@ export const HomePage = () => {
                 {thumbnailImages.map((banner, idx) => (
                   <div
                     key={`thumbnail-${idx}`}
-                    className="flex-shrink-0"
-                    style={{
-                      width: "calc((100% - 32px) / 5)",
-                      minWidth: "calc((100% - 32px) / 5)",
-                    }}
+                    className="flex-shrink-0 min-w-[calc((100%-32px)/5)] w-[calc((100%-32px)/5)]"
                   >
                     <div
                       onClick={() => handleThumbnailClick(idx)}
                       className={`bg-gray-100 overflow-hidden cursor-pointer transition-opacity aspect-[2.567] ${
                         idx === thumbnailIndex
-                          ? "opacity-100 ring-2 ring-blue-500"
+                          ? "opacity-100 ring-2 ring-[#e2603f]"
                           : "opacity-70 hover:opacity-90"
                       }`}
                     >
@@ -932,7 +874,7 @@ export const HomePage = () => {
                             href={banner.page_url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-xs sm:text-sm text-gray-700 hover:text-blue-600 hover:underline line-clamp-2 break-all transition-colors cursor-pointer"
+                            className="text-xs sm:text-sm text-gray-700 hover:text-[#e2603f] hover:underline line-clamp-2 break-all transition-colors cursor-pointer"
                           >
                             {banner.display_text}
                           </a>
@@ -952,15 +894,15 @@ export const HomePage = () => {
                 <>
                   <button
                     onClick={handleThumbnailCarouselPrev}
-                    className="absolute left-4 top-1/2 transform -translate-y-1/2 w-10 h-10 bg-white/90 hover:bg-blue-500 rounded-full flex items-center justify-center z-20 shadow-lg transition-all duration-300 hover:scale-110 active:scale-95 group"
+                    className="absolute left-2 sm:left-4 top-1/2 transform -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 bg-white/90 hover:bg-[#e2603f] rounded-full flex items-center justify-center z-20 shadow-lg transition-all duration-300 hover:scale-110 active:scale-95 group"
                   >
-                    <ChevronLeft className="w-5 h-5 text-gray-800 group-hover:text-white transition-all duration-300 group-hover:-translate-x-1" />
+                    <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 text-gray-800 group-hover:text-white transition-all duration-300 group-hover:-translate-x-1" />
                   </button>
                   <button
                     onClick={handleThumbnailCarouselNext}
-                    className="absolute right-4 top-1/2 transform -translate-y-1/2 w-10 h-10 bg-white/90 hover:bg-blue-500 rounded-full flex items-center justify-center z-20 shadow-lg transition-all duration-300 hover:scale-110 active:scale-95 group"
+                    className="absolute right-2 sm:right-4 top-1/2 transform -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 bg-white/90 hover:bg-[#e2603f] rounded-full flex items-center justify-center z-20 shadow-lg transition-all duration-300 hover:scale-110 active:scale-95 group"
                   >
-                    <ChevronRight className="w-5 h-5 text-gray-800 group-hover:text-white transition-all duration-300 group-hover:translate-x-1" />
+                    <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-gray-800 group-hover:text-white transition-all duration-300 group-hover:translate-x-1" />
                   </button>
                 </>
               )}
@@ -997,7 +939,7 @@ export const HomePage = () => {
                 {recommendedProducts.map((product) => (
                   <div
                     key={product.id}
-                    className="flex-shrink-0 w-[calc((100%-60px)/6)] sm:w-[calc((100%-80px)/6)] min-w-[180px] sm:min-w-[200px] bg-white border border-gray-200 rounded-md overflow-hidden shadow-sm"
+                    className="flex-shrink-0 w-[calc((100%-60px)/6)] sm:w-[calc((100%-80px)/6)] min-w-[180px] sm:min-w-[200px] bg-white border border-gray-200 rounded-md overflow-hidden shadow-sm flex flex-col"
                   >
                     <div className="relative">
                       <img
@@ -1006,17 +948,25 @@ export const HomePage = () => {
                         className="w-full h-32 sm:h-40 md:h-48 object-cover"
                       />
                       <button
-                        onClick={(e) => {
+                        onClick={async (e) => {
                           e.preventDefault();
                           e.stopPropagation();
-                          if (isAuthenticated) {
-                            console.log(
-                              "Toggling favorite for product:",
-                              product.id
-                            );
-                            toggleFavorite(product.id);
+                          if (!isAuthenticated) {
+                            showToast("ログインが必要です", "warning");
+                            return;
+                          }
+                          const wasFavorited = isFavorited(product.id);
+                          const toggleSuccess = await toggleFavorite(
+                            product.id
+                          );
+                          if (toggleSuccess) {
+                            if (wasFavorited) {
+                              success("お気に入りから削除しました");
+                            } else {
+                              success("お気に入りに追加しました");
+                            }
                           } else {
-                            console.warn("User not authenticated");
+                            error("お気に入りの更新に失敗しました");
                           }
                         }}
                         className={`absolute top-2 right-2 bg-white/80 rounded-full p-1.5 transition-colors ${
@@ -1032,11 +982,21 @@ export const HomePage = () => {
                         />
                       </button>
                     </div>
-                    <div className="p-3 sm:p-4">
-                      <h3 className="text-xs sm:text-sm text-gray-800 mb-1 sm:mb-2 line-clamp-2 min-h-[2.5rem] sm:min-h-[2.75rem]">
-                        {product.title}
-                      </h3>
-                      <div className="flex items-center gap-1 mb-1 sm:mb-2">
+                    <div className="p-3 sm:p-4 flex flex-col flex-grow">
+                      {/* Title and Description - Fixed 3 lines */}
+                      <div className="h-[4.5rem] sm:h-[5rem] mb-0">
+                        <div className="text-sm sm:text-base text-gray-800 leading-tight">
+                          <div className="font-semibold line-clamp-1 mb-1">
+                            {product.title}
+                          </div>
+                          {product.description && (
+                            <div className="text-gray-600 text-xs sm:text-sm line-clamp-2">
+                              {product.description}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1 mb-0.5">
                         {[...Array(5)].map((_, index) => (
                           <Star
                             key={index}
@@ -1052,7 +1012,7 @@ export const HomePage = () => {
                           ({product.reviews}件)
                         </span>
                       </div>
-                      <div className="mb-1 sm:mb-2">
+                      <div className="mb-2 sm:mb-3">
                         <span className="text-base sm:text-lg font-bold text-red-600">
                           ¥{product.price.toLocaleString()}
                         </span>
@@ -1060,26 +1020,89 @@ export const HomePage = () => {
                           (税込)
                         </span>
                       </div>
-                      <div className="text-xs text-gray-600 mb-1 sm:mb-2 line-clamp-1">
-                        {product.delivery}
+                      {/* Button pushed to bottom */}
+                      <div className="mt-auto">
+                        <AddToCartButton
+                          productId={product.id}
+                          isAuthenticated={isAuthenticated}
+                          isAdding={addingToCart === product.id}
+                          isInCart={cartProductIds.has(product.id)}
+                          onAddToCart={async (productId) => {
+                            if (!isAuthenticated) {
+                              showToast("ログインが必要です", "warning");
+                              return;
+                            }
+                            setAddingToCart(productId);
+                            try {
+                              const response = await apiService.addToCart(
+                                productId,
+                                1
+                              );
+                              if (response.error) {
+                                error(response.error);
+                              } else {
+                                success("カートに追加しました");
+                                // Update cart product IDs
+                                const cartResponse = await apiService.getCart();
+                                if (
+                                  cartResponse.data &&
+                                  Array.isArray(cartResponse.data)
+                                ) {
+                                  const productIds = new Set(
+                                    cartResponse.data.map(
+                                      (item: { product_id: string }) =>
+                                        item.product_id
+                                    )
+                                  );
+                                  setCartProductIds(productIds);
+                                } else {
+                                  setCartProductIds(new Set());
+                                }
+                              }
+                            } catch {
+                              error("カートへの追加に失敗しました");
+                            } finally {
+                              setAddingToCart(null);
+                            }
+                          }}
+                          onRemoveFromCart={async (productId) => {
+                            if (!isAuthenticated) {
+                              return;
+                            }
+                            setAddingToCart(productId);
+                            try {
+                              const response = await apiService.removeFromCart(
+                                productId
+                              );
+                              if (response.error) {
+                                error(response.error);
+                              } else {
+                                success("カートから削除しました");
+                                // Update cart product IDs
+                                const cartResponse = await apiService.getCart();
+                                if (
+                                  cartResponse.data &&
+                                  Array.isArray(cartResponse.data)
+                                ) {
+                                  const productIds = new Set(
+                                    cartResponse.data.map(
+                                      (item: { product_id: string }) =>
+                                        item.product_id
+                                    )
+                                  );
+                                  setCartProductIds(productIds);
+                                } else {
+                                  setCartProductIds(new Set());
+                                }
+                              }
+                            } catch {
+                              error("カートからの削除に失敗しました");
+                            } finally {
+                              setAddingToCart(null);
+                            }
+                          }}
+                        />
                       </div>
-                      <div className="flex flex-wrap gap-1 mb-2 sm:mb-3">
-                        {product.badges.map((badge, idx) => (
-                          <span
-                            key={idx}
-                            className={`text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md ${
-                              badge === "送料無料"
-                                ? "bg-blue-600 text-white"
-                                : "bg-gray-600 text-white"
-                            }`}
-                          >
-                            {badge}
-                          </span>
-                        ))}
-                      </div>
-                      <button className="w-full bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white text-xs sm:text-sm font-medium py-2 px-4 rounded-full transition-all duration-200 shadow-sm">
-                        カートに入れる
-                      </button>
                     </div>
                   </div>
                 ))}
@@ -1108,7 +1131,7 @@ export const HomePage = () => {
                         className="w-full h-full object-cover"
                       />
                     </div>
-                    <span className="text-xs sm:text-sm text-gray-700 group-hover:text-blue-600 font-medium text-center leading-tight transition-colors duration-300">
+                    <span className="text-xs sm:text-sm text-gray-700 group-hover:text-[#e2603f] font-medium text-center leading-tight transition-colors duration-300">
                       {category.name}
                     </span>
                   </div>
@@ -1129,7 +1152,7 @@ export const HomePage = () => {
                 key={pick.id}
                 className="bg-white border border-gray-200 relative rounded-md overflow-hidden"
               >
-                <div className="absolute top-2 left-2 bg-blue-600 text-white text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 z-10 rounded-md">
+                <div className="absolute top-2 left-2 bg-[#e2603f] text-white text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 z-10 rounded-md">
                   ③ 当店おすすめ
                 </div>
                 <img
@@ -1147,95 +1170,209 @@ export const HomePage = () => {
             ))}
           </div>
         </div>
-      </main>
+      </div>
 
-      {/* Footer */}
-      <footer className="bg-gradient-to-r from-blue-500 to-blue-600 text-white mt-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 mb-6 sm:mb-8">
-            <div>
-              <h3 className="font-bold mb-3 sm:mb-4 text-sm sm:text-base">
-                はじめてのお客様へ
-              </h3>
-              <ul className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm">
-                <li>よくある質問</li>
-                <li>配送料金について</li>
-                <li>お支払方法について</li>
-                <li>領収書の発行方法について</li>
-                <li>返品・交換について</li>
-                <li>配送納期について</li>
-                <li>サイズガイド</li>
-              </ul>
+      {/* Footer - Full Width - Warm Orange/Terracotta Theme */}
+      <footer className="w-full bg-[#e2603f] text-white mt-16 sm:mt-20">
+        <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 py-10 sm:py-12 lg:py-16">
+          {/* Top Section with Logo and Description */}
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 sm:gap-10 mb-10 sm:mb-12">
+            {/* Brand Section */}
+            <div className="lg:col-span-1">
+              <div className="mb-4">
+                <img
+                  src="/img/logo/logo.png"
+                  alt="Fashion EC Store"
+                  className="h-16 sm:h-20 md:h-24 lg:h-28 w-auto object-contain"
+                />
+              </div>
+              <p className="text-[#f5e8e4] text-sm sm:text-base leading-relaxed mb-4 max-w-md">
+                最新のファッショントレンドをお届け。あなたのスタイルを彩る、質の高いアイテムを豊富に取り揃えています。
+              </p>
+              <div className="flex flex-col space-y-2 text-[#f5e8e4]">
+                <span className="text-xs sm:text-sm">info@fashionstore.jp</span>
+                <span className="text-xs sm:text-sm">0120-XXX-XXX</span>
+              </div>
             </div>
-            <div>
-              <h3 className="font-bold mb-3 sm:mb-4 text-sm sm:text-base">
-                会員サービス
-              </h3>
-              <ul className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm">
-                <li>マイページ</li>
-                <li>ポイントサービスについて</li>
-                <li>お気に入り登録</li>
-                <li>会員登録</li>
-                <li>ポイント還元について</li>
-                <li>購入履歴照会</li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-bold mb-3 sm:mb-4 text-sm sm:text-base">
-                サービス
-              </h3>
-              <ul className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm">
-                <li>店舗受取サービス</li>
-                <li>サイズ交換サービス</li>
-                <li>リペアサービス</li>
-                <li>無料 長期保証</li>
-                <li>品質保証</li>
-                <li>オリジナル商品保証</li>
-                <li>即日配送お届け「高速便」</li>
-                <li>スタイリング相談</li>
-                <li>リサイクル・買取サービス</li>
-                <li>総合保証サービス</li>
-                <li>アフターサービス</li>
-                <li>下取り・買取サービス</li>
-                <li>クリーニングサービス</li>
-                <li>ギフト包装サービス</li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-bold mb-3 sm:mb-4 text-sm sm:text-base">
-                企業情報
-              </h3>
-              <ul className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm">
-                <li>企業・店舗情報</li>
-                <li>採用情報</li>
-                <li>各種お問い合せはこちら</li>
-                <li>オリジナル商品取扱説明書</li>
-              </ul>
+
+            {/* Links Grid */}
+            <div className="lg:col-span-3 grid grid-cols-2 sm:grid-cols-3 gap-8 sm:gap-10">
+              <div>
+                <h3 className="font-bold mb-4 sm:mb-5 text-sm sm:text-base text-white uppercase tracking-wide">
+                  お客様サポート
+                </h3>
+                <ul className="space-y-2.5 sm:space-y-3 text-sm">
+                  <li>
+                    <a
+                      href="#"
+                      className="text-[#f5e8e4] hover:text-white transition-colors"
+                    >
+                      よくある質問
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="#"
+                      className="text-[#f5e8e4] hover:text-white transition-colors"
+                    >
+                      配送・送料について
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="#"
+                      className="text-[#f5e8e4] hover:text-white transition-colors"
+                    >
+                      お支払い方法
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="#"
+                      className="text-[#f5e8e4] hover:text-white transition-colors"
+                    >
+                      返品・交換
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="#"
+                      className="text-[#f5e8e4] hover:text-white transition-colors"
+                    >
+                      サイズガイド
+                    </a>
+                  </li>
+                </ul>
+              </div>
+              <div>
+                <h3 className="font-bold mb-4 sm:mb-5 text-sm sm:text-base text-white uppercase tracking-wide">
+                  会員サービス
+                </h3>
+                <ul className="space-y-2.5 sm:space-y-3 text-sm">
+                  <li>
+                    <a
+                      href="#"
+                      className="text-[#f5e8e4] hover:text-white transition-colors"
+                    >
+                      マイページ
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="#"
+                      className="text-[#f5e8e4] hover:text-white transition-colors"
+                    >
+                      ポイントサービス
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="#"
+                      className="text-[#f5e8e4] hover:text-white transition-colors"
+                    >
+                      お気に入り
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="#"
+                      className="text-[#f5e8e4] hover:text-white transition-colors"
+                    >
+                      購入履歴
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="#"
+                      className="text-[#f5e8e4] hover:text-white transition-colors"
+                    >
+                      会員登録
+                    </a>
+                  </li>
+                </ul>
+              </div>
+              <div>
+                <h3 className="font-bold mb-4 sm:mb-5 text-sm sm:text-base text-white uppercase tracking-wide">
+                  企業情報
+                </h3>
+                <ul className="space-y-2.5 sm:space-y-3 text-sm">
+                  <li>
+                    <a
+                      href="#"
+                      className="text-[#f5e8e4] hover:text-white transition-colors"
+                    >
+                      会社概要
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="#"
+                      className="text-[#f5e8e4] hover:text-white transition-colors"
+                    >
+                      採用情報
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="#"
+                      className="text-[#f5e8e4] hover:text-white transition-colors"
+                    >
+                      お問い合わせ
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="#"
+                      className="text-[#f5e8e4] hover:text-white transition-colors"
+                    >
+                      プレスリリース
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="#"
+                      className="text-[#f5e8e4] hover:text-white transition-colors"
+                    >
+                      店舗情報
+                    </a>
+                  </li>
+                </ul>
+              </div>
             </div>
           </div>
-          <div className="border-t border-blue-400 pt-4 sm:pt-8">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div className="flex items-center space-x-2">
-                <div className="w-6 h-6 sm:w-8 sm:h-8 bg-red-600 flex items-center justify-center">
-                  <span className="text-white font-bold text-xs sm:text-sm">
-                    Y
-                  </span>
-                </div>
-                <span className="text-xs sm:text-sm">
-                  Copyright © FASHION EC SITE Co., Ltd.
-                </span>
+
+          {/* Bottom Section */}
+          <div className="border-t border-[#e2603f] pt-6 sm:pt-8">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-6">
+              <div className="text-xs sm:text-sm text-[#f5e8e4]">
+                © 2024 Fashion EC Store. All rights reserved.
               </div>
-              <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4">
-                <span className="text-xs sm:text-sm">会員規約</span>
-                <span className="text-xs sm:text-sm">個人情報保護方針</span>
-                <span className="text-xs sm:text-sm">
-                  特定商取引法に基づく表示
-                </span>
+              <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 text-xs sm:text-sm">
+                <a
+                  href="#"
+                  className="text-[#f5e8e4] hover:text-white transition-colors"
+                >
+                  会員規約
+                </a>
+                <span className="text-[#e8c4b8]">|</span>
+                <a
+                  href="#"
+                  className="text-[#f5e8e4] hover:text-white transition-colors"
+                >
+                  プライバシーポリシー
+                </a>
+                <span className="text-[#e8c4b8]">|</span>
+                <a
+                  href="#"
+                  className="text-[#f5e8e4] hover:text-white transition-colors"
+                >
+                  特定商取引法
+                </a>
               </div>
             </div>
           </div>
         </div>
       </footer>
-    </div>
+    </UserLayout>
   );
 };

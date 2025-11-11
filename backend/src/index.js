@@ -46,6 +46,9 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
+// Stripe webhook needs raw body, so it must be before JSON middleware
+// But we'll handle it in the router with express.raw()
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -106,6 +109,14 @@ app.use("/api/banners", bannerRoutes);
 // Favorites routes
 const favoriteRoutes = require("./router/favorites/favorites");
 app.use("/api/favorites", favoriteRoutes);
+
+// Cart routes
+const cartRoutes = require("./router/cart/cart");
+app.use("/api/cart", cartRoutes);
+
+// Checkout routes (must be before JSON middleware for webhook)
+const checkoutRoutes = require("./router/checkout/checkout");
+app.use("/api/checkout", checkoutRoutes);
 
 // User management routes
 const userRoutes = require("./router/users/users");

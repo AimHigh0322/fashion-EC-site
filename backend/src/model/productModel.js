@@ -839,6 +839,154 @@ async function bulkUpdateProducts(productsData) {
   }
 }
 
+// Decrease stock quantity for products (used when order is confirmed)
+// If connection is provided, use it (for batch operations), otherwise create new connection
+async function decreaseStock(productId, quantity, providedConnection = null) {
+  const connection = providedConnection || await pool.getConnection();
+  const shouldRelease = !providedConnection;
+  const shouldCommit = !providedConnection;
+
+  try {
+    if (shouldCommit) {
+      await connection.beginTransaction();
+    }
+
+    // Get current stock with row lock to prevent race conditions
+    const [current] = await connection.query(
+      "SELECT id, name, sku, stock_quantity, status FROM products WHERE id = ? FOR UPDATE",
+      [productId]
+    );
+
+    if (current.length === 0) {
+      throw new Error(`Product not found: ${productId}`);
+    }
+
+    const product = current[0];
+    const currentStock = product.stock_quantity;
+    
+    // Check if stock is sufficient (allow negative for unlimited stock items, but log warning)
+    if (currentStock < quantity && currentStock >= 0) {
+      console.warn(
+        `Insufficient stock for product ${product.sku} (${product.name}): ` +
+        `Requested: ${quantity}, Available: ${currentStock}`
+      );
+      // In production, you might want to throw an error here
+      // For now, we allow it but log a warning
+    }
+
+    const newStock = Math.max(0, currentStock - quantity);
+
+    // Update stock
+    await connection.query(
+      "UPDATE products SET stock_quantity = ? WHERE id = ?",
+      [newStock, productId]
+    );
+
+    // Auto-update status if stock becomes 0
+    if (newStock === 0 && product.status !== "out_of_stock") {
+      await connection.query(
+        "UPDATE products SET status = 'out_of_stock' WHERE id = ?",
+        [productId]
+      );
+      console.log(`Product ${product.sku} (${product.name}) is now out of stock`);
+    } else if (product.status === "out_of_stock" && newStock > 0) {
+      // If stock was 0 and now has stock, set back to active
+      await connection.query(
+        "UPDATE products SET status = 'active' WHERE id = ?",
+        [productId]
+      );
+      console.log(`Product ${product.sku} (${product.name}) is back in stock (${newStock} units)`);
+    }
+
+    if (shouldCommit) {
+      await connection.commit();
+    }
+    
+    return { 
+      productId, 
+      productName: product.name,
+      productSku: product.sku,
+      oldStock: currentStock, 
+      newStock,
+      quantityDecreased: quantity,
+      wasInsufficient: currentStock < quantity
+    };
+  } catch (error) {
+    if (shouldCommit) {
+      await connection.rollback();
+    }
+    throw error;
+  } finally {
+    if (shouldRelease) {
+      connection.release();
+    }
+  }
+}
+
+// Decrease stock for multiple products (batch operation)
+async function decreaseStockBatch(items, providedConnection = null) {
+  const connection = providedConnection || await pool.getConnection();
+  const shouldRelease = !providedConnection;
+  const shouldCommit = !providedConnection;
+
+  try {
+    if (shouldCommit) {
+      await connection.beginTransaction();
+    }
+
+    const results = [];
+    const warnings = [];
+    
+    for (const item of items) {
+      try {
+        const result = await decreaseStock(item.product_id, item.quantity, connection);
+        results.push(result);
+        
+        if (result.wasInsufficient) {
+          warnings.push({
+            productId: item.product_id,
+            productName: result.productName,
+            productSku: result.productSku,
+            requested: item.quantity,
+            available: result.oldStock
+          });
+        }
+      } catch (itemError) {
+        console.error(`Error decreasing stock for product ${item.product_id}:`, itemError);
+        // Continue with other items even if one fails
+        results.push({
+          productId: item.product_id,
+          error: itemError.message
+        });
+      }
+    }
+
+    if (warnings.length > 0) {
+      console.warn(`Stock decrease completed with ${warnings.length} insufficient stock warnings:`, warnings);
+    }
+
+    if (shouldCommit) {
+      await connection.commit();
+    }
+    
+    return {
+      results,
+      warnings,
+      successCount: results.filter(r => !r.error).length,
+      errorCount: results.filter(r => r.error).length
+    };
+  } catch (error) {
+    if (shouldCommit) {
+      await connection.rollback();
+    }
+    throw error;
+  } finally {
+    if (shouldRelease) {
+      connection.release();
+    }
+  }
+}
+
 module.exports = {
   createProduct,
   updateProduct,
@@ -847,4 +995,6 @@ module.exports = {
   deleteProduct,
   bulkUpdateProducts,
   generateSKU,
+  decreaseStock,
+  decreaseStockBatch,
 };

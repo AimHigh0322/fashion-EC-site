@@ -217,25 +217,31 @@ export const BannerCreate = () => {
           {/* Initial Upload Area - Show only when no banners */}
           {banners.length === 0 && (
             <div className="flex items-center justify-center min-h-[60vh]">
-              <div className="bg-white rounded-lg shadow p-8 border-2 border-gray-200 w-full max-w-2xl">
-                <label className="block text-sm font-medium text-gray-700 mb-6 text-center">
+              <div className="bg-white rounded-xl shadow-sm p-8 border border-gray-200 w-full max-w-2xl">
+                <label className="block text-base font-semibold text-gray-900 mb-6 text-center">
                   画像をアップロード <span className="text-red-500">*</span>
                   <span className="text-xs text-gray-500 ml-2 font-normal">
                     (複数選択可能)
                   </span>
                 </label>
                 <div className="flex justify-center">
-                  <label className="flex flex-col items-center justify-center w-full max-w-[600px] h-[300px] rounded-lg cursor-pointer hover:bg-gray-50 transition-all duration-200 bg-gray-50/50 p-8">
-                    <Upload className="w-16 h-16 text-gray-400 mb-4" />
-                    <span className="text-base font-medium text-gray-600 mb-2">
-                      画像をアップロード
-                    </span>
-                    <span className="text-sm text-gray-500 mb-3">
-                      クリックまたはドラッグ＆ドロップ（複数選択可能）
-                    </span>
-                    <span className="text-sm text-blue-600 font-medium bg-blue-50 px-4 py-2 rounded">
-                      推奨サイズ: 1280 × 500
-                    </span>
+                  <label className="flex flex-col items-center justify-center w-full max-w-[600px] rounded-xl cursor-pointer hover:border-purple-400 hover:bg-purple-50/50 transition-all duration-200 bg-gray-50/30 p-8" style={{ aspectRatio: "2.56/1", minHeight: "200px" }}>
+                    <div className="flex flex-col items-center space-y-3">
+                      <div className="w-16 h-16 rounded-full bg-purple-100 flex items-center justify-center">
+                        <Upload className="w-8 h-8 text-purple-600" />
+                      </div>
+                      <div className="text-center">
+                        <span className="text-sm font-medium text-gray-700 block">
+                          画像をアップロード
+                        </span>
+                        <span className="text-xs text-gray-500 mt-1 block">
+                          クリックまたはドラッグ＆ドロップ（複数選択可能）
+                        </span>
+                        <span className="text-xs text-purple-600 font-medium bg-purple-50 px-3 py-1 rounded-full mt-2 inline-block">
+                          推奨サイズ: 950 × 370 (2.56:1)
+                        </span>
+                      </div>
+                    </div>
                     <input
                       type="file"
                       accept="image/*"
@@ -256,16 +262,16 @@ export const BannerCreate = () => {
             {banners.map((banner, index) => (
               <div
                 key={index}
-                className="bg-white rounded-lg shadow p-6 space-y-4 border-2 border-gray-200"
+                className="bg-white rounded-xl shadow-sm p-6 space-y-4 border border-gray-200"
               >
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-semibold text-gray-900">
+                <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-200">
+                  <h2 className="text-base font-semibold text-gray-900">
                     バナー {index + 1}
                   </h2>
                   <button
                     type="button"
                     onClick={() => handleRemoveBanner(index)}
-                    className="text-red-600 hover:text-red-800 p-1"
+                    className="text-red-600 hover:text-red-700 p-1 transition-colors"
                   >
                     <Trash2 className="w-5 h-5" />
                   </button>
@@ -279,81 +285,82 @@ export const BannerCreate = () => {
                     </label>
                     <div className="mt-1">
                       {banner.preview ? (
-                        <div
-                          className="relative w-full"
-                          style={{ aspectRatio: "2.567" }}
-                        >
-                          <img
-                            src={banner.preview}
-                            alt="Preview"
-                            className="w-full h-full object-cover rounded-lg border border-gray-300 shadow-sm"
-                          />
-                          {/* Preview Overlay - Title and Description */}
-                          <div className={`absolute inset-0 flex p-6 md:p-8 lg:p-12 ${
-                            banner.title_vertical_position === "top" ? "items-start" :
-                            banner.title_vertical_position === "bottom" ? "items-end" :
-                            "items-center"
-                          }`}>
-                            <div className="w-full space-y-4">
-                              {banner.title && (
-                                <div 
-                                  className={`w-full ${
-                                    banner.title_position === "left" ? "text-left" :
-                                    banner.title_position === "center" ? "text-center" :
-                                    banner.title_position === "right" ? "text-right" : "text-left"
-                                  }`}
-                                >
-                                  <h2
-                                    className={`${banner.title_font_size || "text-4xl"} font-bold leading-tight`}
-                                    style={{ color: banner.title_color || "#FFFFFF" }}
+                        <div className="relative group">
+                          <div className="relative w-full" style={{ aspectRatio: "2.56/1" }}>
+                            <img
+                              src={banner.preview}
+                              alt="Preview"
+                              className="w-full h-full object-cover rounded-lg border-2 border-gray-200"
+                            />
+                            {/* Preview Overlay - Title and Description */}
+                            <div className={`absolute inset-0 flex p-4 md:p-6 ${
+                              banner.title_vertical_position === "top" ? "items-start" :
+                              banner.title_vertical_position === "bottom" ? "items-end" :
+                              "items-center"
+                            }`}>
+                              <div className="w-full space-y-2">
+                                {banner.title && (
+                                  <div 
+                                    className={`w-full ${
+                                      banner.title_position === "left" ? "text-left" :
+                                      banner.title_position === "center" ? "text-center" :
+                                      banner.title_position === "right" ? "text-right" : "text-left"
+                                    }`}
                                   >
-                                    {banner.title}
-                                  </h2>
-                                </div>
-                              )}
-                              {banner.description && (
-                                <div 
-                                  className={`w-full ${
-                                    banner.description_position === "left" ? "text-left" :
-                                    banner.description_position === "center" ? "text-center" :
-                                    banner.description_position === "right" ? "text-right" : "text-left"
-                                  }`}
-                                >
-                                  <p
-                                    className={`${banner.description_font_size || "text-lg"} leading-relaxed`}
-                                    style={{ color: banner.description_color || "#FFFFFF" }}
+                                    <h2
+                                      className={`${banner.title_font_size || "text-4xl"} font-bold leading-tight drop-shadow-lg`}
+                                      style={{ color: banner.title_color || "#FFFFFF" }}
+                                    >
+                                      {banner.title}
+                                    </h2>
+                                  </div>
+                                )}
+                                {banner.description && (
+                                  <div 
+                                    className={`w-full ${
+                                      banner.description_position === "left" ? "text-left" :
+                                      banner.description_position === "center" ? "text-center" :
+                                      banner.description_position === "right" ? "text-right" : "text-left"
+                                    }`}
                                   >
-                                    {banner.description}
-                                  </p>
-                                </div>
-                              )}
+                                    <p
+                                      className={`${banner.description_font_size || "text-lg"} leading-relaxed drop-shadow-lg`}
+                                      style={{ color: banner.description_color || "#FFFFFF" }}
+                                    >
+                                      {banner.description}
+                                    </p>
+                                  </div>
+                                )}
+                              </div>
                             </div>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                handleBannerChange(index, "image", null)
+                              }
+                              className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1.5 hover:bg-red-600 shadow-lg transition-all hover:scale-110 z-10"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
                           </div>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              handleBannerChange(index, "image", null)
-                            }
-                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1.5 hover:bg-red-600 shadow-lg transition-all hover:scale-110 z-10"
-                          >
-                            <X className="w-4 h-4" />
-                          </button>
                         </div>
                       ) : (
                         <label
-                          className="flex flex-col items-center justify-center w-full border-2 border-gray-300 border-dashed rounded-lg cursor-pointer hover:bg-gray-50 hover:border-blue-400 transition-all duration-200 bg-gray-50/50"
-                          style={{ aspectRatio: "2.567", minHeight: "117px" }}
+                          className="flex flex-col items-center justify-center w-full border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-purple-400 hover:bg-purple-50/50 transition-all duration-200 bg-gray-50/30"
+                          style={{ aspectRatio: "2.56/1", minHeight: "117px" }}
                         >
-                          <Upload className="w-10 h-10 text-gray-400 mb-3" />
-                          <span className="text-sm font-medium text-gray-600">
-                            画像をアップロード
-                          </span>
-                          <span className="text-xs text-gray-500 mt-1 mb-2">
-                            クリックまたはドラッグ＆ドロップ
-                          </span>
-                          <span className="text-xs text-blue-600 font-medium bg-blue-50 px-3 py-1 rounded">
-                            推奨サイズ: 300 × 117
-                          </span>
+                          <div className="flex flex-col items-center space-y-2">
+                            <Upload className="w-8 h-8 text-gray-400" />
+                            <span className="text-xs font-medium text-gray-600">
+                              画像をアップロード
+                            </span>
+                            <span className="text-xs text-gray-500">
+                              クリックまたはドラッグ＆ドロップ
+                            </span>
+                            <span className="text-xs text-purple-600 font-medium bg-purple-50 px-3 py-1 rounded-full">
+                              推奨サイズ: 950 × 370 (2.56:1)
+                            </span>
+                          </div>
                           <input
                             type="file"
                             accept="image/*"

@@ -43,7 +43,7 @@ export const Dashboard = () => {
       change: "+15.3%",
       changeType: "positive",
       icon: Users,
-      color: "text-orange-600",
+      color: "text-[#e2603f]",
     },
   ];
 
@@ -123,14 +123,14 @@ export const Dashboard = () => {
                 </dd>
               </div>
               <div>
-                <dt className="text-sm font-medium text-gray-500">ユーザーID</dt>
+                <dt className="text-sm font-medium text-gray-500">
+                  ユーザーID
+                </dt>
                 <dd className="text-sm text-gray-900 mt-1">{user?.id}</dd>
               </div>
               {user?.createdAt && (
                 <div>
-                  <dt className="text-sm font-medium text-gray-500">
-                    登録日
-                  </dt>
+                  <dt className="text-sm font-medium text-gray-500">登録日</dt>
                   <dd className="text-sm text-gray-900 mt-1">
                     {new Date(user.createdAt).toLocaleDateString()}
                   </dd>

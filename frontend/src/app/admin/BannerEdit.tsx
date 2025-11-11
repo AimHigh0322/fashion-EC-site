@@ -296,7 +296,7 @@ export const BannerEdit = () => {
         </nav>
 
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
               バナー編集
@@ -308,21 +308,31 @@ export const BannerEdit = () => {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Image Preview Section */}
-          <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4 pb-3 border-b border-gray-200">
-              画像プレビュー
-            </h2>
-            <div className="flex justify-center">
-              {banner.preview ? (
-                <div
-                  className="relative group"
-                  style={{ width: "950px", height: "370px" }}
+          {/* Image Upload Section */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="flex items-center justify-between mb-4">
+              <label className="text-base font-semibold text-gray-900">
+                画像 <span className="text-red-500">*</span>
+              </label>
+              {banner.preview && (
+                <button
+                  type="button"
+                  onClick={() => handleBannerChange("image", null)}
+                  className="text-red-600 hover:text-red-700 text-sm font-medium flex items-center gap-1"
                 >
+                  <X className="w-4 h-4" />
+                  画像を削除
+                </button>
+              )}
+            </div>
+            
+            {banner.preview ? (
+              <div className="relative group">
+                <div className="relative w-full" style={{ aspectRatio: "2.56/1", maxHeight: "400px" }}>
                   <img
                     src={banner.preview}
-                    alt="Preview"
-                    className="w-full h-full object-cover rounded-lg border border-gray-300 shadow-sm"
+                    alt="Banner preview"
+                    className="w-full h-full object-cover rounded-lg border-2 border-gray-200"
                   />
                   {/* Preview Overlay - Title and Description */}
                   <div
@@ -334,7 +344,7 @@ export const BannerEdit = () => {
                         : "items-center"
                     }`}
                   >
-                    <div className="w-full space-y-4">
+                    <div className="w-full space-y-3">
                       {banner.title && (
                         <div
                           className={`w-full ${
@@ -350,7 +360,7 @@ export const BannerEdit = () => {
                           <h2
                             className={`${
                               banner.title_font_size || "text-4xl"
-                            } font-bold leading-tight`}
+                            } font-bold leading-tight drop-shadow-lg`}
                             style={{
                               color: banner.title_color || "#FFFFFF",
                             }}
@@ -374,7 +384,7 @@ export const BannerEdit = () => {
                           <p
                             className={`${
                               banner.description_font_size || "text-lg"
-                            } leading-relaxed`}
+                            } leading-relaxed drop-shadow-lg`}
                             style={{
                               color: banner.description_color || "#FFFFFF",
                             }}
@@ -385,13 +395,11 @@ export const BannerEdit = () => {
                       )}
                     </div>
                   </div>
-                  {/* Change Image Button */}
-                  <label className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg cursor-pointer z-20">
-                    <div className="flex flex-col items-center space-y-2">
-                      <Upload className="w-8 h-8 text-white" />
-                      <span className="text-sm font-medium text-white">
-                        画像を変更
-                      </span>
+                  {/* Change Image Overlay */}
+                  <label className="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg cursor-pointer z-20">
+                    <div className="flex flex-col items-center space-y-2 text-white">
+                      <Upload className="w-8 h-8" />
+                      <span className="text-sm font-medium">画像を変更</span>
                     </div>
                     <input
                       type="file"
@@ -405,259 +413,251 @@ export const BannerEdit = () => {
                       }}
                     />
                   </label>
-                  {/* Remove Image Button */}
-                  <button
-                    type="button"
-                    onClick={() => handleBannerChange("image", null)}
-                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1.5 hover:bg-red-600 shadow-lg transition-all hover:scale-110 z-30"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
                 </div>
-              ) : (
-                <label
-                  className="flex flex-col items-center justify-center border-2 border-gray-300 border-dashed rounded-lg cursor-pointer hover:bg-gray-50 hover:border-blue-400 transition-all duration-200 bg-gray-50/50"
-                  style={{ width: "950px", height: "370px" }}
-                >
-                  <Upload className="w-10 h-10 text-gray-400 mb-3" />
-                  <span className="text-sm font-medium text-gray-600">
-                    画像をアップロード
-                  </span>
-                  <span className="text-xs text-gray-500 mt-1 mb-2">
-                    クリックまたはドラッグ＆ドロップ
-                  </span>
-                  <span className="text-xs text-blue-600 font-medium bg-blue-50 px-3 py-1 rounded">
-                    推奨サイズ: 950 × 370
-                  </span>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) {
-                        handleImageChange(file);
-                      }
-                    }}
-                  />
-                </label>
-              )}
-            </div>
+              </div>
+            ) : (
+              <label className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-purple-400 hover:bg-purple-50/50 transition-all duration-200 bg-gray-50/30" style={{ aspectRatio: "2.56/1", maxHeight: "400px" }}>
+                <div className="flex flex-col items-center space-y-3">
+                  <div className="w-16 h-16 rounded-full bg-purple-100 flex items-center justify-center">
+                    <Upload className="w-8 h-8 text-purple-600" />
+                  </div>
+                  <div className="text-center">
+                    <span className="text-sm font-medium text-gray-700 block">
+                      画像をアップロード
+                    </span>
+                    <span className="text-xs text-gray-500 mt-1 block">
+                      クリックまたはドラッグ＆ドロップ
+                    </span>
+                    <span className="text-xs text-purple-600 font-medium bg-purple-50 px-3 py-1 rounded-full mt-2 inline-block">
+                      推奨サイズ: 950 × 370 (2.56:1)
+                    </span>
+                  </div>
+                </div>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      handleImageChange(file);
+                    }
+                  }}
+                />
+              </label>
+            )}
           </div>
 
           {/* Title Settings Section */}
-          <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4 pb-3 border-b border-gray-200">
-              タイトル設定
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <h2 className="text-base font-semibold text-gray-900 mb-5">
+              タイトル <span className="text-red-500">*</span>
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
-              {/* Title */}
-              <div className="md:col-span-12">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  タイトル <span className="text-red-500">*</span>
-                </label>
+            
+            <div className="space-y-4">
+              {/* Title Input */}
+              <div>
                 <input
                   type="text"
                   value={banner.title}
                   onChange={(e) => handleBannerChange("title", e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  placeholder="タイトルを入力"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all text-base"
                   required
                 />
               </div>
 
-              {/* Title Color */}
-              <div className="md:col-span-3">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  タイトル色
-                </label>
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="color"
-                    value={banner.title_color}
-                    onChange={(e) =>
-                      handleBannerChange("title_color", e.target.value)
-                    }
-                    className="w-12 h-10 border border-gray-300 rounded-lg cursor-pointer"
-                  />
-                  <input
-                    type="text"
-                    value={banner.title_color}
-                    onChange={(e) =>
-                      handleBannerChange("title_color", e.target.value)
-                    }
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                    pattern="^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
-                  />
+              {/* Title Styling Controls */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {/* Title Color */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    タイトル色
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="color"
+                      value={banner.title_color}
+                      onChange={(e) =>
+                        handleBannerChange("title_color", e.target.value)
+                      }
+                      className="w-12 h-12 border-2 border-gray-300 rounded-lg cursor-pointer"
+                    />
+                    <input
+                      type="text"
+                      value={banner.title_color}
+                      onChange={(e) =>
+                        handleBannerChange("title_color", e.target.value)
+                      }
+                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm font-mono"
+                      pattern="^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
+                    />
+                  </div>
                 </div>
-              </div>
 
-              {/* Title Font Size */}
-              <div className="md:col-span-3">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  文字サイズ
-                </label>
-                <select
-                  value={banner.title_font_size}
-                  onChange={(e) =>
-                    handleBannerChange("title_font_size", e.target.value)
-                  }
-                  className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="text-2xl">小 (text-2xl)</option>
-                  <option value="text-3xl">中 (text-3xl)</option>
-                  <option value="text-4xl">大 (text-4xl)</option>
-                  <option value="text-5xl">特大 (text-5xl)</option>
-                  <option value="text-6xl">超特大 (text-6xl)</option>
-                </select>
-              </div>
+                {/* Title Font Size */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    文字サイズ
+                  </label>
+                  <select
+                    value={banner.title_font_size}
+                    onChange={(e) =>
+                      handleBannerChange("title_font_size", e.target.value)
+                    }
+                    className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white"
+                  >
+                    <option value="text-2xl">小 (text-2xl)</option>
+                    <option value="text-3xl">中 (text-3xl)</option>
+                    <option value="text-4xl">大 (text-4xl)</option>
+                    <option value="text-5xl">特大 (text-5xl)</option>
+                    <option value="text-6xl">超特大 (text-6xl)</option>
+                  </select>
+                </div>
 
-              {/* Title Horizontal Position */}
-              <div className="md:col-span-3">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  横位置
-                </label>
-                <select
-                  value={banner.title_position}
-                  onChange={(e) =>
-                    handleBannerChange("title_position", e.target.value)
-                  }
-                  className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="left">左</option>
-                  <option value="center">中央</option>
-                  <option value="right">右</option>
-                </select>
+                {/* Title Horizontal Position */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    横位置
+                  </label>
+                  <select
+                    value={banner.title_position}
+                    onChange={(e) =>
+                      handleBannerChange("title_position", e.target.value)
+                    }
+                    className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white"
+                  >
+                    <option value="left">左</option>
+                    <option value="center">中央</option>
+                    <option value="right">右</option>
+                  </select>
+                </div>
               </div>
             </div>
           </div>
 
           {/* Description Settings Section */}
-          <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4 pb-3 border-b border-gray-200">
-              説明設定
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <h2 className="text-base font-semibold text-gray-900 mb-5">
+              説明
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
-              {/* Description */}
-              <div className="md:col-span-12">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  説明
-                </label>
+            
+            <div className="space-y-4">
+              {/* Description Input */}
+              <div>
                 <textarea
                   value={banner.description}
                   onChange={(e) =>
                     handleBannerChange("description", e.target.value)
                   }
-                  rows={3}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none"
+                  placeholder="説明を入力（任意）"
+                  rows={4}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all resize-none text-base"
                 />
               </div>
 
-              {/* Description Color */}
-              <div className="md:col-span-3">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  説明色
-                </label>
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="color"
-                    value={banner.description_color}
-                    onChange={(e) =>
-                      handleBannerChange("description_color", e.target.value)
-                    }
-                    className="w-12 h-10 border border-gray-300 rounded-lg cursor-pointer"
-                  />
-                  <input
-                    type="text"
-                    value={banner.description_color}
-                    onChange={(e) =>
-                      handleBannerChange("description_color", e.target.value)
-                    }
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                    pattern="^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
-                  />
+              {/* Description Styling Controls */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {/* Description Color */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    説明色
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="color"
+                      value={banner.description_color}
+                      onChange={(e) =>
+                        handleBannerChange("description_color", e.target.value)
+                      }
+                      className="w-12 h-12 border-2 border-gray-300 rounded-lg cursor-pointer"
+                    />
+                    <input
+                      type="text"
+                      value={banner.description_color}
+                      onChange={(e) =>
+                        handleBannerChange("description_color", e.target.value)
+                      }
+                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm font-mono"
+                      pattern="^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
+                    />
+                  </div>
                 </div>
-              </div>
 
-              {/* Description Font Size */}
-              <div className="md:col-span-3">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  文字サイズ
-                </label>
-                <select
-                  value={banner.description_font_size}
-                  onChange={(e) =>
-                    handleBannerChange("description_font_size", e.target.value)
-                  }
-                  className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="text-sm">小 (text-sm)</option>
-                  <option value="text-base">中 (text-base)</option>
-                  <option value="text-lg">大 (text-lg)</option>
-                  <option value="text-xl">特大 (text-xl)</option>
-                  <option value="text-2xl">超特大 (text-2xl)</option>
-                </select>
-              </div>
+                {/* Description Font Size */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    文字サイズ
+                  </label>
+                  <select
+                    value={banner.description_font_size}
+                    onChange={(e) =>
+                      handleBannerChange("description_font_size", e.target.value)
+                    }
+                    className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white"
+                  >
+                    <option value="text-sm">小 (text-sm)</option>
+                    <option value="text-base">中 (text-base)</option>
+                    <option value="text-lg">大 (text-lg)</option>
+                    <option value="text-xl">特大 (text-xl)</option>
+                    <option value="text-2xl">超特大 (text-2xl)</option>
+                  </select>
+                </div>
 
-              {/* Description Horizontal Position */}
-              <div className="md:col-span-3">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  横位置
-                </label>
-                <select
-                  value={banner.description_position}
-                  onChange={(e) =>
-                    handleBannerChange("description_position", e.target.value)
-                  }
-                  className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="left">左</option>
-                  <option value="center">中央</option>
-                  <option value="right">右</option>
-                </select>
+                {/* Description Horizontal Position */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    横位置
+                  </label>
+                  <select
+                    value={banner.description_position}
+                    onChange={(e) =>
+                      handleBannerChange("description_position", e.target.value)
+                    }
+                    className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white"
+                  >
+                    <option value="left">左</option>
+                    <option value="center">中央</option>
+                    <option value="right">右</option>
+                  </select>
+                </div>
               </div>
             </div>
           </div>
 
           {/* Vertical Position Section */}
-          <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4 pb-3 border-b border-gray-200">
-              位置設定
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <h2 className="text-base font-semibold text-gray-900 mb-5">
+              縦位置（タイトル・説明共通）
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
-              {/* Vertical Position */}
-              <div className="md:col-span-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  縦位置（タイトル・説明共通）
-                </label>
-                <select
-                  value={banner.title_vertical_position}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    handleBannerChange("title_vertical_position", value);
-                    // 説明の縦位置も同じ値に設定
-                    handleBannerChange("description_vertical_position", value);
-                  }}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="top">上</option>
-                  <option value="middle">中央</option>
-                  <option value="bottom">下</option>
-                </select>
-                <p className="text-xs text-gray-500 mt-1">
-                  タイトルと説明は同じ縦位置に配置されます
-                </p>
-              </div>
+            <div className="max-w-md">
+              <select
+                value={banner.title_vertical_position}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  handleBannerChange("title_vertical_position", value);
+                  handleBannerChange("description_vertical_position", value);
+                }}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white"
+              >
+                <option value="top">上</option>
+                <option value="middle">中央</option>
+                <option value="bottom">下</option>
+              </select>
+              <p className="text-xs text-gray-500 mt-2">
+                タイトルと説明は同じ縦位置に配置されます
+              </p>
             </div>
           </div>
 
           {/* Other Settings Section */}
-          <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4 pb-3 border-b border-gray-200">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <h2 className="text-base font-semibold text-gray-900 mb-5">
               その他設定
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+            <div className="space-y-5">
               {/* Page URL */}
-              <div className="md:col-span-7">
+              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   ページURL
                 </label>
@@ -668,12 +668,12 @@ export const BannerEdit = () => {
                     handleBannerChange("page_url", e.target.value)
                   }
                   placeholder="https://example.com"
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
                 />
               </div>
 
               {/* Display Text */}
-              <div className="md:col-span-7">
+              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   表示テキスト
                 </label>
@@ -684,15 +684,15 @@ export const BannerEdit = () => {
                     handleBannerChange("display_text", e.target.value)
                   }
                   placeholder="クリック可能なテキストを入力"
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
                 />
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-gray-500 mt-2">
                   このテキストがURLの代わりに表示され、クリックするとページURLに移動します
                 </p>
               </div>
 
               {/* Status */}
-              <div className="md:col-span-5">
+              <div className="max-w-md">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   ステータス
                 </label>
@@ -704,7 +704,7 @@ export const BannerEdit = () => {
                       e.target.value as "active" | "inactive"
                     )
                   }
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white"
                 >
                   <option value="active">有効</option>
                   <option value="inactive">無効</option>
@@ -714,18 +714,18 @@ export const BannerEdit = () => {
           </div>
 
           {/* Submit Button */}
-          <div className="flex justify-end space-x-4 pt-4">
+          <div className="flex justify-end gap-3 pt-2">
             <button
               type="button"
               onClick={() => navigate("/admin/banners")}
-              className="px-6 py-2.5 text-gray-700 bg-white border border-gray-300 rounded-lg font-medium hover:bg-gray-50 hover:border-gray-400 transition-all duration-200"
+              className="px-6 py-3 text-gray-700 bg-white border border-gray-300 rounded-lg font-medium hover:bg-gray-50 transition-all duration-200"
             >
               キャンセル
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="px-6 py-2.5 text-white font-medium rounded-lg bg-purple-600 hover:bg-purple-700 shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-8 py-3 text-white font-medium rounded-lg bg-purple-600 hover:bg-purple-700 shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {submitting ? (
                 <span className="flex items-center">

@@ -33,7 +33,7 @@ export const Login = ({ onSwitchToRegister }: LoginProps) => {
     setLoading(true);
 
     const result = await login(email, password);
-    setLoading(false);  
+    setLoading(false);
 
     if (!result.success) {
       const errorMessage = result.error || "ログインに失敗しました";
@@ -47,7 +47,7 @@ export const Login = ({ onSwitchToRegister }: LoginProps) => {
   return (
     <div className="min-h-screen flex flex-col lg:flex-row">
       {/* Left Section - Welcome Area */}
-      <div className="hidden md:flex md:w-1/2 relative bg-gradient-to-b from-blue-400 via-blue-500 to-blue-600 overflow-hidden">
+      <div className="hidden md:flex md:w-1/2 relative bg-blue-600 overflow-hidden">
         {/* Abstract background elements */}
         <div className="absolute inset-0 opacity-20">
           <div className="absolute top-20 left-10 w-72 h-72 bg-blue-300 rounded-full blur-3xl"></div>

@@ -736,6 +736,82 @@ class ApiService {
       }>;
     }>("/users/stats");
   }
+
+  // Cart endpoints
+  async addToCart(productId: string, quantity: number = 1) {
+    return this.request<{
+      id: string;
+      user_id: string;
+      product_id: string;
+      quantity: number;
+    }>("/cart", {
+      method: "POST",
+      body: JSON.stringify({ product_id: productId, quantity }),
+    });
+  }
+
+  async removeFromCart(productId: string) {
+    return this.request<void>(`/cart/${productId}`, {
+      method: "DELETE",
+    });
+  }
+
+  async updateCartQuantity(productId: string, quantity: number) {
+    return this.request<{
+      user_id: string;
+      product_id: string;
+      quantity: number;
+    }>(`/cart/${productId}`, {
+      method: "PUT",
+      body: JSON.stringify({ quantity }),
+    });
+  }
+
+  async getCart() {
+    return this.request<
+      Array<{
+        id: string;
+        user_id: string;
+        product_id: string;
+        quantity: number;
+        name: string;
+        sku: string;
+        price: number;
+        main_image_url: string;
+        status: string;
+        stock_quantity: number;
+        createdAt: string;
+        updatedAt: string;
+      }>
+    >("/cart", {
+      method: "GET",
+    });
+  }
+
+  async getCartCount() {
+    return this.request<{
+      itemCount: number;
+      totalQuantity: number;
+    }>("/cart/count", {
+      method: "GET",
+    });
+  }
+
+  async clearCart() {
+    return this.request<void>("/cart", {
+      method: "DELETE",
+    });
+  }
+
+  // Checkout endpoints
+  async createCheckoutSession() {
+    return this.request<{
+      sessionId: string;
+      url: string;
+    }>("/checkout/create-session", {
+      method: "POST",
+    });
+  }
 }
 
 export const apiService = new ApiService();

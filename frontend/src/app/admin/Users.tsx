@@ -1,12 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import {
-  Search,
-  UserPlus,
-  Ban,
-  UserCheck,
-  Trash2,
-  Loader2,
-} from "lucide-react";
+import { Search, Ban, UserCheck, Trash2, Loader2 } from "lucide-react";
 import { AdminLayout } from "../../components/layouts/AdminLayout";
 import { apiService } from "../../services/api";
 import { useToast } from "../../contexts/ToastContext";
@@ -35,7 +28,7 @@ export const Users = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const itemsPerPage = 10;
-  const { showToast, success, error } = useToast();
+  const { success, error } = useToast();
 
   const loadUsers = useCallback(async () => {
     setLoading(true);
@@ -156,25 +149,13 @@ export const Users = () => {
     <AdminLayout>
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
-              ユーザー管理
-            </h1>
-            <p className="text-sm text-gray-600 mt-1">
-              ユーザーアカウントと権限の管理
-            </p>
-          </div>
-          <button
-            onClick={() => {
-              // TODO: Implement add user functionality
-              showToast("ユーザー追加機能は今後実装予定です。", "info");
-            }}
-            className="flex items-center justify-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            <UserPlus className="w-5 h-5" />
-            <span>ユーザー追加</span>
-          </button>
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+            ユーザー管理
+          </h1>
+          <p className="text-sm text-gray-600 mt-1">
+            ユーザーアカウントと権限の管理
+          </p>
         </div>
 
         {/* Filters and Search */}
@@ -206,127 +187,134 @@ export const Users = () => {
             </div>
           ) : (
             <>
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        ユーザー
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        メール
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        ロール
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        ステータス
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        注文数
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        登録日
-                      </th>
-                      <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        操作
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {users.map((user) => (
-                      <tr key={user.id} className="hover:bg-gray-50">
-                        <td className="px-4 py-4 whitespace-nowrap">
-                          <div className="flex items-center space-x-3">
-                            <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                              <span className="text-blue-600 font-medium">
-                                {user.username.charAt(0).toUpperCase()}
+              <div className="overflow-x-auto -mx-4 sm:mx-0">
+                <div className="inline-block min-w-full align-middle sm:px-0">
+                  <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-2 sm:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            ユーザー
+                          </th>
+                          <th className="px-2 sm:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">
+                            メール
+                          </th>
+                          <th className="px-2 sm:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            ロール
+                          </th>
+                          <th className="px-2 sm:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            ステータス
+                          </th>
+                          <th className="px-2 sm:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden lg:table-cell">
+                            注文数
+                          </th>
+                          <th className="px-2 sm:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden xl:table-cell">
+                            登録日
+                          </th>
+                          <th className="px-2 sm:px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            操作
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {users.map((user) => (
+                          <tr key={user.id} className="hover:bg-gray-50">
+                            <td className="px-2 sm:px-4 py-4">
+                              <div className="flex items-center space-x-2 sm:space-x-3">
+                                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                  <span className="text-blue-600 font-medium text-xs sm:text-sm">
+                                    {user.username.charAt(0).toUpperCase()}
+                                  </span>
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <div className="text-xs sm:text-sm font-medium text-gray-900 truncate">
+                                    {user.username}
+                                  </div>
+                                  <div className="text-[10px] sm:text-xs text-gray-500 truncate">
+                                    {user.email}
+                                  </div>
+                                  <div className="md:hidden text-[10px] text-gray-400 mt-0.5">
+                                    注文: {user.orders}件
+                                  </div>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="px-2 sm:px-4 py-4 whitespace-nowrap hidden md:table-cell">
+                              <div className="text-xs sm:text-sm text-gray-900 truncate max-w-xs">
+                                {user.email}
+                              </div>
+                            </td>
+                            <td className="px-2 sm:px-4 py-4 whitespace-nowrap">
+                              <span
+                                className={`px-1.5 sm:px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs font-medium rounded-full ${
+                                  user.role === "admin"
+                                    ? "bg-purple-100 text-purple-800"
+                                    : "bg-gray-100 text-gray-800"
+                                }`}
+                              >
+                                {user.role === "admin" ? "管理者" : "顧客"}
                               </span>
-                            </div>
-                            <div>
-                              <div className="text-sm font-medium text-gray-900">
-                                {user.username}
+                            </td>
+                            <td className="px-2 sm:px-4 py-4 whitespace-nowrap">
+                              <span
+                                className={`px-1.5 sm:px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs font-medium rounded-full ${
+                                  user.status === "active"
+                                    ? "bg-green-100 text-green-800"
+                                    : "bg-red-100 text-red-800"
+                                }`}
+                              >
+                                {user.status === "active"
+                                  ? "アクティブ"
+                                  : "非アクティブ"}
+                              </span>
+                            </td>
+                            <td className="px-2 sm:px-4 py-4 whitespace-nowrap hidden lg:table-cell">
+                              <div className="text-xs sm:text-sm text-gray-900">
+                                {user.orders}
                               </div>
-                              <div className="text-xs text-gray-500">
-                                ID: {user.id}
+                            </td>
+                            <td className="px-2 sm:px-4 py-4 whitespace-nowrap hidden xl:table-cell">
+                              <div className="text-xs sm:text-sm text-gray-900">
+                                {formatDate(user.createdAt)}
                               </div>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-4 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">
-                            {user.email}
-                          </div>
-                        </td>
-                        <td className="px-4 py-4 whitespace-nowrap">
-                          <span
-                            className={`px-2 py-1 text-xs font-medium rounded-full ${
-                              user.role === "admin"
-                                ? "bg-purple-100 text-purple-800"
-                                : "bg-gray-100 text-gray-800"
-                            }`}
-                          >
-                            {user.role === "admin" ? "管理者" : "顧客"}
-                          </span>
-                        </td>
-                        <td className="px-4 py-4 whitespace-nowrap">
-                          <span
-                            className={`px-2 py-1 text-xs font-medium rounded-full ${
-                              user.status === "active"
-                                ? "bg-green-100 text-green-800"
-                                : "bg-red-100 text-red-800"
-                            }`}
-                          >
-                            {user.status === "active"
-                              ? "アクティブ"
-                              : "非アクティブ"}
-                          </span>
-                        </td>
-                        <td className="px-4 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">
-                            {user.orders}
-                          </div>
-                        </td>
-                        <td className="px-4 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">
-                            {formatDate(user.createdAt)}
-                          </div>
-                        </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          <div className="flex items-center justify-end space-x-2">
-                            <button
-                              onClick={() => handleBlock(user.id)}
-                              disabled={blocking && userToBlock === user.id}
-                              className={`p-1 ${
-                                user.status === "blocked"
-                                  ? "text-green-600 hover:text-green-900"
-                                  : "text-orange-600 hover:text-orange-900"
-                              } disabled:opacity-50 disabled:cursor-not-allowed`}
-                              title={
-                                user.status === "blocked"
-                                  ? "アンブロック"
-                                  : "ブロック"
-                              }
-                            >
-                              {user.status === "blocked" ? (
-                                <UserCheck className="w-4 h-4" />
-                              ) : (
-                                <Ban className="w-4 h-4" />
-                              )}
-                            </button>
-                            <button
-                              onClick={() => handleDelete(user.id)}
-                              className="text-red-600 hover:text-red-900 p-1"
-                              title="削除"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                            </td>
+                            <td className="px-2 sm:px-4 py-4 whitespace-nowrap text-right text-xs sm:text-sm font-medium">
+                              <div className="flex items-center justify-end space-x-1 sm:space-x-2">
+                                <button
+                                  onClick={() => handleBlock(user.id)}
+                                  disabled={blocking && userToBlock === user.id}
+                                  className={`p-1 ${
+                                    user.status === "blocked"
+                                      ? "text-green-600 hover:text-green-900"
+                                      : "text-[#e2603f] hover:text-[#8a3d2a]"
+                                  } disabled:opacity-50 disabled:cursor-not-allowed`}
+                                  title={
+                                    user.status === "blocked"
+                                      ? "アンブロック"
+                                      : "ブロック"
+                                  }
+                                >
+                                  {user.status === "blocked" ? (
+                                    <UserCheck className="w-3 h-3 sm:w-4 sm:h-4" />
+                                  ) : (
+                                    <Ban className="w-3 h-3 sm:w-4 sm:h-4" />
+                                  )}
+                                </button>
+                                <button
+                                  onClick={() => handleDelete(user.id)}
+                                  className="text-red-600 hover:text-red-900 p-1"
+                                  title="削除"
+                                >
+                                  <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
               </div>
 
               {/* Pagination */}

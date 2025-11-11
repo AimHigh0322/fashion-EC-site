@@ -15,6 +15,8 @@ import { Banners } from "./app/admin/Banners";
 import { BannerCreate } from "./app/admin/BannerCreate";
 import { BannerEdit } from "./app/admin/BannerEdit";
 import { HomePage } from "./app/home/HomePage";
+import { Cart } from "./app/user/Cart";
+import { CheckoutSuccess } from "./app/user/CheckoutSuccess";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useState } from "react";
 
@@ -85,6 +87,22 @@ function App() {
               element={
                 <ProtectedRoute>
                   <HomePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/cart"
+              element={
+                <ProtectedRoute>
+                  <Cart />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/checkout/success"
+              element={
+                <ProtectedRoute>
+                  <CheckoutSuccess />
                 </ProtectedRoute>
               }
             />
