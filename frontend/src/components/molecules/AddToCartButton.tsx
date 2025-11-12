@@ -54,7 +54,7 @@ export const AddToCartButton = ({
     <button
       onClick={handleClick}
       disabled={isAdding || !isAuthenticated || disabled}
-      className={`w-full transition-all duration-200 shadow-sm flex items-center justify-center gap-2 text-xs sm:text-sm font-medium py-2 px-4 rounded-full ${
+      className={`w-full transition-all duration-200 shadow-sm flex items-center justify-center gap-2 text-xs sm:text-sm font-medium py-2 px-4 rounded-full cursor-pointer ${
         isInCart
           ? "bg-green-500 hover:bg-green-600 text-white"
           : "bg-[#e2603f] hover:bg-[#c95a42] disabled:bg-gray-300 disabled:cursor-not-allowed text-white"

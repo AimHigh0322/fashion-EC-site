@@ -761,9 +761,6 @@ async function initializeDatabase() {
 
     // Check and create admin user if it doesn't exist
     await createAdminUser();
-
-    // Check and create default categories if they don't exist
-    await createDefaultCategories();
   } catch (error) {
     console.error("❌ Error initializing database tables:", error.message);
   }
@@ -804,126 +801,6 @@ async function createAdminUser() {
     console.log(`   Role: admin`);
   } catch (error) {
     console.error("❌ Error creating admin user:", error.message);
-  }
-}
-
-// Create default categories if they don't exist
-async function createDefaultCategories() {
-  try {
-    const { v4: uuidv4 } = require("uuid");
-
-    // Default categories structure for fashion EC site
-    const defaultCategories = [
-      // Level 1 categories
-      { name: "メンズ", slug: "mens", parent_id: null, level: 1 },
-      { name: "レディース", slug: "ladies", parent_id: null, level: 1 },
-      { name: "キッズ", slug: "kids", parent_id: null, level: 1 },
-      { name: "アクセサリー", slug: "accessories", parent_id: null, level: 1 },
-    ];
-
-    let createdCount = 0;
-    const parentMap = new Map(); // Store parent IDs for child categories
-
-    // Create level 1 categories
-    for (const category of defaultCategories) {
-      const [existing] = await pool.query(
-        "SELECT id FROM categories WHERE slug = ?",
-        [category.slug]
-      );
-
-      if (existing.length === 0) {
-        const categoryId = uuidv4();
-        await pool.query(
-          `INSERT INTO categories (id, name, slug, parent_id, level, is_active, sort_order)
-           VALUES (?, ?, ?, ?, ?, ?, ?)`,
-          [
-            categoryId,
-            category.name,
-            category.slug,
-            category.parent_id,
-            category.level,
-            true,
-            createdCount,
-          ]
-        );
-        parentMap.set(category.slug, categoryId);
-        createdCount++;
-      } else {
-        parentMap.set(category.slug, existing[0].id);
-      }
-    }
-
-    // Level 2 categories for メンズ
-    const mensSubCategories = [
-      { name: "トップス", slug: "mens-tops", parent_slug: "mens" },
-      { name: "ボトムス", slug: "mens-bottoms", parent_slug: "mens" },
-      { name: "アウター", slug: "mens-outer", parent_slug: "mens" },
-      { name: "シューズ", slug: "mens-shoes", parent_slug: "mens" },
-    ];
-
-    // Level 2 categories for レディース
-    const ladiesSubCategories = [
-      { name: "トップス", slug: "ladies-tops", parent_slug: "ladies" },
-      { name: "ボトムス", slug: "ladies-bottoms", parent_slug: "ladies" },
-      { name: "ワンピース", slug: "ladies-dresses", parent_slug: "ladies" },
-      { name: "アウター", slug: "ladies-outer", parent_slug: "ladies" },
-      { name: "シューズ", slug: "ladies-shoes", parent_slug: "ladies" },
-    ];
-
-    // Level 2 categories for アクセサリー
-    const accessoriesSubCategories = [
-      { name: "バッグ", slug: "bags", parent_slug: "accessories" },
-      { name: "財布", slug: "wallets", parent_slug: "accessories" },
-      { name: "時計", slug: "watches", parent_slug: "accessories" },
-      { name: "ジュエリー", slug: "jewelry", parent_slug: "accessories" },
-    ];
-
-    const allSubCategories = [
-      ...mensSubCategories,
-      ...ladiesSubCategories,
-      ...accessoriesSubCategories,
-    ];
-
-    let subCreatedCount = 0;
-    for (const subCategory of allSubCategories) {
-      const parentId = parentMap.get(subCategory.parent_slug);
-      if (!parentId) continue;
-
-      const [existing] = await pool.query(
-        "SELECT id FROM categories WHERE slug = ?",
-        [subCategory.slug]
-      );
-
-      if (existing.length === 0) {
-        const categoryId = uuidv4();
-        await pool.query(
-          `INSERT INTO categories (id, name, slug, parent_id, level, is_active, sort_order)
-           VALUES (?, ?, ?, ?, ?, ?, ?)`,
-          [
-            categoryId,
-            subCategory.name,
-            subCategory.slug,
-            parentId,
-            2,
-            true,
-            subCreatedCount,
-          ]
-        );
-        subCreatedCount++;
-      }
-    }
-
-    if (createdCount > 0 || subCreatedCount > 0) {
-      console.log(
-        `✅ Default categories created successfully (${
-          createdCount + subCreatedCount
-        } categories)`
-      );
-    } else {
-      console.log("✅ Default categories already exist");
-    }
-  } catch (error) {
-    console.error("❌ Error creating default categories:", error.message);
   }
 }
 

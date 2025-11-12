@@ -337,7 +337,7 @@ export const Banners = () => {
 
                               <td className="px-2 sm:px-4 py-4 whitespace-nowrap">
                                 <span
-                                  className={`px-1.5 sm:px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs font-medium rounded-full ${
+                                  className={`px-1.5 sm:px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs font-medium rounded-md ${
                                     banner.status === "active" ||
                                     banner.is_active
                                       ? "bg-green-100 text-green-800"

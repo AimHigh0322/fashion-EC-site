@@ -666,7 +666,7 @@ export const Products = () => {
                             </td>
                             <td className="px-2 sm:px-4 py-4 whitespace-nowrap">
                               <span
-                                className={`px-1.5 sm:px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs font-medium rounded-full ${
+                                className={`px-1.5 sm:px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs font-medium rounded-md ${
                                   product.status === "active"
                                     ? "bg-green-100 text-green-800"
                                     : product.status === "out_of_stock"

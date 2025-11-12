@@ -9,6 +9,7 @@ import {
   Check,
 } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
+import { useCart } from "../../contexts/CartContext";
 import { useToast } from "../../contexts/ToastContext";
 import { apiService } from "../../services/api";
 import { UserLayout } from "../../components/layouts/UserLayout";
@@ -28,7 +29,8 @@ interface CartItem {
 export const Cart = () => {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
-  const {  success, error } = useToast();
+  const { refreshCart } = useCart();
+  const { success, error } = useToast();
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState<string | null>(null);
@@ -53,7 +55,7 @@ export const Cart = () => {
       } else if (response.data) {
         setCartItems(response.data);
       }
-    } catch  {
+    } catch {
       error("カートの読み込みに失敗しました");
       setCartItems([]);
     } finally {
@@ -77,6 +79,7 @@ export const Cart = () => {
         await loadCart(); // Reload to revert changes
       } else {
         await loadCart(); // Reload to get updated data
+        await refreshCart(); // Refresh cart count in context
         success("数量を更新しました");
       }
     } catch {
@@ -95,6 +98,7 @@ export const Cart = () => {
         error(response.error);
       } else {
         await loadCart();
+        await refreshCart(); // Refresh cart count in context
         success("カートから削除しました");
       }
     } catch {
@@ -279,7 +283,7 @@ export const Cart = () => {
                                 updating === item.product_id ||
                                 item.quantity <= 1
                               }
-                              className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                              className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
                             >
                               <Minus className="w-4 h-4" />
                             </button>
@@ -302,7 +306,7 @@ export const Cart = () => {
                                 (item.stock_quantity > 0 &&
                                   item.quantity >= item.stock_quantity)
                               }
-                              className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                              className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
                             >
                               <Plus className="w-4 h-4" />
                             </button>
@@ -312,7 +316,7 @@ export const Cart = () => {
                           <button
                             onClick={() => removeItem(item.product_id)}
                             disabled={removing === item.product_id}
-                            className="flex items-center space-x-1 text-red-600 hover:text-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            className="flex items-center space-x-1 text-red-600 hover:text-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
                           >
                             {removing === item.product_id ? (
                               <>
@@ -383,7 +387,7 @@ export const Cart = () => {
                   <button
                     onClick={handleCheckout}
                     disabled={checkingOut || cartItems.length === 0}
-                    className="w-full bg-[#e2603f] hover:bg-[#c95a42] disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-4 px-6 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg flex items-center justify-center space-x-2"
+                    className="w-full bg-[#e2603f] hover:bg-[#c95a42] disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-4 px-6 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg flex items-center justify-center space-x-2 cursor-pointer"
                   >
                     {checkingOut ? (
                       <>
@@ -400,7 +404,7 @@ export const Cart = () => {
 
                   <Link
                     to="/"
-                    className="block mt-4 text-center text-indigo-600 hover:text-indigo-700 font-medium text-sm transition-colors"
+                    className="block mt-4 text-center text-indigo-600 hover:text-indigo-700 font-medium text-sm transition-colors cursor-pointer"
                   >
                     買い物を続ける
                   </Link>

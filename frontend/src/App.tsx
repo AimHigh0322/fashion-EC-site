@@ -1,6 +1,7 @@
 import "./App.css";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { FavoritesProvider } from "./contexts/FavoritesContext";
+import { CartProvider } from "./contexts/CartContext";
 import { ToastProvider } from "./contexts/ToastContext";
 import { Login } from "./app/user/auth/Login";
 import { Register } from "./app/user/auth/Register";
@@ -16,6 +17,7 @@ import { BannerCreate } from "./app/admin/BannerCreate";
 import { BannerEdit } from "./app/admin/BannerEdit";
 import { HomePage } from "./app/home/HomePage";
 import { Cart } from "./app/user/Cart";
+import { Favorites } from "./app/user/Favorites";
 import { CheckoutSuccess } from "./app/user/CheckoutSuccess";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useState } from "react";
@@ -79,6 +81,7 @@ function App() {
     <ToastProvider>
       <AuthProvider>
         <FavoritesProvider>
+          <CartProvider>
           <BrowserRouter>
           <Routes>
             <Route path="/login" element={<AuthPages />} />
@@ -95,6 +98,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Cart />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/favorites"
+              element={
+                <ProtectedRoute>
+                  <Favorites />
                 </ProtectedRoute>
               }
             />
@@ -189,6 +200,7 @@ function App() {
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </BrowserRouter>
+          </CartProvider>
         </FavoritesProvider>
       </AuthProvider>
     </ToastProvider>

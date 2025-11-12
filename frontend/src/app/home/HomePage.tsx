@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useRef } from "react";
 import { Heart, ChevronLeft, ChevronRight, Star } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import { useFavorites } from "../../contexts/FavoritesContext";
+import { useCart } from "../../contexts/CartContext";
 import { useToast } from "../../contexts/ToastContext";
 import { apiService } from "../../services/api";
 import { AddToCartButton } from "../../components/molecules/AddToCartButton";
@@ -11,6 +12,8 @@ export const HomePage = () => {
   const [cartProductIds, setCartProductIds] = useState<Set<string>>(new Set());
   const { isAuthenticated } = useAuth();
   const { isFavorited, toggleFavorite } = useFavorites();
+  const { addToCart: addToCartContext, removeFromCart: removeFromCartContext } =
+    useCart();
   const { showToast, success, error } = useToast();
   const [mainBannerIndex, setMainBannerIndex] = useState(0);
   const [thumbnailIndex, setThumbnailIndex] = useState(0);
@@ -590,6 +593,44 @@ export const HomePage = () => {
     }
   };
 
+  // Helper function to get responsive font size classes
+  const getResponsiveTitleSize = (apiFontSize?: string) => {
+    if (!apiFontSize) {
+      return "text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl";
+    }
+    // Map API font sizes to responsive classes
+    const sizeMap: { [key: string]: string } = {
+      "text-xs": "text-xs sm:text-sm md:text-sm lg:text-xs",
+      "text-sm": "text-sm sm:text-base md:text-lg lg:text-sm",
+      "text-base": "text-base sm:text-lg md:text-xl lg:text-base",
+      "text-lg": "text-base sm:text-lg md:text-xl lg:text-lg",
+      "text-xl": "text-base sm:text-lg md:text-xl lg:text-xl",
+      "text-2xl": "text-base sm:text-lg md:text-xl lg:text-2xl",
+      "text-3xl": "text-base sm:text-lg md:text-xl lg:text-3xl",
+      "text-4xl": "text-base sm:text-lg md:text-xl lg:text-4xl",
+      "text-5xl": "text-base sm:text-lg md:text-2xl lg:text-5xl",
+      "text-6xl": "text-base sm:text-lg md:text-2xl lg:text-6xl",
+    };
+    return (
+      sizeMap[apiFontSize] || "text-base sm:text-lg md:text-xl lg:text-2xl"
+    );
+  };
+
+  const getResponsiveDescriptionSize = (apiFontSize?: string) => {
+    if (!apiFontSize) {
+      return "text-xs sm:text-sm md:text-base";
+    }
+    // Map API font sizes to responsive classes
+    const sizeMap: { [key: string]: string } = {
+      "text-xs": "text-xs sm:text-xs md:text-sm lg:text-xs",
+      "text-sm": "text-xs sm:text-sm md:text-base lg:text-sm",
+      "text-base": "text-xs sm:text-sm md:text-base lg:text-base",
+      "text-lg": "text-xs sm:text-sm md:text-base lg:text-lg",
+      "text-xl": "text-xs sm:text-sm md:text-base lg:text-xl",
+    };
+    return sizeMap[apiFontSize] || "text-xs sm:text-sm md:text-base";
+  };
+
   return (
     <UserLayout>
       {/* Main Content */}
@@ -634,10 +675,9 @@ export const HomePage = () => {
                           }`}
                         >
                           <h2
-                            className={`${
-                              currentBanner.title_font_size ||
-                              "text-xl sm:text-2xl md:text-3xl lg:text-4xl"
-                            } font-bold leading-tight`}
+                            className={`${getResponsiveTitleSize(
+                              currentBanner.title_font_size
+                            )} font-bold leading-tight`}
                             style={{
                               color: currentBanner.title_color || "#FFFFFF",
                             }}
@@ -657,10 +697,9 @@ export const HomePage = () => {
                           }`}
                         >
                           <p
-                            className={`${
-                              currentBanner.description_font_size ||
-                              "text-sm sm:text-base md:text-lg"
-                            } leading-relaxed`}
+                            className={`${getResponsiveDescriptionSize(
+                              currentBanner.description_font_size
+                            )} leading-relaxed`}
                             style={{
                               color:
                                 currentBanner.description_color || "#FFFFFF",
@@ -694,13 +733,13 @@ export const HomePage = () => {
                 <>
                   <button
                     onClick={handleMainBannerPrev}
-                    className="absolute left-2 sm:left-4 top-1/2 transform -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 bg-white/90 hover:bg-[#e2603f] rounded-full flex items-center justify-center z-20 shadow-lg transition-all duration-300 hover:scale-110 active:scale-95 group"
+                    className="absolute left-2 sm:left-4 top-1/2 transform -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 bg-white/90 hover:bg-[#e2603f] rounded-full flex items-center justify-center z-20 shadow-lg transition-all duration-300 hover:scale-110 active:scale-95 group cursor-pointer"
                   >
                     <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 text-gray-800 group-hover:text-white transition-all duration-300 group-hover:-translate-x-1" />
                   </button>
                   <button
                     onClick={handleMainBannerNext}
-                    className="absolute right-2 sm:right-4 top-1/2 transform -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 bg-white/90 hover:bg-[#e2603f] rounded-full flex items-center justify-center z-20 shadow-lg transition-all duration-300 hover:scale-110 active:scale-95 group"
+                    className="absolute right-2 sm:right-4 top-1/2 transform -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 bg-white/90 hover:bg-[#e2603f] rounded-full flex items-center justify-center z-20 shadow-lg transition-all duration-300 hover:scale-110 active:scale-95 group cursor-pointer"
                   >
                     <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-gray-800 group-hover:text-white transition-all duration-300 group-hover:translate-x-1" />
                   </button>
@@ -894,13 +933,13 @@ export const HomePage = () => {
                 <>
                   <button
                     onClick={handleThumbnailCarouselPrev}
-                    className="absolute left-2 sm:left-4 top-1/2 transform -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 bg-white/90 hover:bg-[#e2603f] rounded-full flex items-center justify-center z-20 shadow-lg transition-all duration-300 hover:scale-110 active:scale-95 group"
+                    className="absolute left-2 sm:left-4 top-1/2 transform -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 bg-white/90 hover:bg-[#e2603f] rounded-full flex items-center justify-center z-20 shadow-lg transition-all duration-300 hover:scale-110 active:scale-95 group cursor-pointer"
                   >
                     <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 text-gray-800 group-hover:text-white transition-all duration-300 group-hover:-translate-x-1" />
                   </button>
                   <button
                     onClick={handleThumbnailCarouselNext}
-                    className="absolute right-2 sm:right-4 top-1/2 transform -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 bg-white/90 hover:bg-[#e2603f] rounded-full flex items-center justify-center z-20 shadow-lg transition-all duration-300 hover:scale-110 active:scale-95 group"
+                    className="absolute right-2 sm:right-4 top-1/2 transform -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 bg-white/90 hover:bg-[#e2603f] rounded-full flex items-center justify-center z-20 shadow-lg transition-all duration-300 hover:scale-110 active:scale-95 group cursor-pointer"
                   >
                     <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-gray-800 group-hover:text-white transition-all duration-300 group-hover:translate-x-1" />
                   </button>
@@ -917,10 +956,10 @@ export const HomePage = () => {
               おすすめ商品
             </h2>
             <div className="hidden sm:flex space-x-2">
-              <button className="w-8 h-8 sm:w-10 sm:h-10 border border-gray-300 hover:bg-gray-100 flex items-center justify-center rounded-md">
+              <button className="w-8 h-8 sm:w-10 sm:h-10 border border-gray-300 hover:bg-gray-100 flex items-center justify-center rounded-md cursor-pointer">
                 <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
-              <button className="w-8 h-8 sm:w-10 sm:h-10 border border-gray-300 hover:bg-gray-100 flex items-center justify-center rounded-md">
+              <button className="w-8 h-8 sm:w-10 sm:h-10 border border-gray-300 hover:bg-gray-100 flex items-center justify-center rounded-md cursor-pointer">
                 <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
             </div>
@@ -969,7 +1008,7 @@ export const HomePage = () => {
                             error("お気に入りの更新に失敗しました");
                           }
                         }}
-                        className={`absolute top-2 right-2 bg-white/80 rounded-full p-1.5 transition-colors ${
+                        className={`absolute top-2 right-2 bg-white/80 rounded-full p-1.5 transition-colors cursor-pointer ${
                           isFavorited(product.id)
                             ? "text-red-500 hover:text-red-600"
                             : "text-gray-400 hover:text-red-500"
@@ -1034,14 +1073,12 @@ export const HomePage = () => {
                             }
                             setAddingToCart(productId);
                             try {
-                              const response = await apiService.addToCart(
+                              const success = await addToCartContext(
                                 productId,
                                 1
                               );
-                              if (response.error) {
-                                error(response.error);
-                              } else {
-                                success("カートに追加しました");
+                              if (success) {
+                                showToast("カートに追加しました", "success");
                                 // Update cart product IDs
                                 const cartResponse = await apiService.getCart();
                                 if (
@@ -1058,6 +1095,8 @@ export const HomePage = () => {
                                 } else {
                                   setCartProductIds(new Set());
                                 }
+                              } else {
+                                error("カートへの追加に失敗しました");
                               }
                             } catch {
                               error("カートへの追加に失敗しました");
@@ -1071,13 +1110,11 @@ export const HomePage = () => {
                             }
                             setAddingToCart(productId);
                             try {
-                              const response = await apiService.removeFromCart(
+                              const success = await removeFromCartContext(
                                 productId
                               );
-                              if (response.error) {
-                                error(response.error);
-                              } else {
-                                success("カートから削除しました");
+                              if (success) {
+                                showToast("カートから削除しました", "success");
                                 // Update cart product IDs
                                 const cartResponse = await apiService.getCart();
                                 if (
@@ -1094,6 +1131,8 @@ export const HomePage = () => {
                                 } else {
                                   setCartProductIds(new Set());
                                 }
+                              } else {
+                                error("カートからの削除に失敗しました");
                               }
                             } catch {
                               error("カートからの削除に失敗しました");
@@ -1171,208 +1210,6 @@ export const HomePage = () => {
           </div>
         </div>
       </div>
-
-      {/* Footer - Full Width - Warm Orange/Terracotta Theme */}
-      <footer className="w-full bg-[#e2603f] text-white mt-16 sm:mt-20">
-        <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 py-10 sm:py-12 lg:py-16">
-          {/* Top Section with Logo and Description */}
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 sm:gap-10 mb-10 sm:mb-12">
-            {/* Brand Section */}
-            <div className="lg:col-span-1">
-              <div className="mb-4">
-                <img
-                  src="/img/logo/logo.png"
-                  alt="Fashion EC Store"
-                  className="h-16 sm:h-20 md:h-24 lg:h-28 w-auto object-contain"
-                />
-              </div>
-              <p className="text-[#f5e8e4] text-sm sm:text-base leading-relaxed mb-4 max-w-md">
-                最新のファッショントレンドをお届け。あなたのスタイルを彩る、質の高いアイテムを豊富に取り揃えています。
-              </p>
-              <div className="flex flex-col space-y-2 text-[#f5e8e4]">
-                <span className="text-xs sm:text-sm">info@fashionstore.jp</span>
-                <span className="text-xs sm:text-sm">0120-XXX-XXX</span>
-              </div>
-            </div>
-
-            {/* Links Grid */}
-            <div className="lg:col-span-3 grid grid-cols-2 sm:grid-cols-3 gap-8 sm:gap-10">
-              <div>
-                <h3 className="font-bold mb-4 sm:mb-5 text-sm sm:text-base text-white uppercase tracking-wide">
-                  お客様サポート
-                </h3>
-                <ul className="space-y-2.5 sm:space-y-3 text-sm">
-                  <li>
-                    <a
-                      href="#"
-                      className="text-[#f5e8e4] hover:text-white transition-colors"
-                    >
-                      よくある質問
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                      className="text-[#f5e8e4] hover:text-white transition-colors"
-                    >
-                      配送・送料について
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                      className="text-[#f5e8e4] hover:text-white transition-colors"
-                    >
-                      お支払い方法
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                      className="text-[#f5e8e4] hover:text-white transition-colors"
-                    >
-                      返品・交換
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                      className="text-[#f5e8e4] hover:text-white transition-colors"
-                    >
-                      サイズガイド
-                    </a>
-                  </li>
-                </ul>
-              </div>
-              <div>
-                <h3 className="font-bold mb-4 sm:mb-5 text-sm sm:text-base text-white uppercase tracking-wide">
-                  会員サービス
-                </h3>
-                <ul className="space-y-2.5 sm:space-y-3 text-sm">
-                  <li>
-                    <a
-                      href="#"
-                      className="text-[#f5e8e4] hover:text-white transition-colors"
-                    >
-                      マイページ
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                      className="text-[#f5e8e4] hover:text-white transition-colors"
-                    >
-                      ポイントサービス
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                      className="text-[#f5e8e4] hover:text-white transition-colors"
-                    >
-                      お気に入り
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                      className="text-[#f5e8e4] hover:text-white transition-colors"
-                    >
-                      購入履歴
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                      className="text-[#f5e8e4] hover:text-white transition-colors"
-                    >
-                      会員登録
-                    </a>
-                  </li>
-                </ul>
-              </div>
-              <div>
-                <h3 className="font-bold mb-4 sm:mb-5 text-sm sm:text-base text-white uppercase tracking-wide">
-                  企業情報
-                </h3>
-                <ul className="space-y-2.5 sm:space-y-3 text-sm">
-                  <li>
-                    <a
-                      href="#"
-                      className="text-[#f5e8e4] hover:text-white transition-colors"
-                    >
-                      会社概要
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                      className="text-[#f5e8e4] hover:text-white transition-colors"
-                    >
-                      採用情報
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                      className="text-[#f5e8e4] hover:text-white transition-colors"
-                    >
-                      お問い合わせ
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                      className="text-[#f5e8e4] hover:text-white transition-colors"
-                    >
-                      プレスリリース
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                      className="text-[#f5e8e4] hover:text-white transition-colors"
-                    >
-                      店舗情報
-                    </a>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          {/* Bottom Section */}
-          <div className="border-t border-[#e2603f] pt-6 sm:pt-8">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-6">
-              <div className="text-xs sm:text-sm text-[#f5e8e4]">
-                © 2024 Fashion EC Store. All rights reserved.
-              </div>
-              <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 text-xs sm:text-sm">
-                <a
-                  href="#"
-                  className="text-[#f5e8e4] hover:text-white transition-colors"
-                >
-                  会員規約
-                </a>
-                <span className="text-[#e8c4b8]">|</span>
-                <a
-                  href="#"
-                  className="text-[#f5e8e4] hover:text-white transition-colors"
-                >
-                  プライバシーポリシー
-                </a>
-                <span className="text-[#e8c4b8]">|</span>
-                <a
-                  href="#"
-                  className="text-[#f5e8e4] hover:text-white transition-colors"
-                >
-                  特定商取引法
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </footer>
     </UserLayout>
   );
 };

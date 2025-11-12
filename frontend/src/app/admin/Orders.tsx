@@ -250,7 +250,7 @@ export const Orders = () => {
                           onChange={(e) =>
                             handleStatusUpdate(order.id, e.target.value)
                           }
-                          className={`px-2 py-1 text-xs font-medium rounded-full border-0 ${getStatusColor(
+                          className={`px-2 py-1 text-xs font-medium rounded-md border-0 ${getStatusColor(
                             order.status
                           )}`}
                         >

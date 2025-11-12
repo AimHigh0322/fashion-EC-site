@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { CheckCircle, ShoppingBag, ArrowRight } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
+import { useCart } from "../../contexts/CartContext";
 import { useToast } from "../../contexts/ToastContext";
 import { UserLayout } from "../../components/layouts/UserLayout";
 
@@ -9,6 +10,7 @@ export const CheckoutSuccess = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { isAuthenticated } = useAuth();
+  const { refreshCart } = useCart();
   const { success, error } = useToast();
   const [loading, setLoading] = useState(true);
   const sessionId = searchParams.get("session_id");
@@ -30,6 +32,8 @@ export const CheckoutSuccess = () => {
       // Payment was successful, show success message only once
       hasShownToast.current = true;
       success("お支払いが完了しました！");
+      // Refresh cart count after successful checkout (cart should be cleared)
+      refreshCart();
       setLoading(false);
     } else {
       hasShownToast.current = true;

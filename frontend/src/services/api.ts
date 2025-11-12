@@ -394,6 +394,23 @@ class ApiService {
     });
   }
 
+  async updateCategory(id: string, category: Partial<Category>) {
+    return this.request<Category>(`/categories/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(category),
+    });
+  }
+
+  async deleteCategory(id: string) {
+    return this.request<void>(`/categories/${id}`, {
+      method: "DELETE",
+    });
+  }
+
+  async getCategory(id: string) {
+    return this.request<Category>(`/categories/${id}`);
+  }
+
   // Attribute endpoints
   async getAttributeDefinitionsByCategories(categoryIds: string[]) {
     const query = new URLSearchParams();

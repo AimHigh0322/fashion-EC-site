@@ -161,7 +161,7 @@ export const Dashboard = () => {
                       ¥{order.amount.toLocaleString()}
                     </p>
                     <span
-                      className={`text-xs px-2 py-1 rounded-full ${
+                      className={`text-xs px-2 py-1 rounded-md ${
                         order.status === "pending"
                           ? "bg-yellow-100 text-yellow-800"
                           : order.status === "processing"
