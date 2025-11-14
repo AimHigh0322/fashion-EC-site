@@ -131,9 +131,17 @@ class ApiService {
         };
       }
 
-      // Handle backend response structure: { success: true, data: ... } or direct data
+      // Handle backend response structure: { success: true, data: ..., total: ... } or direct data
       if (data && typeof data === "object" && "success" in data && "data" in data) {
-        return { data: data.data };
+        // Preserve metadata like total, count, etc.
+        const response: ApiResponse<T> & { total?: number; count?: number } = { data: data.data };
+        if ("total" in data) {
+          (response as any).total = data.total;
+        }
+        if ("count" in data) {
+          (response as any).count = data.count;
+        }
+        return response;
       }
 
       return { data };

@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from "react";
+import { Link } from "react-router-dom";
 import { Heart, ChevronLeft, ChevronRight, Star } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import { useFavorites } from "../../contexts/FavoritesContext";
@@ -143,6 +144,9 @@ export const HomePage = () => {
   >([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [addingToCart, setAddingToCart] = useState<string | null>(null);
+  const recommendedProductsRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
 
   // Load cart product IDs
   useEffect(() => {
@@ -177,17 +181,64 @@ export const HomePage = () => {
     const loadProducts = async () => {
       try {
         setLoadingProducts(true);
-        const response = await apiService.getProducts({
-          status: "active",
-          limit: 6,
-        });
 
-        if (response.data && Array.isArray(response.data)) {
+        // Fetch all products using pagination
+        let allProducts: Array<{
+          id: string;
+          sku?: string;
+          name?: string;
+          description?: string;
+          price?: number;
+          compare_price?: number;
+          cost_price?: number;
+          stock_quantity?: number;
+          status?: string;
+          brand_id?: string;
+          brand_name?: string;
+          main_image_url?: string;
+          product_url?: string;
+          weight?: number;
+          dimensions?: string;
+          seo_title?: string;
+          seo_description?: string;
+          is_featured?: boolean;
+          category_count?: number;
+          category_names?: string;
+          createdAt?: string;
+          updatedAt?: string;
+          [key: string]: unknown;
+        }> = [];
+
+        let offset = 0;
+        const limit = 100; // Fetch 100 products at a time
+        let hasMore = true;
+
+        while (hasMore) {
+          const response = await apiService.getProducts({
+            limit,
+            offset,
+          });
+
+          if (response.data && Array.isArray(response.data)) {
+            allProducts = [...allProducts, ...response.data];
+
+            // If we got fewer products than the limit, we've reached the end
+            if (response.data.length < limit) {
+              hasMore = false;
+            } else {
+              offset += limit;
+            }
+          } else {
+            hasMore = false;
+          }
+        }
+
+        if (allProducts.length > 0) {
           const baseUrl = (
             import.meta.env.VITE_API_URL || "http://localhost:8888/api"
           ).replace(/\/api$/, "");
 
-          const formattedProducts = response.data.map(
+          const formattedProducts = allProducts.map(
             (product: {
               id: string;
               sku?: string;
@@ -264,6 +315,9 @@ export const HomePage = () => {
           );
 
           setRecommendedProducts(formattedProducts);
+        } else {
+          // No products found
+          setRecommendedProducts([]);
         }
       } catch (error) {
         console.error("Failed to load products:", error);
@@ -276,6 +330,35 @@ export const HomePage = () => {
 
     loadProducts();
   }, []);
+
+  // Check scroll position for product carousel
+  useEffect(() => {
+    const checkScrollPosition = () => {
+      if (recommendedProductsRef.current) {
+        const { scrollLeft, scrollWidth, clientWidth } =
+          recommendedProductsRef.current;
+        setCanScrollLeft(scrollLeft > 0);
+        setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1);
+      }
+    };
+
+    // Check initially and on resize
+    checkScrollPosition();
+    window.addEventListener("resize", checkScrollPosition);
+
+    // Check on scroll
+    const scrollContainer = recommendedProductsRef.current;
+    if (scrollContainer) {
+      scrollContainer.addEventListener("scroll", checkScrollPosition);
+    }
+
+    return () => {
+      window.removeEventListener("resize", checkScrollPosition);
+      if (scrollContainer) {
+        scrollContainer.removeEventListener("scroll", checkScrollPosition);
+      }
+    };
+  }, [recommendedProducts]);
 
   // トップピックバナー
   const topPicks = [
@@ -733,15 +816,15 @@ export const HomePage = () => {
                 <>
                   <button
                     onClick={handleMainBannerPrev}
-                    className="absolute left-2 sm:left-4 top-1/2 transform -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 bg-white/90 hover:bg-[#e2603f] rounded-full flex items-center justify-center z-20 shadow-lg transition-all duration-300 hover:scale-110 active:scale-95 group cursor-pointer"
+                    className="absolute left-2 sm:left-4 top-1/2 transform -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 bg-white/90 rounded-full flex items-center justify-center z-20 shadow-lg cursor-pointer"
                   >
-                    <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 text-gray-800 group-hover:text-white transition-all duration-300 group-hover:-translate-x-1" />
+                    <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 text-gray-800" />
                   </button>
                   <button
                     onClick={handleMainBannerNext}
-                    className="absolute right-2 sm:right-4 top-1/2 transform -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 bg-white/90 hover:bg-[#e2603f] rounded-full flex items-center justify-center z-20 shadow-lg transition-all duration-300 hover:scale-110 active:scale-95 group cursor-pointer"
+                    className="absolute right-2 sm:right-4 top-1/2 transform -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 bg-white/90 rounded-full flex items-center justify-center z-20 shadow-lg cursor-pointer"
                   >
-                    <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-gray-800 group-hover:text-white transition-all duration-300 group-hover:translate-x-1" />
+                    <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-gray-800" />
                   </button>
                 </>
               )}
@@ -933,15 +1016,15 @@ export const HomePage = () => {
                 <>
                   <button
                     onClick={handleThumbnailCarouselPrev}
-                    className="absolute left-2 sm:left-4 top-1/2 transform -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 bg-white/90 hover:bg-[#e2603f] rounded-full flex items-center justify-center z-20 shadow-lg transition-all duration-300 hover:scale-110 active:scale-95 group cursor-pointer"
+                    className="absolute left-2 sm:left-4 top-1/2 transform -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 bg-white/90 rounded-full flex items-center justify-center z-20 shadow-lg cursor-pointer"
                   >
-                    <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 text-gray-800 group-hover:text-white transition-all duration-300 group-hover:-translate-x-1" />
+                    <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 text-gray-800" />
                   </button>
                   <button
                     onClick={handleThumbnailCarouselNext}
-                    className="absolute right-2 sm:right-4 top-1/2 transform -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 bg-white/90 hover:bg-[#e2603f] rounded-full flex items-center justify-center z-20 shadow-lg transition-all duration-300 hover:scale-110 active:scale-95 group cursor-pointer"
+                    className="absolute right-2 sm:right-4 top-1/2 transform -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 bg-white/90 rounded-full flex items-center justify-center z-20 shadow-lg cursor-pointer"
                   >
-                    <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-gray-800 group-hover:text-white transition-all duration-300 group-hover:translate-x-1" />
+                    <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-gray-800" />
                   </button>
                 </>
               )}
@@ -955,14 +1038,80 @@ export const HomePage = () => {
             <h2 className="text-lg sm:text-xl md:text-2xl font-bold">
               おすすめ商品
             </h2>
-            <div className="hidden sm:flex space-x-2">
-              <button className="w-8 h-8 sm:w-10 sm:h-10 border border-gray-300 hover:bg-gray-100 flex items-center justify-center rounded-md cursor-pointer">
-                <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
-              </button>
-              <button className="w-8 h-8 sm:w-10 sm:h-10 border border-gray-300 hover:bg-gray-100 flex items-center justify-center rounded-md cursor-pointer">
-                <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
-              </button>
-            </div>
+            {recommendedProducts.length > 0 && (
+              <div className="hidden sm:flex space-x-2">
+                <button
+                  onClick={() => {
+                    if (recommendedProductsRef.current) {
+                      // Calculate scroll amount for 6 products
+                      const firstChild = recommendedProductsRef.current
+                        .firstElementChild as HTMLElement;
+                      if (firstChild) {
+                        const productWidth = firstChild.offsetWidth;
+                        const gap = 16; // space-x-4 = 16px
+                        // Scroll by 6 products: (productWidth + gap) * 6 - gap (last product doesn't need gap)
+                        const scrollAmount = (productWidth + gap) * 6 - gap;
+                        recommendedProductsRef.current.scrollBy({
+                          left: -scrollAmount,
+                          behavior: "smooth",
+                        });
+                      } else {
+                        // Fallback to container width
+                        const scrollAmount =
+                          recommendedProductsRef.current.clientWidth * 0.8;
+                        recommendedProductsRef.current.scrollBy({
+                          left: -scrollAmount,
+                          behavior: "smooth",
+                        });
+                      }
+                    }
+                  }}
+                  disabled={!canScrollLeft}
+                  className={`w-8 h-8 sm:w-10 sm:h-10 border border-gray-300 bg-white flex items-center justify-center rounded-md shadow-sm ${
+                    !canScrollLeft
+                      ? "opacity-50 cursor-not-allowed"
+                      : "cursor-pointer"
+                  }`}
+                >
+                  <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 text-gray-700" />
+                </button>
+                <button
+                  onClick={() => {
+                    if (recommendedProductsRef.current) {
+                      // Calculate scroll amount for 6 products
+                      const firstChild = recommendedProductsRef.current
+                        .firstElementChild as HTMLElement;
+                      if (firstChild) {
+                        const productWidth = firstChild.offsetWidth;
+                        const gap = 16; // space-x-4 = 16px
+                        // Scroll by 6 products: (productWidth + gap) * 6 - gap (last product doesn't need gap)
+                        const scrollAmount = (productWidth + gap) * 6 - gap;
+                        recommendedProductsRef.current.scrollBy({
+                          left: scrollAmount,
+                          behavior: "smooth",
+                        });
+                      } else {
+                        // Fallback to container width
+                        const scrollAmount =
+                          recommendedProductsRef.current.clientWidth * 0.8;
+                        recommendedProductsRef.current.scrollBy({
+                          left: scrollAmount,
+                          behavior: "smooth",
+                        });
+                      }
+                    }
+                  }}
+                  disabled={!canScrollRight}
+                  className={`w-8 h-8 sm:w-10 sm:h-10 border border-gray-300 bg-white flex items-center justify-center rounded-md shadow-sm ${
+                    !canScrollRight
+                      ? "opacity-50 cursor-not-allowed"
+                      : "cursor-pointer"
+                  }`}
+                >
+                  <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-gray-700" />
+                </button>
+              </div>
+            )}
           </div>
           <div className="relative">
             {loadingProducts ? (
@@ -974,177 +1123,190 @@ export const HomePage = () => {
                 <div className="text-gray-500">商品がありません</div>
               </div>
             ) : (
-              <div className="flex space-x-3 sm:space-x-4 overflow-x-auto pb-4 scrollbar-hide">
-                {recommendedProducts.map((product) => (
-                  <div
-                    key={product.id}
-                    className="flex-shrink-0 w-[calc((100%-60px)/6)] sm:w-[calc((100%-80px)/6)] min-w-[180px] sm:min-w-[200px] bg-white border border-gray-200 rounded-md overflow-hidden shadow-sm flex flex-col"
-                  >
-                    <div className="relative">
-                      <img
-                        src={product.image}
-                        alt={product.title}
-                        className="w-full h-32 sm:h-40 md:h-48 object-cover"
-                      />
-                      <button
-                        onClick={async (e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          if (!isAuthenticated) {
-                            showToast("ログインが必要です", "warning");
-                            return;
-                          }
-                          const wasFavorited = isFavorited(product.id);
-                          const toggleSuccess = await toggleFavorite(
-                            product.id
-                          );
-                          if (toggleSuccess) {
-                            if (wasFavorited) {
-                              success("お気に入りから削除しました");
-                            } else {
-                              success("お気に入りに追加しました");
-                            }
-                          } else {
-                            error("お気に入りの更新に失敗しました");
-                          }
-                        }}
-                        className={`absolute top-2 right-2 bg-white/80 rounded-full p-1.5 transition-colors cursor-pointer ${
-                          isFavorited(product.id)
-                            ? "text-red-500 hover:text-red-600"
-                            : "text-gray-400 hover:text-red-500"
-                        }`}
-                      >
-                        <Heart
-                          className={`w-4 h-4 sm:w-5 sm:h-5 ${
-                            isFavorited(product.id) ? "fill-current" : ""
-                          }`}
+              <div className="relative">
+                <div
+                  ref={recommendedProductsRef}
+                  className="flex space-x-3 sm:space-x-4 overflow-x-auto pb-4 scrollbar-hide scroll-smooth"
+                  style={{ scrollBehavior: "smooth" }}
+                >
+                  {recommendedProducts.map((product) => (
+                    <Link
+                      key={product.id}
+                      to={`/product/${product.id}`}
+                      className="group flex-shrink-0 w-[calc((100%-60px)/6)] sm:w-[calc((100%-80px)/6)] min-w-[180px] sm:min-w-[200px] bg-white border border-gray-200 rounded-md overflow-hidden shadow-sm flex flex-col cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-105 hover:-translate-y-1"
+                    >
+                      <div className="relative overflow-hidden">
+                        <img
+                          src={product.image}
+                          alt={product.title}
+                          className="w-full h-32 sm:h-40 md:h-48 object-cover transition-opacity duration-300 group-hover:opacity-80"
                         />
-                      </button>
-                    </div>
-                    <div className="p-3 sm:p-4 flex flex-col flex-grow">
-                      {/* Title and Description - Fixed 3 lines */}
-                      <div className="h-[4.5rem] sm:h-[5rem] mb-0">
-                        <div className="text-sm sm:text-base text-gray-800 leading-tight">
-                          <div className="font-semibold line-clamp-1 mb-1">
-                            {product.title}
-                          </div>
-                          {product.description && (
-                            <div className="text-gray-600 text-xs sm:text-sm line-clamp-2">
-                              {product.description}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-1 mb-0.5">
-                        {[...Array(5)].map((_, index) => (
-                          <Star
-                            key={index}
-                            className={`w-3 h-3 sm:w-4 sm:h-4 ${
-                              product.rating > 0 &&
-                              index < Math.floor(product.rating)
-                                ? "fill-yellow-400 text-yellow-400"
-                                : "fill-none stroke-gray-300 text-gray-300"
-                            }`}
-                          />
-                        ))}
-                        <span className="text-xs sm:text-sm text-gray-600 ml-1">
-                          ({product.reviews}件)
-                        </span>
-                      </div>
-                      <div className="mb-2 sm:mb-3">
-                        <span className="text-base sm:text-lg font-bold text-red-600">
-                          ¥{product.price.toLocaleString()}
-                        </span>
-                        <span className="text-xs text-gray-500 ml-1">
-                          (税込)
-                        </span>
-                      </div>
-                      {/* Button pushed to bottom */}
-                      <div className="mt-auto">
-                        <AddToCartButton
-                          productId={product.id}
-                          isAuthenticated={isAuthenticated}
-                          isAdding={addingToCart === product.id}
-                          isInCart={cartProductIds.has(product.id)}
-                          onAddToCart={async (productId) => {
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300 pointer-events-none"></div>
+                        <button
+                          onClick={async (e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
                             if (!isAuthenticated) {
                               showToast("ログインが必要です", "warning");
                               return;
                             }
-                            setAddingToCart(productId);
-                            try {
-                              const success = await addToCartContext(
-                                productId,
-                                1
-                              );
-                              if (success) {
-                                showToast("カートに追加しました", "success");
-                                // Update cart product IDs
-                                const cartResponse = await apiService.getCart();
-                                if (
-                                  cartResponse.data &&
-                                  Array.isArray(cartResponse.data)
-                                ) {
-                                  const productIds = new Set(
-                                    cartResponse.data.map(
-                                      (item: { product_id: string }) =>
-                                        item.product_id
-                                    )
-                                  );
-                                  setCartProductIds(productIds);
-                                } else {
-                                  setCartProductIds(new Set());
-                                }
+                            const wasFavorited = isFavorited(product.id);
+                            const toggleSuccess = await toggleFavorite(
+                              product.id
+                            );
+                            if (toggleSuccess) {
+                              if (wasFavorited) {
+                                success("お気に入りから削除しました");
                               } else {
-                                error("カートへの追加に失敗しました");
+                                success("お気に入りに追加しました");
                               }
-                            } catch {
-                              error("カートへの追加に失敗しました");
-                            } finally {
-                              setAddingToCart(null);
+                            } else {
+                              error("お気に入りの更新に失敗しました");
                             }
                           }}
-                          onRemoveFromCart={async (productId) => {
-                            if (!isAuthenticated) {
-                              return;
-                            }
-                            setAddingToCart(productId);
-                            try {
-                              const success = await removeFromCartContext(
-                                productId
-                              );
-                              if (success) {
-                                showToast("カートから削除しました", "success");
-                                // Update cart product IDs
-                                const cartResponse = await apiService.getCart();
-                                if (
-                                  cartResponse.data &&
-                                  Array.isArray(cartResponse.data)
-                                ) {
-                                  const productIds = new Set(
-                                    cartResponse.data.map(
-                                      (item: { product_id: string }) =>
-                                        item.product_id
-                                    )
-                                  );
-                                  setCartProductIds(productIds);
-                                } else {
-                                  setCartProductIds(new Set());
-                                }
-                              } else {
-                                error("カートからの削除に失敗しました");
-                              }
-                            } catch {
-                              error("カートからの削除に失敗しました");
-                            } finally {
-                              setAddingToCart(null);
-                            }
-                          }}
-                        />
+                          className={`absolute top-2 right-2 bg-white/80 rounded-full p-1.5 transition-colors cursor-pointer ${
+                            isFavorited(product.id)
+                              ? "text-red-500 hover:text-red-600"
+                              : "text-gray-400 hover:text-red-500"
+                          }`}
+                        >
+                          <Heart
+                            className={`w-4 h-4 sm:w-5 sm:h-5 ${
+                              isFavorited(product.id) ? "fill-current" : ""
+                            }`}
+                          />
+                        </button>
                       </div>
-                    </div>
-                  </div>
-                ))}
+                      <div className="p-3 sm:p-4 flex flex-col flex-grow">
+                        {/* Title and Description - Fixed 3 lines */}
+                        <div className="h-[4.5rem] sm:h-[5rem] mb-0">
+                          <div className="text-sm sm:text-base text-gray-800 leading-tight">
+                            <div className="font-semibold line-clamp-1 mb-1">
+                              {product.title}
+                            </div>
+                            {product.description && (
+                              <div className="text-gray-600 text-xs sm:text-sm line-clamp-2">
+                                {product.description}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1 mb-0.5">
+                          {[...Array(5)].map((_, index) => (
+                            <Star
+                              key={index}
+                              className={`w-3 h-3 sm:w-4 sm:h-4 ${
+                                product.rating > 0 &&
+                                index < Math.floor(product.rating)
+                                  ? "fill-yellow-400 text-yellow-400"
+                                  : "fill-none stroke-gray-300 text-gray-300"
+                              }`}
+                            />
+                          ))}
+                          <span className="text-xs sm:text-sm text-gray-600 ml-1">
+                            ({product.reviews}件)
+                          </span>
+                        </div>
+                        <div className="mb-2 sm:mb-3">
+                          <span className="text-base sm:text-lg font-bold text-red-600">
+                            ¥{product.price.toLocaleString()}
+                          </span>
+                          <span className="text-xs text-gray-500 ml-1">
+                            (税込)
+                          </span>
+                        </div>
+                        {/* Button pushed to bottom */}
+                        <div className="mt-auto">
+                          <AddToCartButton
+                            productId={product.id}
+                            isAuthenticated={isAuthenticated}
+                            isAdding={addingToCart === product.id}
+                            isInCart={cartProductIds.has(product.id)}
+                            onAddToCart={async (productId) => {
+                              if (!isAuthenticated) {
+                                showToast("ログインが必要です", "warning");
+                                return;
+                              }
+                              setAddingToCart(productId);
+                              try {
+                                const success = await addToCartContext(
+                                  productId,
+                                  1
+                                );
+                                if (success) {
+                                  showToast("カートに追加しました", "success");
+                                  // Update cart product IDs
+                                  const cartResponse =
+                                    await apiService.getCart();
+                                  if (
+                                    cartResponse.data &&
+                                    Array.isArray(cartResponse.data)
+                                  ) {
+                                    const productIds = new Set(
+                                      cartResponse.data.map(
+                                        (item: { product_id: string }) =>
+                                          item.product_id
+                                      )
+                                    );
+                                    setCartProductIds(productIds);
+                                  } else {
+                                    setCartProductIds(new Set());
+                                  }
+                                } else {
+                                  error("カートへの追加に失敗しました");
+                                }
+                              } catch {
+                                error("カートへの追加に失敗しました");
+                              } finally {
+                                setAddingToCart(null);
+                              }
+                            }}
+                            onRemoveFromCart={async (productId) => {
+                              if (!isAuthenticated) {
+                                return;
+                              }
+                              setAddingToCart(productId);
+                              try {
+                                const success = await removeFromCartContext(
+                                  productId
+                                );
+                                if (success) {
+                                  showToast(
+                                    "カートから削除しました",
+                                    "success"
+                                  );
+                                  // Update cart product IDs
+                                  const cartResponse =
+                                    await apiService.getCart();
+                                  if (
+                                    cartResponse.data &&
+                                    Array.isArray(cartResponse.data)
+                                  ) {
+                                    const productIds = new Set(
+                                      cartResponse.data.map(
+                                        (item: { product_id: string }) =>
+                                          item.product_id
+                                      )
+                                    );
+                                    setCartProductIds(productIds);
+                                  } else {
+                                    setCartProductIds(new Set());
+                                  }
+                                } else {
+                                  error("カートからの削除に失敗しました");
+                                }
+                              } catch {
+                                error("カートからの削除に失敗しました");
+                              } finally {
+                                setAddingToCart(null);
+                              }
+                            }}
+                          />
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
               </div>
             )}
           </div>

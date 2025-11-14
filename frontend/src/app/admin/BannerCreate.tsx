@@ -183,31 +183,31 @@ export const BannerCreate = () => {
 
   return (
     <AdminLayout>
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-5 md:space-y-6 max-w-full">
         {/* Breadcrumb */}
-        <nav className="flex items-center space-x-2 text-sm text-gray-600">
+        <nav className="flex items-center flex-wrap gap-1 sm:gap-2 text-xs sm:text-sm text-gray-600">
           <Link
             to="/admin"
             className="hover:text-purple-600 flex items-center space-x-1"
           >
-            <Home className="w-4 h-4" />
-            <span>ダッシュボード</span>
+            <Home className="w-3 h-3 sm:w-4 sm:h-4" />
+            <span className="hidden xs:inline">ダッシュボード</span>
           </Link>
-          <ChevronRight className="w-4 h-4 text-gray-400" />
-          <Link to="/admin/banners" className="hover:text-purple-600">
+          <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400 flex-shrink-0" />
+          <Link to="/admin/banners" className="hover:text-purple-600 truncate">
             バナー管理
           </Link>
-          <ChevronRight className="w-4 h-4 text-gray-400" />
-          <span className="text-pink-600 font-medium">バナー作成</span>
+          <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400 flex-shrink-0" />
+          <span className="text-pink-600 font-medium truncate">バナー作成</span>
         </nav>
 
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900">
               バナー作成
             </h1>
-            <p className="text-sm text-gray-600 mt-1">
+            <p className="text-xs sm:text-sm text-gray-600 mt-1">
               複数のバナーを一度に作成できます
             </p>
           </div>
@@ -216,28 +216,35 @@ export const BannerCreate = () => {
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Initial Upload Area - Show only when no banners */}
           {banners.length === 0 && (
-            <div className="flex items-center justify-center min-h-[60vh]">
-              <div className="bg-white rounded-xl shadow-sm p-8 border border-gray-200 w-full max-w-2xl">
-                <label className="block text-base font-semibold text-gray-900 mb-6 text-center">
+            <div className="flex items-center justify-center min-h-[40vh] sm:min-h-[50vh] md:min-h-[60vh] px-3 sm:px-4 md:px-6">
+              <div className="bg-white rounded-xl shadow-sm p-3 sm:p-4 md:p-6 lg:p-8 border border-gray-200 w-full max-w-2xl">
+                <label className="block text-xs sm:text-sm md:text-base font-semibold text-gray-900 mb-3 sm:mb-4 md:mb-6 text-center">
                   画像をアップロード <span className="text-red-500">*</span>
-                  <span className="text-xs text-gray-500 ml-2 font-normal">
+                  <span className="text-[10px] sm:text-xs text-gray-500 ml-1 sm:ml-2 font-normal block sm:inline mt-1 sm:mt-0">
                     (複数選択可能)
                   </span>
                 </label>
-                <div className="flex justify-center">
-                  <label className="flex flex-col items-center justify-center w-full max-w-[600px] rounded-xl cursor-pointer hover:border-purple-400 hover:bg-purple-50/50 transition-all duration-200 bg-gray-50/30 p-8" style={{ aspectRatio: "2.56/1", minHeight: "200px" }}>
-                    <div className="flex flex-col items-center space-y-3">
-                      <div className="w-16 h-16 rounded-full bg-purple-100 flex items-center justify-center">
-                        <Upload className="w-8 h-8 text-purple-600" />
+                <div className="flex justify-center w-full">
+                  <label
+                    className="flex flex-col items-center justify-center w-full max-w-full sm:max-w-[600px] rounded-xl cursor-pointer hover:border-purple-400 hover:bg-purple-50/50 transition-all duration-200 bg-gray-50/30 p-3 sm:p-4 md:p-6 lg:p-8 border-2 border-dashed border-gray-300"
+                    style={{
+                      aspectRatio: "2.56/1",
+                      minHeight: "120px",
+                      maxHeight: "400px",
+                    }}
+                  >
+                    <div className="flex flex-col items-center space-y-2 sm:space-y-3 w-full">
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
+                        <Upload className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 text-purple-600" />
                       </div>
-                      <div className="text-center">
-                        <span className="text-sm font-medium text-gray-700 block">
+                      <div className="text-center w-full px-2">
+                        <span className="text-xs sm:text-sm md:text-base font-medium text-gray-700 block">
                           画像をアップロード
                         </span>
-                        <span className="text-xs text-gray-500 mt-1 block">
+                        <span className="text-[10px] sm:text-xs text-gray-500 mt-1 block px-2 break-words">
                           クリックまたはドラッグ＆ドロップ（複数選択可能）
                         </span>
-                        <span className="text-xs text-purple-600 font-medium bg-purple-50 px-3 py-1 rounded-full mt-2 inline-block">
+                        <span className="text-[10px] sm:text-xs text-purple-600 font-medium bg-purple-50 px-2 sm:px-3 py-1 rounded-full mt-2 inline-block">
                           推奨サイズ: 950 × 370 (2.56:1)
                         </span>
                       </div>
@@ -258,14 +265,14 @@ export const BannerCreate = () => {
           )}
 
           {/* Banner Forms - Show after images are uploaded */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5 md:gap-6">
             {banners.map((banner, index) => (
               <div
                 key={index}
-                className="bg-white rounded-xl shadow-sm p-6 space-y-4 border border-gray-200"
+                className="bg-white rounded-xl shadow-sm p-4 sm:p-5 md:p-6 space-y-3 sm:space-y-4 border border-gray-200"
               >
                 <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-200">
-                  <h2 className="text-base font-semibold text-gray-900">
+                  <h2 className="text-sm sm:text-base font-semibold text-gray-900">
                     バナー {index + 1}
                   </h2>
                   <button
@@ -273,59 +280,94 @@ export const BannerCreate = () => {
                     onClick={() => handleRemoveBanner(index)}
                     className="text-red-600 hover:text-red-700 p-1 transition-colors"
                   >
-                    <Trash2 className="w-5 h-5" />
+                    <Trash2 className="w-4 h-4 sm:w-5 sm:h-5" />
                   </button>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-3 sm:gap-4 md:gap-5">
                   {/* Image Upload with Preview */}
                   <div className="md:col-span-12">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
                       画像 <span className="text-red-500">*</span>
                     </label>
                     <div className="mt-1">
                       {banner.preview ? (
-                        <div className="relative group">
-                          <div className="relative w-full" style={{ aspectRatio: "2.56/1" }}>
+                        <div className="relative group w-full overflow-hidden rounded-lg">
+                          <div
+                            className="relative w-full max-h-[300px] sm:max-h-[350px] md:max-h-[400px] lg:max-h-[450px] xl:max-h-[500px]"
+                            style={{
+                              aspectRatio: "2.56/1",
+                              minHeight: "120px",
+                            }}
+                          >
                             <img
                               src={banner.preview}
                               alt="Preview"
                               className="w-full h-full object-cover rounded-lg border-2 border-gray-200"
                             />
                             {/* Preview Overlay - Title and Description */}
-                            <div className={`absolute inset-0 flex p-4 md:p-6 ${
-                              banner.title_vertical_position === "top" ? "items-start" :
-                              banner.title_vertical_position === "bottom" ? "items-end" :
-                              "items-center"
-                            }`}>
-                              <div className="w-full space-y-2">
+                            <div
+                              className={`absolute inset-0 flex p-2 sm:p-3 md:p-4 lg:p-5 xl:p-6 ${
+                                banner.title_vertical_position === "top"
+                                  ? "items-start"
+                                  : banner.title_vertical_position === "bottom"
+                                  ? "items-end"
+                                  : "items-center"
+                              }`}
+                            >
+                              <div className="w-full space-y-1 sm:space-y-2 max-w-full">
                                 {banner.title && (
-                                  <div 
+                                  <div
                                     className={`w-full ${
-                                      banner.title_position === "left" ? "text-left" :
-                                      banner.title_position === "center" ? "text-center" :
-                                      banner.title_position === "right" ? "text-right" : "text-left"
+                                      banner.title_position === "left"
+                                        ? "text-left"
+                                        : banner.title_position === "center"
+                                        ? "text-center"
+                                        : banner.title_position === "right"
+                                        ? "text-right"
+                                        : "text-left"
                                     }`}
                                   >
                                     <h2
-                                      className={`${banner.title_font_size || "text-4xl"} font-bold leading-tight drop-shadow-lg`}
-                                      style={{ color: banner.title_color || "#FFFFFF" }}
+                                      className={`${
+                                        banner.title_font_size ||
+                                        "text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl"
+                                      } font-bold leading-tight drop-shadow-lg px-2 sm:px-3 md:px-4 lg:px-5 xl:px-6 break-words`}
+                                      style={{
+                                        color: banner.title_color || "#FFFFFF",
+                                        textShadow:
+                                          "2px 2px 4px rgba(0,0,0,0.5), -1px -1px 2px rgba(0,0,0,0.3)",
+                                      }}
                                     >
                                       {banner.title}
                                     </h2>
                                   </div>
                                 )}
                                 {banner.description && (
-                                  <div 
+                                  <div
                                     className={`w-full ${
-                                      banner.description_position === "left" ? "text-left" :
-                                      banner.description_position === "center" ? "text-center" :
-                                      banner.description_position === "right" ? "text-right" : "text-left"
+                                      banner.description_position === "left"
+                                        ? "text-left"
+                                        : banner.description_position ===
+                                          "center"
+                                        ? "text-center"
+                                        : banner.description_position ===
+                                          "right"
+                                        ? "text-right"
+                                        : "text-left"
                                     }`}
                                   >
                                     <p
-                                      className={`${banner.description_font_size || "text-lg"} leading-relaxed drop-shadow-lg`}
-                                      style={{ color: banner.description_color || "#FFFFFF" }}
+                                      className={`${
+                                        banner.description_font_size ||
+                                        "text-xs sm:text-sm md:text-base lg:text-lg"
+                                      } leading-relaxed drop-shadow-lg px-2 sm:px-3 md:px-4 lg:px-5 xl:px-6 break-words`}
+                                      style={{
+                                        color:
+                                          banner.description_color || "#FFFFFF",
+                                        textShadow:
+                                          "2px 2px 4px rgba(0,0,0,0.5), -1px -1px 2px rgba(0,0,0,0.3)",
+                                      }}
                                     >
                                       {banner.description}
                                     </p>
@@ -338,26 +380,31 @@ export const BannerCreate = () => {
                               onClick={() =>
                                 handleBannerChange(index, "image", null)
                               }
-                              className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1.5 hover:bg-red-600 shadow-lg transition-all hover:scale-110 z-10"
+                              className="absolute top-1 right-1 sm:top-2 sm:right-2 bg-red-500 text-white rounded-full p-1 sm:p-1.5 md:p-2 hover:bg-red-600 shadow-lg transition-all hover:scale-110 z-10"
+                              aria-label="画像を削除"
                             >
-                              <X className="w-4 h-4" />
+                              <X className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5" />
                             </button>
                           </div>
                         </div>
                       ) : (
                         <label
                           className="flex flex-col items-center justify-center w-full border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-purple-400 hover:bg-purple-50/50 transition-all duration-200 bg-gray-50/30"
-                          style={{ aspectRatio: "2.56/1", minHeight: "117px" }}
+                          style={{
+                            aspectRatio: "2.56/1",
+                            minHeight: "120px",
+                            maxHeight: "400px",
+                          }}
                         >
-                          <div className="flex flex-col items-center space-y-2">
-                            <Upload className="w-8 h-8 text-gray-400" />
-                            <span className="text-xs font-medium text-gray-600">
+                          <div className="flex flex-col items-center space-y-2 p-4 sm:p-6">
+                            <Upload className="w-6 h-6 sm:w-8 sm:h-8 text-gray-400" />
+                            <span className="text-xs sm:text-sm font-medium text-gray-600 text-center px-2">
                               画像をアップロード
                             </span>
-                            <span className="text-xs text-gray-500">
+                            <span className="text-[10px] sm:text-xs text-gray-500 text-center px-2">
                               クリックまたはドラッグ＆ドロップ
                             </span>
-                            <span className="text-xs text-purple-600 font-medium bg-purple-50 px-3 py-1 rounded-full">
+                            <span className="text-[10px] sm:text-xs text-purple-600 font-medium bg-purple-50 px-2 sm:px-3 py-1 rounded-full text-center">
                               推奨サイズ: 950 × 370 (2.56:1)
                             </span>
                           </div>
@@ -378,8 +425,8 @@ export const BannerCreate = () => {
                   </div>
 
                   {/* Title */}
-                  <div className="md:col-span-7">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <div className="md:col-span-12">
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
                       タイトル <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -388,86 +435,97 @@ export const BannerCreate = () => {
                       onChange={(e) =>
                         handleBannerChange(index, "title", e.target.value)
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                      className="w-full px-2 sm:px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
                       required
                     />
                   </div>
 
-                  {/* Title Color */}
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      タイトル色
-                    </label>
-                    <div className="flex items-center space-x-2">
-                      <input
-                        type="color"
-                        value={banner.title_color}
+                  {/* Title Styling Options */}
+                  <div className="md:col-span-12 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4 md:gap-5">
+                    {/* Title Color */}
+                    <div>
+                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
+                        タイトル色
+                      </label>
+                      <div className="flex items-center space-x-1 sm:space-x-2">
+                        <input
+                          type="color"
+                          value={banner.title_color}
+                          onChange={(e) =>
+                            handleBannerChange(
+                              index,
+                              "title_color",
+                              e.target.value
+                            )
+                          }
+                          className="w-10 h-10 sm:w-12 sm:h-10 border border-gray-300 rounded cursor-pointer flex-shrink-0"
+                        />
+                        <input
+                          type="text"
+                          value={banner.title_color}
+                          onChange={(e) =>
+                            handleBannerChange(
+                              index,
+                              "title_color",
+                              e.target.value
+                            )
+                          }
+                          className="flex-1 min-w-0 px-2 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-xs"
+                          pattern="^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Title Font Size */}
+                    <div>
+                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
+                        タイトル文字サイズ
+                      </label>
+                      <select
+                        value={banner.title_font_size}
                         onChange={(e) =>
                           handleBannerChange(
                             index,
-                            "title_color",
+                            "title_font_size",
                             e.target.value
                           )
                         }
-                        className="w-10 h-8 border border-gray-300 rounded cursor-pointer"
-                      />
-                      <input
-                        type="text"
-                        value={banner.title_color}
+                        className="w-full px-2 sm:px-3 py-2 text-xs sm:text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                      >
+                        <option value="text-2xl">小 (text-2xl)</option>
+                        <option value="text-3xl">中 (text-3xl)</option>
+                        <option value="text-4xl">大 (text-4xl)</option>
+                        <option value="text-5xl">特大 (text-5xl)</option>
+                        <option value="text-6xl">超特大 (text-6xl)</option>
+                      </select>
+                    </div>
+
+                    {/* Title Position */}
+                    <div>
+                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
+                        タイトル横位置
+                      </label>
+                      <select
+                        value={banner.title_position}
                         onChange={(e) =>
                           handleBannerChange(
                             index,
-                            "title_color",
+                            "title_position",
                             e.target.value
                           )
                         }
-                        className="w-20 px-2 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-xs"
-                        pattern="^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
-                      />
+                        className="w-full px-2 sm:px-3 py-2 text-xs sm:text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                      >
+                        <option value="left">左</option>
+                        <option value="center">中央</option>
+                        <option value="right">右</option>
+                      </select>
                     </div>
                   </div>
 
-                  {/* Title Font Size */}
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      タイトル文字サイズ
-                    </label>
-                    <select
-                      value={banner.title_font_size}
-                      onChange={(e) =>
-                        handleBannerChange(index, "title_font_size", e.target.value)
-                      }
-                      className="w-full px-2 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-sm"
-                    >
-                      <option value="text-2xl">小 (text-2xl)</option>
-                      <option value="text-3xl">中 (text-3xl)</option>
-                      <option value="text-4xl">大 (text-4xl)</option>
-                      <option value="text-5xl">特大 (text-5xl)</option>
-                      <option value="text-6xl">超特大 (text-6xl)</option>
-                    </select>
-                  </div>
-
-                  {/* Title Position */}
-                  <div className="md:col-span-1">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      タイトル横位置
-                    </label>
-                    <select
-                      value={banner.title_position}
-                      onChange={(e) =>
-                        handleBannerChange(index, "title_position", e.target.value)
-                      }
-                      className="w-full px-2 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-sm"
-                    >
-                      <option value="left">左</option>
-                      <option value="center">中央</option>
-                      <option value="right">右</option>
-                    </select>
-                  </div>
-
                   {/* Description */}
-                  <div className="md:col-span-7">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <div className="md:col-span-12">
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
                       説明
                     </label>
                     <textarea
@@ -476,111 +534,130 @@ export const BannerCreate = () => {
                         handleBannerChange(index, "description", e.target.value)
                       }
                       rows={3}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                      className="w-full px-2 sm:px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 resize-none"
                     />
                   </div>
 
-                  {/* Description Color */}
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      説明色
-                    </label>
-                    <div className="flex items-center space-x-2">
-                      <input
-                        type="color"
-                        value={banner.description_color}
-                        onChange={(e) =>
-                          handleBannerChange(
-                            index,
-                            "description_color",
-                            e.target.value
-                          )
-                        }
-                        className="w-10 h-8 border border-gray-300 rounded cursor-pointer"
-                      />
-                      <input
-                        type="text"
-                        value={banner.description_color}
-                        onChange={(e) =>
-                          handleBannerChange(
-                            index,
-                            "description_color",
-                            e.target.value
-                          )
-                        }
-                        className="w-20 px-2 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-xs"
-                        pattern="^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
-                      />
+                  {/* Description Styling Options */}
+                  <div className="md:col-span-12 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4 md:gap-5">
+                    {/* Description Color */}
+                    <div>
+                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
+                        説明色
+                      </label>
+                      <div className="flex items-center space-x-1 sm:space-x-2">
+                        <input
+                          type="color"
+                          value={banner.description_color}
+                          onChange={(e) =>
+                            handleBannerChange(
+                              index,
+                              "description_color",
+                              e.target.value
+                            )
+                          }
+                          className="w-10 h-10 sm:w-12 sm:h-10 border border-gray-300 rounded cursor-pointer flex-shrink-0"
+                        />
+                        <input
+                          type="text"
+                          value={banner.description_color}
+                          onChange={(e) =>
+                            handleBannerChange(
+                              index,
+                              "description_color",
+                              e.target.value
+                            )
+                          }
+                          className="flex-1 min-w-0 px-2 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-xs"
+                          pattern="^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
+                        />
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Description Font Size */}
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      説明文字サイズ
-                    </label>
-                    <select
-                      value={banner.description_font_size}
-                      onChange={(e) =>
-                        handleBannerChange(index, "description_font_size", e.target.value)
-                      }
-                      className="w-full px-2 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-sm"
-                    >
-                      <option value="text-sm">小 (text-sm)</option>
-                      <option value="text-base">中 (text-base)</option>
-                      <option value="text-lg">大 (text-lg)</option>
-                      <option value="text-xl">特大 (text-xl)</option>
-                      <option value="text-2xl">超特大 (text-2xl)</option>
-                    </select>
-                  </div>
+                    {/* Description Font Size */}
+                    <div>
+                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
+                        説明文字サイズ
+                      </label>
+                      <select
+                        value={banner.description_font_size}
+                        onChange={(e) =>
+                          handleBannerChange(
+                            index,
+                            "description_font_size",
+                            e.target.value
+                          )
+                        }
+                        className="w-full px-2 sm:px-3 py-2 text-xs sm:text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                      >
+                        <option value="text-sm">小 (text-sm)</option>
+                        <option value="text-base">中 (text-base)</option>
+                        <option value="text-lg">大 (text-lg)</option>
+                        <option value="text-xl">特大 (text-xl)</option>
+                        <option value="text-2xl">超特大 (text-2xl)</option>
+                      </select>
+                    </div>
 
-                  {/* Description Position */}
-                  <div className="md:col-span-1">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      説明横位置
-                    </label>
-                    <select
-                      value={banner.description_position}
-                      onChange={(e) =>
-                        handleBannerChange(index, "description_position", e.target.value)
-                      }
-                      className="w-full px-2 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-sm"
-                    >
-                      <option value="left">左</option>
-                      <option value="center">中央</option>
-                      <option value="right">右</option>
-                    </select>
+                    {/* Description Position */}
+                    <div>
+                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
+                        説明横位置
+                      </label>
+                      <select
+                        value={banner.description_position}
+                        onChange={(e) =>
+                          handleBannerChange(
+                            index,
+                            "description_position",
+                            e.target.value
+                          )
+                        }
+                        className="w-full px-2 sm:px-3 py-2 text-xs sm:text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                      >
+                        <option value="left">左</option>
+                        <option value="center">中央</option>
+                        <option value="right">右</option>
+                      </select>
+                    </div>
                   </div>
 
                   {/* Vertical Position */}
                   <div className="md:col-span-12">
-                    <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <div className="bg-gray-50 rounded-lg p-3 sm:p-4 md:p-5 border border-gray-200">
+                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
                         縦位置（タイトル・説明共通）
                       </label>
                       <select
                         value={banner.title_vertical_position}
                         onChange={(e) => {
                           const value = e.target.value;
-                          handleBannerChange(index, "title_vertical_position", value);
+                          handleBannerChange(
+                            index,
+                            "title_vertical_position",
+                            value
+                          );
                           // 説明の縦位置も同じ値に設定
-                          handleBannerChange(index, "description_vertical_position", value);
+                          handleBannerChange(
+                            index,
+                            "description_vertical_position",
+                            value
+                          );
                         }}
-                        className="w-full max-w-xs px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full sm:max-w-xs md:max-w-sm px-2 sm:px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       >
                         <option value="top">上</option>
                         <option value="middle">中央</option>
                         <option value="bottom">下</option>
                       </select>
-                      <p className="text-xs text-gray-500 mt-1">
+                      <p className="text-[10px] sm:text-xs text-gray-500 mt-1">
                         タイトルと説明は同じ縦位置に配置されます
                       </p>
                     </div>
                   </div>
 
                   {/* Page URL */}
-                  <div className="md:col-span-7">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <div className="md:col-span-12">
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
                       ページURL
                     </label>
                     <input
@@ -590,32 +667,36 @@ export const BannerCreate = () => {
                         handleBannerChange(index, "page_url", e.target.value)
                       }
                       placeholder="https://example.com"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                      className="w-full px-2 sm:px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
                     />
                   </div>
 
                   {/* Display Text */}
-                  <div className="md:col-span-7">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <div className="md:col-span-12 lg:col-span-7">
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
                       表示テキスト
                     </label>
                     <input
                       type="text"
                       value={banner.display_text}
                       onChange={(e) =>
-                        handleBannerChange(index, "display_text", e.target.value)
+                        handleBannerChange(
+                          index,
+                          "display_text",
+                          e.target.value
+                        )
                       }
                       placeholder="クリック可能なテキストを入力"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                      className="w-full px-2 sm:px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
                     />
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-[10px] sm:text-xs text-gray-500 mt-1">
                       このテキストがURLの代わりに表示され、クリックするとページURLに移動します
                     </p>
                   </div>
 
                   {/* Status */}
-                  <div className="md:col-span-5">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <div className="md:col-span-12 lg:col-span-5">
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
                       ステータス
                     </label>
                     <select
@@ -627,7 +708,7 @@ export const BannerCreate = () => {
                           e.target.value as "active" | "inactive"
                         )
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                      className="w-full px-2 sm:px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
                     >
                       <option value="active">有効</option>
                       <option value="inactive">無効</option>
@@ -639,7 +720,7 @@ export const BannerCreate = () => {
 
             {/* Add Banner Button - Show in grid when banners exist */}
             {banners.length > 0 && (
-              <div className="bg-white rounded-lg shadow p-6 border-2 border-dashed border-gray-300 flex flex-col items-center justify-center min-h-[400px] hover:border-blue-400 hover:bg-gray-50 transition-all cursor-pointer">
+              <div className="bg-white rounded-lg shadow p-4 sm:p-6 border-2 border-dashed border-gray-300 flex flex-col items-center justify-center min-h-[300px] sm:min-h-[400px] hover:border-blue-400 hover:bg-gray-50 transition-all cursor-pointer">
                 <button
                   type="button"
                   onClick={() => {
@@ -655,12 +736,12 @@ export const BannerCreate = () => {
                     };
                     input.click();
                   }}
-                  className="flex flex-col items-center justify-center space-y-3 w-full h-full"
+                  className="flex flex-col items-center justify-center space-y-2 sm:space-y-3 w-full h-full"
                 >
-                  <div className="w-16 h-16 rounded-full border-2 border-red-500 flex items-center justify-center">
-                    <Plus className="w-8 h-8 text-red-500" />
+                  <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full border-2 border-red-500 flex items-center justify-center">
+                    <Plus className="w-6 h-6 sm:w-8 sm:h-8 text-red-500" />
                   </div>
-                  <span className="text-sm font-medium text-gray-600">
+                  <span className="text-xs sm:text-sm font-medium text-gray-600">
                     バナーを追加
                   </span>
                 </button>
@@ -670,21 +751,21 @@ export const BannerCreate = () => {
 
           {/* Submit Button - Show only when banners exist */}
           {banners.length > 0 && (
-            <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200">
+            <div className="flex flex-col sm:flex-row justify-end gap-3 sm:gap-4 pt-4 sm:pt-6 border-t border-gray-200">
               <button
                 type="button"
                 onClick={() => navigate("/admin/banners")}
-                className="px-8 py-3 text-gray-700 bg-white border-2 border-gray-300 rounded-lg font-medium shadow-sm hover:bg-gray-50 hover:border-gray-400 hover:shadow-md transition-all duration-200 transform hover:-translate-y-0.5 active:translate-y-0"
+                className="w-full sm:w-auto px-6 sm:px-8 py-2.5 sm:py-3 text-sm sm:text-base text-gray-700 bg-white border-2 border-gray-300 rounded-lg font-medium shadow-sm hover:bg-gray-50 hover:border-gray-400 hover:shadow-md transition-all duration-200 transform hover:-translate-y-0.5 active:translate-y-0"
               >
                 キャンセル
               </button>
               <button
                 type="submit"
                 disabled={submitting}
-                className="px-8 py-3 text-white font-medium rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-sm"
+                className="w-full sm:w-auto px-6 sm:px-8 py-2.5 sm:py-3 text-sm sm:text-base text-white font-medium rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-sm"
               >
                 {submitting ? (
-                  <span className="flex items-center">
+                  <span className="flex items-center justify-center">
                     <svg
                       className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
                       xmlns="http://www.w3.org/2000/svg"

@@ -39,7 +39,7 @@ export const Users = () => {
         limit: itemsPerPage,
         offset: offset,
         sortBy: "createdAt",
-        sortOrder: "DESC",
+        sortOrder: "ASC",
       });
 
       if (response.error) {

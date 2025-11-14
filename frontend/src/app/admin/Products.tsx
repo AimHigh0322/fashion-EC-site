@@ -75,9 +75,12 @@ export const Products = () => {
       });
       if (response.data) {
         // Backend returns: { success: true, data: [...], total: ... }
-        // API service wraps it: { data: { success: true, data: [...], total: ... } }
+        // API service now preserves total in response object
         let productsData: Product[] = [];
         let total = 0;
+
+        // Extract total from response object (preserved by API service)
+        total = (response as any).total || 0;
 
         if (Array.isArray(response.data)) {
           productsData = response.data;
@@ -97,7 +100,10 @@ export const Products = () => {
             productsData = responseObj.products;
           }
 
-          total = responseObj.total || 0;
+          // Use total from nested object if not found in response
+          if (total === 0) {
+            total = responseObj.total || 0;
+          }
         }
 
         setProducts(productsData);
@@ -725,9 +731,7 @@ export const Products = () => {
               </div>
             </div>
           )}
-          {!loading &&
-            totalItems > itemsPerPage &&
-            Math.ceil(totalItems / itemsPerPage) > 1 && (
+          {!loading && totalItems > itemsPerPage && (
               <Pagination
                 currentPage={currentPage}
                 totalPages={Math.ceil(totalItems / itemsPerPage)}

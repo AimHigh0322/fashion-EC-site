@@ -650,7 +650,7 @@ async function getProducts(filters = {}) {
     FROM products p
     LEFT JOIN brands b ON p.brand_id = b.id
     ${whereClause}
-    ORDER BY p.createdAt DESC
+    ORDER BY p.createdAt ASC
   `;
 
   const dataParams = [...params];
@@ -998,11 +998,4 @@ module.exports = {
   decreaseStock,
   decreaseStockBatch,
 };
-
-
-A product detail page must be created.
-First, apply the cursor-pointer style to the product. When selected, it should navigate to the product detail page.
-The uploaded images are reference designs for the product detail page.
-Use the project's color scheme for the colors.
-Arrange the images in sequence as a landing page format. Design it to match Japanese aesthetics, befitting a Japanese e-commerce site.
 

@@ -15,7 +15,7 @@ async function getBanners(filters = {}) {
     SELECT *
     FROM banners
     ${whereClause}
-    ORDER BY createdAt DESC
+    ORDER BY createdAt ASC
   `;
 
   if (filters.limit) {
@@ -128,7 +128,7 @@ async function getActiveBanners() {
   const [banners] = await pool.query(
     `SELECT * FROM banners
      WHERE status = 'active'
-     ORDER BY createdAt DESC`
+     ORDER BY createdAt ASC`
   );
   return banners;
 }

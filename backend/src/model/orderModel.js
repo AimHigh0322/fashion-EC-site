@@ -112,7 +112,7 @@ async function getOrders(filters = {}) {
     params.push(`%${filters.customer_email}%`);
   }
 
-  query += " ORDER BY o.createdAt DESC";
+  query += " ORDER BY o.createdAt ASC";
   if (filters.limit) {
     query += " LIMIT ?";
     params.push(parseInt(filters.limit));
