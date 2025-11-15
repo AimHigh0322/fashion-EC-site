@@ -1,11 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Search, Trash2, Plus, ChevronRight, Home, Edit } from "lucide-react";
+import { Search, Trash2, Plus, Edit } from "lucide-react";
 import { AdminLayout } from "../../components/layouts/AdminLayout";
 import { apiService } from "../../services/api";
 import { useToast } from "../../contexts/ToastContext";
 import { ConfirmModal } from "../../components/molecules/modals/ConfirmModal";
 import { Pagination } from "../../components/atom/Pagination";
+import { Breadcrumbs } from "../../components/molecules/Breadcrumbs";
 
 interface Banner {
   id: string;
@@ -148,17 +149,13 @@ export const Banners = () => {
     <AdminLayout>
       <div className="space-y-6">
         {/* Breadcrumb */}
-        <nav className="flex items-center space-x-2 text-sm text-gray-600">
-          <Link
-            to="/admin"
-            className="hover:text-purple-600 flex items-center space-x-1"
-          >
-            <Home className="w-4 h-4" />
-            <span>ダッシュボード</span>
-          </Link>
-          <ChevronRight className="w-4 h-4 text-gray-400" />
-          <span className="text-pink-600 font-medium">バナー管理</span>
-        </nav>
+        <Breadcrumbs
+          homePath="/admin"
+          items={[
+            { label: "ダッシュボード", path: "/admin" },
+            { label: "バナー管理" },
+          ]}
+        />
 
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">

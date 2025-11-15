@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link, useParams } from "react-router-dom";
-import { X, Upload, ChevronRight, Home } from "lucide-react";
+import { X, Upload } from "lucide-react";
 import { AdminLayout } from "../../components/layouts/AdminLayout";
 import { useToast } from "../../contexts/ToastContext";
 import { apiService } from "../../services/api";
+import { Breadcrumbs } from "../../components/molecules/Breadcrumbs";
 
 interface BannerFormData {
   title: string;
@@ -279,21 +280,14 @@ export const BannerEdit = () => {
     <AdminLayout>
       <div className="space-y-6">
         {/* Breadcrumb */}
-        <nav className="flex items-center space-x-2 text-sm text-gray-600">
-          <Link
-            to="/admin"
-            className="hover:text-purple-600 flex items-center space-x-1"
-          >
-            <Home className="w-4 h-4" />
-            <span>ダッシュボード</span>
-          </Link>
-          <ChevronRight className="w-4 h-4 text-gray-400" />
-          <Link to="/admin/banners" className="hover:text-purple-600">
-            バナー管理
-          </Link>
-          <ChevronRight className="w-4 h-4 text-gray-400" />
-          <span className="text-pink-600 font-medium">バナー編集</span>
-        </nav>
+        <Breadcrumbs
+          homePath="/admin"
+          items={[
+            { label: "ダッシュボード", path: "/admin" },
+            { label: "バナー管理", path: "/admin/banners" },
+            { label: "バナー編集" },
+          ]}
+        />
 
         {/* Header */}
         <div className="flex items-center justify-between">

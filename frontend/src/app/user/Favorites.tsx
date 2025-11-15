@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
-import { Heart, ShoppingCart, Star, Trash2 } from "lucide-react";
+import { Heart, ShoppingCart, Star } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import { useFavorites } from "../../contexts/FavoritesContext";
 import { useCart } from "../../contexts/CartContext";
@@ -8,6 +8,7 @@ import { useToast } from "../../contexts/ToastContext";
 import { apiService } from "../../services/api";
 import { UserLayout } from "../../components/layouts/UserLayout";
 import { AddToCartButton } from "../../components/molecules/AddToCartButton";
+import { Breadcrumbs } from "../../components/molecules/Breadcrumbs";
 
 interface FavoriteProduct {
   id: string;
@@ -27,72 +28,67 @@ interface FavoriteProduct {
 
 export const Favorites = () => {
   const { isAuthenticated } = useAuth();
-  const { favorites, toggleFavorite, isFavorited, loadFavorites } = useFavorites();
-  const { addToCart: addToCartContext, removeFromCart: removeFromCartContext } = useCart();
+  const { favorites, toggleFavorite, isFavorited } = useFavorites();
+  const { addToCart: addToCartContext, removeFromCart: removeFromCartContext } =
+    useCart();
   const { success, error } = useToast();
-  const [favoriteProducts, setFavoriteProducts] = useState<FavoriteProduct[]>([]);
+  const [favoriteProducts, setFavoriteProducts] = useState<FavoriteProduct[]>(
+    []
+  );
   const [loading, setLoading] = useState(true);
   const [removing, setRemoving] = useState<string | null>(null);
   const [addingToCart, setAddingToCart] = useState<string | null>(null);
   const [cartProductIds, setCartProductIds] = useState<Set<string>>(new Set());
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      loadFavoriteProducts();
-      loadCartProductIds();
-    }
-  }, [isAuthenticated, favorites]);
-
-  const loadCartProductIds = async () => {
-    try {
-      const cartResponse = await apiService.getCart();
-      if (cartResponse.data && Array.isArray(cartResponse.data)) {
-        const productIds = new Set(
-          cartResponse.data.map((item: { product_id: string }) => item.product_id)
-        );
-        setCartProductIds(productIds);
-      }
-    } catch {
-      // Silently fail
-    }
-  };
-
-  const loadFavoriteProducts = async () => {
+  const loadFavoriteProducts = useCallback(async () => {
     try {
       setLoading(true);
       const response = await apiService.getFavorites();
-      
+
       if (response.data && Array.isArray(response.data)) {
         // Fetch product details for each favorite
-        const productPromises = response.data.map(async (fav: { product_id: string }) => {
-          try {
-            const productResponse = await apiService.getProduct(fav.product_id);
-            if (productResponse.data) {
-              const product = productResponse.data;
-              return {
-                id: fav.product_id,
-                product_id: fav.product_id,
-                name: product.name || "",
-                sku: product.sku || "",
-                price: product.price || 0,
-                main_image_url: product.main_image_url || product.image || "",
-                image: product.main_image_url || product.image || "",
-                title: product.name || "",
-                description: product.description || "",
-                rating: (product as any).rating || 0,
-                reviews: (product as any).reviews || 0,
-                status: product.status || "active",
-                stock_quantity: product.stock_quantity || 0,
-              } as FavoriteProduct;
+        const productPromises = response.data.map(
+          async (fav: { product_id: string }) => {
+            try {
+              const productResponse = await apiService.getProduct(
+                fav.product_id
+              );
+              if (productResponse.data) {
+                const product = productResponse.data;
+                return {
+                  id: fav.product_id,
+                  product_id: fav.product_id,
+                  name: product.name || "",
+                  sku: product.sku || "",
+                  price: product.price || 0,
+                  main_image_url:
+                    product.main_image_url ||
+                    (product as { image?: string }).image ||
+                    "",
+                  image:
+                    product.main_image_url ||
+                    (product as { image?: string }).image ||
+                    "",
+                  title: product.name || "",
+                  description: product.description || "",
+                  rating: (product as { rating?: number }).rating || 0,
+                  reviews: (product as { reviews?: number }).reviews || 0,
+                  status: product.status || "active",
+                  stock_quantity: product.stock_quantity || 0,
+                } as FavoriteProduct;
+              }
+            } catch {
+              return null;
             }
-          } catch {
             return null;
           }
-          return null;
-        });
+        );
 
         const products = await Promise.all(productPromises);
-        setFavoriteProducts(products.filter((p): p is FavoriteProduct => p !== null));
+        const validProducts = products.filter(
+          (p): p is FavoriteProduct => p !== null
+        );
+        setFavoriteProducts(validProducts);
       } else {
         setFavoriteProducts([]);
       }
@@ -102,19 +98,46 @@ export const Favorites = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [error]);
+
+  const loadCartProductIds = useCallback(async () => {
+    try {
+      const cartResponse = await apiService.getCart();
+      if (cartResponse.data && Array.isArray(cartResponse.data)) {
+        const productIds = new Set(
+          cartResponse.data.map(
+            (item: { product_id: string }) => item.product_id
+          )
+        );
+        setCartProductIds(productIds);
+      } else {
+        setCartProductIds(new Set());
+      }
+    } catch {
+      setCartProductIds(new Set());
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      loadFavoriteProducts();
+      loadCartProductIds();
+    }
+  }, [isAuthenticated, favorites, loadFavoriteProducts, loadCartProductIds]);
 
   const handleRemoveFavorite = async (productId: string) => {
     setRemoving(productId);
     try {
       const wasFavorited = isFavorited(productId);
       const toggleSuccess = await toggleFavorite(productId);
-      
+
       if (toggleSuccess) {
         if (wasFavorited) {
           success("お気に入りから削除しました");
           // Remove from local state
-          setFavoriteProducts(prev => prev.filter(p => p.product_id !== productId));
+          setFavoriteProducts((prev) =>
+            prev.filter((p) => p.product_id !== productId)
+          );
         }
       } else {
         error("お気に入りの削除に失敗しました");
@@ -126,7 +149,10 @@ export const Favorites = () => {
     }
   };
 
-  const showToast = (message: string, type: "success" | "error" | "warning" = "success") => {
+  const showToast = (
+    message: string,
+    type: "success" | "error" | "warning" = "success"
+  ) => {
     if (type === "success") {
       success(message);
     } else if (type === "error") {
@@ -137,6 +163,11 @@ export const Favorites = () => {
   return (
     <UserLayout>
       <div className="min-h-screen bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+          <Breadcrumbs
+            items={[{ label: "商品一覧", path: "/" }, { label: "お気に入り" }]}
+          />
+        </div>
         {/* Header Section - Japanese Design */}
         <div className="bg-[#e2603f] text-white py-8 sm:py-12">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -192,10 +223,14 @@ export const Favorites = () => {
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 mb-6 sm:mb-8">
                 <div className="flex items-center justify-between flex-wrap gap-4">
                   <div>
-                    <p className="text-sm text-gray-600 mb-1">お気に入り商品数</p>
+                    <p className="text-sm text-gray-600 mb-1">
+                      お気に入り商品数
+                    </p>
                     <p className="text-2xl sm:text-3xl font-bold text-[#e2603f]">
                       {favoriteProducts.length}
-                      <span className="text-lg sm:text-xl text-gray-600 ml-2">件</span>
+                      <span className="text-lg sm:text-xl text-gray-600 ml-2">
+                        件
+                      </span>
                     </p>
                   </div>
                   <div className="flex items-center space-x-2 text-sm text-gray-600">
@@ -214,14 +249,21 @@ export const Favorites = () => {
                   >
                     {/* Image Section */}
                     <div className="relative overflow-hidden bg-gray-100">
-                      <Link to={`/product/${product.product_id}`} className="block">
+                      <Link
+                        to={`/product/${product.product_id}`}
+                        className="block"
+                      >
                         <img
-                          src={product.image || product.main_image_url || "/placeholder-product.jpg"}
+                          src={
+                            product.image ||
+                            product.main_image_url ||
+                            "/placeholder-product.jpg"
+                          }
                           alt={product.title || product.name}
                           className="w-full h-48 sm:h-56 md:h-64 object-cover group-hover:scale-105 transition-transform duration-300"
                         />
                       </Link>
-                      
+
                       {/* Favorite Button */}
                       <button
                         onClick={() => handleRemoveFavorite(product.product_id)}
@@ -270,7 +312,8 @@ export const Favorites = () => {
                             <Star
                               key={index}
                               className={`w-3 h-3 sm:w-4 sm:h-4 ${
-                                product.rating && index < Math.floor(product.rating)
+                                product.rating &&
+                                index < Math.floor(product.rating)
                                   ? "fill-yellow-400 text-yellow-400"
                                   : "fill-none stroke-gray-300 text-gray-300"
                               }`}
@@ -289,7 +332,9 @@ export const Favorites = () => {
                         <span className="text-lg sm:text-xl font-bold text-red-600">
                           ¥{product.price.toLocaleString()}
                         </span>
-                        <span className="text-xs text-gray-500 ml-1">(税込)</span>
+                        <span className="text-xs text-gray-500 ml-1">
+                          (税込)
+                        </span>
                       </div>
 
                       {/* Add to Cart Button */}
@@ -306,7 +351,10 @@ export const Favorites = () => {
                             }
                             setAddingToCart(productId);
                             try {
-                              const successResult = await addToCartContext(productId, 1);
+                              const successResult = await addToCartContext(
+                                productId,
+                                1
+                              );
                               if (successResult) {
                                 success("カートに追加しました");
                                 await loadCartProductIds();
@@ -325,7 +373,9 @@ export const Favorites = () => {
                             }
                             setAddingToCart(productId);
                             try {
-                              const successResult = await removeFromCartContext(productId);
+                              const successResult = await removeFromCartContext(
+                                productId
+                              );
                               if (successResult) {
                                 success("カートから削除しました");
                                 await loadCartProductIds();
@@ -351,4 +401,3 @@ export const Favorites = () => {
     </UserLayout>
   );
 };
-

@@ -5,7 +5,6 @@ import {
   Trash2,
   Plus,
   Minus,
-  ArrowLeft,
   Check,
 } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
@@ -13,6 +12,7 @@ import { useCart } from "../../contexts/CartContext";
 import { useToast } from "../../contexts/ToastContext";
 import { apiService } from "../../services/api";
 import { UserLayout } from "../../components/layouts/UserLayout";
+import { Breadcrumbs } from "../../components/molecules/Breadcrumbs";
 
 interface CartItem {
   id: string;
@@ -186,22 +186,16 @@ export const Cart = () => {
         {/* Page Header */}
         <div className="bg-white border-b border-gray-200">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <Link
-                  to="/"
-                  className="flex items-center text-gray-600 hover:text-indigo-600 transition-colors"
-                >
-                  <ArrowLeft className="w-5 h-5 mr-2" />
-                  <span className="text-sm font-medium">買い物を続ける</span>
-                </Link>
-              </div>
-              <h1 className="text-2xl font-bold text-gray-900 flex items-center">
-                <ShoppingCart className="w-6 h-6 mr-2 text-indigo-600" />
-                ショッピングカート
-              </h1>
-              <div className="w-24"></div> {/* Spacer for centering */}
-            </div>
+            <Breadcrumbs
+              items={[
+                { label: "商品一覧", path: "/" },
+                { label: "ショッピングカート" },
+              ]}
+            />
+            <h1 className="text-2xl font-bold text-gray-900 flex items-center mt-4">
+              <ShoppingCart className="w-6 h-6 mr-2 text-indigo-600" />
+              ショッピングカート
+            </h1>
           </div>
         </div>
 
@@ -220,7 +214,6 @@ export const Cart = () => {
                 to="/"
                 className="inline-flex items-center px-4 sm:px-6 py-2 sm:py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-sm sm:text-base font-medium rounded-lg transition-colors shadow-md"
               >
-                <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                 商品を見る
               </Link>
             </div>

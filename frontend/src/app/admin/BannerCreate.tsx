@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { X, Upload, Trash2, ChevronRight, Home, Plus } from "lucide-react";
+import { X, Upload, Trash2, Plus } from "lucide-react";
 import { AdminLayout } from "../../components/layouts/AdminLayout";
 import { useToast } from "../../contexts/ToastContext";
+import { Breadcrumbs } from "../../components/molecules/Breadcrumbs";
 
 interface BannerFormData {
   title: string;
@@ -185,21 +186,14 @@ export const BannerCreate = () => {
     <AdminLayout>
       <div className="space-y-4 sm:space-y-5 md:space-y-6 max-w-full">
         {/* Breadcrumb */}
-        <nav className="flex items-center flex-wrap gap-1 sm:gap-2 text-xs sm:text-sm text-gray-600">
-          <Link
-            to="/admin"
-            className="hover:text-purple-600 flex items-center space-x-1"
-          >
-            <Home className="w-3 h-3 sm:w-4 sm:h-4" />
-            <span className="hidden xs:inline">ダッシュボード</span>
-          </Link>
-          <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400 flex-shrink-0" />
-          <Link to="/admin/banners" className="hover:text-purple-600 truncate">
-            バナー管理
-          </Link>
-          <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400 flex-shrink-0" />
-          <span className="text-pink-600 font-medium truncate">バナー作成</span>
-        </nav>
+        <Breadcrumbs
+          homePath="/admin"
+          items={[
+            { label: "ダッシュボード", path: "/admin" },
+            { label: "バナー管理", path: "/admin/banners" },
+            { label: "バナー作成" },
+          ]}
+        />
 
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">

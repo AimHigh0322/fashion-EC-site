@@ -125,10 +125,8 @@ export const AddProductModal = ({
 
           // Backend returns { success: true, data: product }
           // API service returns { data: { success: true, data: product } }
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const productData = ((response.data as { data?: any })?.data ||
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            response.data) as any;
+          const productData = ((response.data as { data?: Product })?.data ||
+            response.data) as Product;
 
           if (!productData) {
             console.error("No product data in response");

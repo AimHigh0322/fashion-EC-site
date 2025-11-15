@@ -3,6 +3,7 @@ import { Search, Eye, Package, Download } from "lucide-react";
 import { AdminLayout } from "../../components/layouts/AdminLayout";
 import { apiService } from "../../services/api";
 import { useToast } from "../../contexts/ToastContext";
+import { Breadcrumbs } from "../../components/molecules/Breadcrumbs";
 
 interface Order {
   id: string;
@@ -98,6 +99,14 @@ export const Orders = () => {
   return (
     <AdminLayout>
       <div className="space-y-6">
+        {/* Breadcrumb */}
+        <Breadcrumbs
+          homePath="/admin"
+          items={[
+            { label: "ダッシュボード", path: "/admin" },
+            { label: "注文管理" },
+          ]}
+        />
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>

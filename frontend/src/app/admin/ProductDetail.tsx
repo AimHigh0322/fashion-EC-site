@@ -1,11 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { Edit, Trash2, ChevronRight, ArrowLeft, X, ZoomIn, LayoutDashboard, Package } from "lucide-react";
+import { Edit, Trash2, ArrowLeft, X, ZoomIn } from "lucide-react";
 import { AdminLayout } from "../../components/layouts/AdminLayout";
 import { apiService } from "../../services/api";
 import { useToast } from "../../contexts/ToastContext";
 import { ConfirmModal } from "../../components/molecules/modals/ConfirmModal";
 import { AddProductModal } from "../../components/modals/AddProductModal";
+import { Breadcrumbs } from "../../components/molecules/Breadcrumbs";
 
 interface Product {
   id: string;
@@ -182,22 +183,14 @@ export const ProductDetail = () => {
     <AdminLayout>
       <div className="space-y-6">
         {/* Breadcrumb */}
-        <nav className="flex items-center space-x-2 text-sm text-gray-600">
-          <Link to="/admin" className="hover:text-gray-900 flex items-center space-x-1">
-            <LayoutDashboard className="w-4 h-4" />
-            <span>ダッシュボード</span>
-          </Link>
-          <ChevronRight className="w-4 h-4 text-gray-400" />
-          <Link to="/admin/products" className="hover:text-gray-900 flex items-center space-x-1">
-            <Package className="w-4 h-4" />
-            <span>商品管理</span>
-          </Link>
-          <ChevronRight className="w-4 h-4 text-gray-400" />
-          <span className="text-gray-900 font-medium flex items-center space-x-1">
-            <Package className="w-4 h-4" />
-            <span>商品編集</span>
-          </span>
-        </nav>
+        <Breadcrumbs
+          homePath="/admin"
+          items={[
+            { label: "ダッシュボード", path: "/admin" },
+            { label: "商品管理", path: "/admin/products" },
+            { label: "商品編集" },
+          ]}
+        />
 
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -224,13 +217,13 @@ export const ProductDetail = () => {
           <div className="sticky top-6">
             {/* Main Image Display */}
             <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 mb-4">
-              <div className="aspect-square bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center relative group cursor-zoom-in">
+              <div className="relative bg-gray-100 rounded-lg overflow-hidden aspect-square flex items-center justify-center group cursor-zoom-in">
                 {selectedImageUrl ? (
                   <>
                     <img
                       src={selectedImageUrl}
                       alt={product.name}
-                      className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105"
+                      className="w-full h-full object-cover"
                       onClick={() => setShowImagePreview(true)}
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;

@@ -8,6 +8,7 @@ import {
   TrendingUp,
   TrendingDown,
 } from "lucide-react";
+import { Breadcrumbs } from "../../components/molecules/Breadcrumbs";
 
 export const Dashboard = () => {
   const { user } = useAuth();
@@ -56,6 +57,13 @@ export const Dashboard = () => {
   return (
     <AdminLayout>
       <div className="space-y-6">
+        {/* Breadcrumb */}
+        <Breadcrumbs
+          homePath="/admin"
+          items={[
+            { label: "ダッシュボード" },
+          ]}
+        />
         {/* Header */}
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">

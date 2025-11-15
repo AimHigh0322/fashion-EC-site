@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Save, Bell, Globe, Shield } from "lucide-react";
 import { AdminLayout } from "../../components/layouts/AdminLayout";
+import { Breadcrumbs } from "../../components/molecules/Breadcrumbs";
 
 export const Settings = () => {
   const [settings, setSettings] = useState({
@@ -27,6 +28,14 @@ export const Settings = () => {
   return (
     <AdminLayout>
       <div className="space-y-6">
+        {/* Breadcrumb */}
+        <Breadcrumbs
+          homePath="/admin"
+          items={[
+            { label: "ダッシュボード", path: "/admin" },
+            { label: "設定" },
+          ]}
+        />
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>

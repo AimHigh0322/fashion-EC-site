@@ -4,6 +4,7 @@ import { AdminLayout } from "../../components/layouts/AdminLayout";
 import { apiService } from "../../services/api";
 import { useToast } from "../../contexts/ToastContext";
 import { ConfirmModal } from "../../components/molecules/modals/ConfirmModal";
+import { Breadcrumbs } from "../../components/molecules/Breadcrumbs";
 
 interface User {
   id: string;
@@ -148,6 +149,14 @@ export const Users = () => {
   return (
     <AdminLayout>
       <div className="space-y-6">
+        {/* Breadcrumb */}
+        <Breadcrumbs
+          homePath="/admin"
+          items={[
+            { label: "ダッシュボード", path: "/admin" },
+            { label: "ユーザー管理" },
+          ]}
+        />
         {/* Header */}
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">

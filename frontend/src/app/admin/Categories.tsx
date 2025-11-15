@@ -4,6 +4,7 @@ import { AdminLayout } from "../../components/layouts/AdminLayout";
 import { apiService } from "../../services/api";
 import { CategoryModal } from "../../components/modals/CategoryModal";
 import { ConfirmModal } from "../../components/molecules/modals/ConfirmModal";
+import { Breadcrumbs } from "../../components/molecules/Breadcrumbs";
 
 interface Category {
   id: string;
@@ -275,6 +276,14 @@ export const Categories = () => {
   return (
     <AdminLayout>
       <div className="space-y-6">
+        {/* Breadcrumb */}
+        <Breadcrumbs
+          homePath="/admin"
+          items={[
+            { label: "ダッシュボード", path: "/admin" },
+            { label: "カテゴリ管理" },
+          ]}
+        />
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>

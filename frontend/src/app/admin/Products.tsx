@@ -7,8 +7,6 @@ import {
   Upload,
   Download,
   X,
-  ChevronRight,
-  Home,
 } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
 import { AdminLayout } from "../../components/layouts/AdminLayout";
@@ -17,6 +15,7 @@ import { useToast } from "../../contexts/ToastContext";
 import { ConfirmModal } from "../../components/molecules/modals/ConfirmModal";
 import { AddProductModal } from "../../components/modals/AddProductModal";
 import { Pagination } from "../../components/atom/Pagination";
+import { Breadcrumbs } from "../../components/molecules/Breadcrumbs";
 
 interface Product {
   id: string;
@@ -80,7 +79,7 @@ export const Products = () => {
         let total = 0;
 
         // Extract total from response object (preserved by API service)
-        total = (response as any).total || 0;
+        total = response.total || 0;
 
         if (Array.isArray(response.data)) {
           productsData = response.data;
@@ -348,17 +347,13 @@ export const Products = () => {
     <AdminLayout>
       <div className="space-y-6">
         {/* Breadcrumb */}
-        <nav className="flex items-center space-x-2 text-sm text-gray-600">
-          <Link
-            to="/admin"
-            className="hover:text-purple-600 flex items-center space-x-1"
-          >
-            <Home className="w-4 h-4" />
-            <span>ダッシュボード</span>
-          </Link>
-          <ChevronRight className="w-4 h-4 text-gray-400" />
-          <span className="text-pink-600 font-medium">商品管理</span>
-        </nav>
+        <Breadcrumbs
+          homePath="/admin"
+          items={[
+            { label: "ダッシュボード", path: "/admin" },
+            { label: "商品管理" },
+          ]}
+        />
 
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">

@@ -11,7 +11,7 @@ import { Orders } from "./app/admin/Orders";
 import { Users } from "./app/admin/Users";
 import { Categories } from "./app/admin/Categories";
 import { Settings } from "./app/admin/Settings";
-import { ProductDetail } from "./app/admin/ProductDetail";
+import { ProductDetail as AdminProductDetail } from "./app/admin/ProductDetail";
 import { Banners } from "./app/admin/Banners";
 import { BannerCreate } from "./app/admin/BannerCreate";
 import { BannerEdit } from "./app/admin/BannerEdit";
@@ -19,6 +19,7 @@ import { HomePage } from "./app/home/HomePage";
 import { Cart } from "./app/user/Cart";
 import { Favorites } from "./app/user/Favorites";
 import { CheckoutSuccess } from "./app/user/CheckoutSuccess";
+import { ProductDetail } from "./app/user/ProductDetail";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useState } from "react";
 
@@ -118,6 +119,14 @@ function App() {
               }
             />
             <Route
+              path="/product/:id"
+              element={
+                <ProtectedRoute>
+                  <ProductDetail />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/admin"
               element={
                 <AdminRoute>
@@ -137,7 +146,7 @@ function App() {
               path="/admin/products/:id"
               element={
                 <AdminRoute>
-                  <ProductDetail />
+                  <AdminProductDetail />
                 </AdminRoute>
               }
             />

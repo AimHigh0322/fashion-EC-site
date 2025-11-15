@@ -5,6 +5,8 @@ const API_BASE_URL =
 interface ApiResponse<T> {
   data?: T;
   error?: string;
+  total?: number;
+  count?: number;
 }
 
 // Type definitions
@@ -134,12 +136,12 @@ class ApiService {
       // Handle backend response structure: { success: true, data: ..., total: ... } or direct data
       if (data && typeof data === "object" && "success" in data && "data" in data) {
         // Preserve metadata like total, count, etc.
-        const response: ApiResponse<T> & { total?: number; count?: number } = { data: data.data };
-        if ("total" in data) {
-          (response as any).total = data.total;
+        const response: ApiResponse<T> = { data: data.data };
+        if ("total" in data && typeof data.total === "number") {
+          response.total = data.total;
         }
-        if ("count" in data) {
-          (response as any).count = data.count;
+        if ("count" in data && typeof data.count === "number") {
+          response.count = data.count;
         }
         return response;
       }
