@@ -233,12 +233,14 @@ class ApiService {
     status?: string;
     limit?: number;
     offset?: number;
+    category_id?: string;
   }) {
     const query = new URLSearchParams();
     if (params?.search) query.append("search", params.search);
     if (params?.status) query.append("status", params.status);
     if (params?.limit) query.append("limit", params.limit.toString());
     if (params?.offset) query.append("offset", params.offset.toString());
+    if (params?.category_id) query.append("category_id", params.category_id);
     return this.request<Product[]>(`/products?${query.toString()}`);
   }
 

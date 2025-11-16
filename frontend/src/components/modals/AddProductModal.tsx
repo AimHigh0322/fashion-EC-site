@@ -24,9 +24,18 @@ interface ProductModalProps {
 interface Category {
   id: string;
   name: string;
+  slug: string;
+  parent_id?: string;
   level: number;
   [key: string]: unknown;
 }
+
+type Gender = "male" | "female" | null;
+
+const GENDER_OPTIONS = [
+  { value: "male", label: "メンズ", slug: "mens" },
+  { value: "female", label: "レディース", slug: "ladies" },
+];
 
 interface AttributeDefinition {
   id: string;
@@ -73,6 +82,9 @@ export const AddProductModal = ({
   >([]);
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>("");
+  const [selectedGender, setSelectedGender] = useState<Gender>(null);
+  const [selectedBasicCategoryId, setSelectedBasicCategoryId] =
+    useState<string>("");
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [existingImageUrls, setExistingImageUrls] = useState<string[]>([]);
@@ -156,6 +168,60 @@ export const AddProductModal = ({
             : [];
 
           const firstCategoryId = categories.length > 0 ? categories[0].id : "";
+          const firstCategory = categories.length > 0 ? categories[0] : null;
+
+          // Determine gender and basic category from category hierarchy
+          let gender: Gender = null;
+          let basicCategoryId = "";
+
+          if (firstCategory) {
+            // If level 3, find parent (basic category) and grandparent (gender)
+            if (firstCategory.level === 3 && firstCategory.parent_id) {
+              const basicCategory = categories.find(
+                (c) => c.id === firstCategory.parent_id
+              );
+              if (basicCategory && basicCategory.parent_id) {
+                const genderCategory = categories.find(
+                  (c) => c.id === basicCategory.parent_id && c.level === 1
+                );
+                if (genderCategory) {
+                  if (
+                    genderCategory.slug === "mens" ||
+                    genderCategory.name === "メンズ"
+                  ) {
+                    gender = "male";
+                  } else if (
+                    genderCategory.slug === "ladies" ||
+                    genderCategory.name === "レディース"
+                  ) {
+                    gender = "female";
+                  }
+                  basicCategoryId = basicCategory.id;
+                }
+              }
+            } else if (firstCategory.level === 2) {
+              // If level 2, find parent (gender)
+              if (firstCategory.parent_id) {
+                const genderCategory = categories.find(
+                  (c) => c.id === firstCategory.parent_id && c.level === 1
+                );
+                if (genderCategory) {
+                  if (
+                    genderCategory.slug === "mens" ||
+                    genderCategory.name === "メンズ"
+                  ) {
+                    gender = "male";
+                  } else if (
+                    genderCategory.slug === "ladies" ||
+                    genderCategory.name === "レディース"
+                  ) {
+                    gender = "female";
+                  }
+                  basicCategoryId = firstCategory.id;
+                }
+              }
+            }
+          }
 
           // Get campaign IDs
           const campaigns = Array.isArray(productData.campaigns)
@@ -184,13 +250,15 @@ export const AddProductModal = ({
 
           console.log("Setting form data:", newFormData);
           setFormData(newFormData);
+          setSelectedGender(gender);
+          setSelectedBasicCategoryId(basicCategoryId);
           setSelectedCategoryId(firstCategoryId);
 
           // Load existing images
           const images = Array.isArray(productData.images)
             ? productData.images
             : [];
-          
+
           if (images.length > 0) {
             // Sort images by sort_order
             const sortedImages = [...images].sort(
@@ -202,13 +270,17 @@ export const AddProductModal = ({
               import.meta.env.VITE_API_URL || "http://localhost:8888/api"
             ).replace(/\/api$/, "");
 
-            const imageUrls = sortedImages.map((img: { image_url: string }) => {
-              const imagePath = img.image_url;
-              if (!imagePath) return "";
-              if (imagePath.startsWith("http")) return imagePath;
-              const path = imagePath.startsWith("/") ? imagePath : `/${imagePath}`;
-              return `${baseUrl}${path}`;
-            }).filter((url: string) => url !== "");
+            const imageUrls = sortedImages
+              .map((img: { image_url: string }) => {
+                const imagePath = img.image_url;
+                if (!imagePath) return "";
+                if (imagePath.startsWith("http")) return imagePath;
+                const path = imagePath.startsWith("/")
+                  ? imagePath
+                  : `/${imagePath}`;
+                return `${baseUrl}${path}`;
+              })
+              .filter((url: string) => url !== "");
 
             console.log("Loading existing images:", imageUrls);
             setImagePreviews(imageUrls);
@@ -222,7 +294,9 @@ export const AddProductModal = ({
               const imagePath = productData.main_image_url;
               const fullUrl = imagePath.startsWith("http")
                 ? imagePath
-                : `${baseUrl}${imagePath.startsWith("/") ? imagePath : `/${imagePath}`}`;
+                : `${baseUrl}${
+                    imagePath.startsWith("/") ? imagePath : `/${imagePath}`
+                  }`;
               setImagePreviews([fullUrl]);
               setExistingImageUrls([fullUrl]);
             } else {
@@ -288,6 +362,8 @@ export const AddProductModal = ({
         brand_id: "",
       });
       setSelectedCategoryId("");
+      setSelectedGender(null);
+      setSelectedBasicCategoryId("");
       setAttributeDefinitions([]);
       setSelectedImages([]);
       setImagePreviews([]);
@@ -295,6 +371,46 @@ export const AddProductModal = ({
       isSubmittingRef.current = false;
     }
   }, [product]);
+
+  // Get gender categories (level 1)
+  const genderCategories = categories.filter((cat) => cat.level === 1);
+
+  // Get basic categories (level 2) for selected gender
+  const basicCategories = selectedGender
+    ? categories.filter((cat) => {
+        if (cat.level !== 2) return false;
+        const genderCategory = genderCategories.find(
+          (gc) =>
+            (gc.slug ===
+              GENDER_OPTIONS.find((g) => g.value === selectedGender)?.slug ||
+              gc.slug === selectedGender) &&
+            gc.level === 1
+        );
+        return genderCategory && cat.parent_id === genderCategory.id;
+      })
+    : [];
+
+  // Get subcategories (level 3) for selected basic category
+  const subcategories = selectedBasicCategoryId
+    ? categories.filter(
+        (cat) => cat.level === 3 && cat.parent_id === selectedBasicCategoryId
+      )
+    : [];
+
+  const handleGenderChange = (gender: Gender) => {
+    setSelectedGender(gender);
+    setSelectedBasicCategoryId("");
+    setSelectedCategoryId("");
+    setFormData({ ...formData, category_ids: [] });
+    setAttributeDefinitions([]);
+  };
+
+  const handleBasicCategoryChange = (basicCategoryId: string) => {
+    setSelectedBasicCategoryId(basicCategoryId);
+    setSelectedCategoryId("");
+    setFormData({ ...formData, category_ids: [] });
+    setAttributeDefinitions([]);
+  };
 
   const handleCategoryChange = (categoryId: string) => {
     setSelectedCategoryId(categoryId);
@@ -401,9 +517,17 @@ export const AddProductModal = ({
       return;
     }
 
-    // Validate category is required
+    // Validate category selection
+    if (!selectedGender) {
+      showToast("性別を選択してください", "error");
+      return;
+    }
+    if (!selectedBasicCategoryId) {
+      showToast("基本カテゴリーを選択してください", "error");
+      return;
+    }
     if (!selectedCategoryId) {
-      showToast("カテゴリーを選択してください", "error");
+      showToast("サブカテゴリーを選択してください", "error");
       return;
     }
 
@@ -462,9 +586,12 @@ export const AddProductModal = ({
       const allImageUrls = [...existingImageUrls, ...imageUrls];
 
       // Ensure category_ids is properly set
-      const categoryIds = formData.category_ids && formData.category_ids.length > 0 
-        ? formData.category_ids 
-        : (selectedCategoryId ? [selectedCategoryId] : []);
+      const categoryIds =
+        formData.category_ids && formData.category_ids.length > 0
+          ? formData.category_ids
+          : selectedCategoryId
+          ? [selectedCategoryId]
+          : [];
 
       const productData = {
         ...formData,
@@ -572,8 +699,11 @@ export const AddProductModal = ({
             {/* Image Upload */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                商品画像
+                商品画像 *
               </label>
+              <p className="text-xs text-gray-500 mb-2">
+                推奨サイズ: 220×270px
+              </p>
               <div className="space-y-3">
                 {/* Image Preview Grid */}
                 {imagePreviews.length > 0 && (
@@ -631,7 +761,6 @@ export const AddProductModal = ({
                   </div>
                 </label>
                 <div className="text-xs text-gray-500">
-                  <p>推奨サイズ: 800x800px以上</p>
                   <p>最初の画像がメイン画像として設定されます</p>
                   <p>
                     画像は商品登録ボタンをクリックしたときにアップロードされます
@@ -706,31 +835,84 @@ export const AddProductModal = ({
                 />
               </div>
             </div>
-            {/* Categories and active*/}
-            <div className="flex flex-row gap-4 w-full">
-              <div className="space-y-4 w-[50%]">
+            {/* Gender, Categories and Status */}
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* Gender Selection */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    カテゴリーを選択 *
+                    性別を選択 *
+                  </label>
+                  <select
+                    value={selectedGender || ""}
+                    onChange={(e) =>
+                      handleGenderChange(e.target.value as Gender)
+                    }
+                    required
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
+                  >
+                    <option value="">選択してください</option>
+                    {GENDER_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Basic Category Selection */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    基本カテゴリーを選択 *
+                  </label>
+                  <select
+                    value={selectedBasicCategoryId}
+                    onChange={(e) => handleBasicCategoryChange(e.target.value)}
+                    required
+                    disabled={!selectedGender}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  >
+                    <option value="">
+                      {selectedGender
+                        ? "基本カテゴリーを選択してください"
+                        : "まず性別を選択してください"}
+                    </option>
+                    {basicCategories.map((category) => (
+                      <option key={category.id} value={category.id}>
+                        {category.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Subcategory Selection */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    サブカテゴリーを選択 *
                   </label>
                   <select
                     value={selectedCategoryId}
                     onChange={(e) => handleCategoryChange(e.target.value)}
                     required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
+                    disabled={!selectedBasicCategoryId}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors disabled:bg-gray-100 disabled:cursor-not-allowed"
                   >
-                    <option value="">カテゴリーを選択してください</option>
-                    {categories.map((category) => (
+                    <option value="">
+                      {selectedBasicCategoryId
+                        ? "サブカテゴリーを選択してください"
+                        : "まず基本カテゴリーを選択してください"}
+                    </option>
+                    {subcategories.map((category) => (
                       <option key={category.id} value={category.id}>
                         {category.name}
-                        {category.level > 1 && ` (Level ${category.level})`}
                       </option>
                     ))}
                   </select>
                 </div>
               </div>
 
-              <div className="w-[50%]">
+              {/* Status */}
+              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   ステータス
                 </label>

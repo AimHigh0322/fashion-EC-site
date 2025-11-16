@@ -1,6 +1,7 @@
 // Database connection file
 const mysql = require("mysql2/promise");
 const bcrypt = require("bcryptjs");
+const { v4: uuidv4 } = require("uuid");
 
 // Database configuration
 const dbConfig = {
@@ -761,8 +762,368 @@ async function initializeDatabase() {
 
     // Check and create admin user if it doesn't exist
     await createAdminUser();
+
+    // Initialize categories with gender -> primary -> subcategory structure
+    await initializeCategories();
   } catch (error) {
     console.error("❌ Error initializing database tables:", error.message);
+  }
+}
+
+// Initialize categories with hierarchical structure
+async function initializeCategories() {
+  try {
+    // Check if categories already exist
+    const [existingCategories] = await pool.query(
+      "SELECT COUNT(*) as count FROM categories"
+    );
+
+    if (existingCategories.length > 0 && existingCategories[0].count > 0) {
+      console.log("✅ Categories already exist, skipping initialization");
+      return;
+    }
+
+    console.log("🔄 Initializing categories...");
+
+    // Define category structure
+    const categoryStructure = {
+      ladies: {
+        name: "レディース",
+        slug: "ladies",
+        primaryCategories: {
+          footwear: {
+            name: "シューズ",
+            slug: "ladies-footwear",
+            subcategories: [
+              { name: "パンプス", slug: "ladies-footwear-pumps" },
+              { name: "サンダル", slug: "ladies-footwear-sandals" },
+              { name: "ブーツ", slug: "ladies-footwear-boots" },
+              { name: "スニーカー", slug: "ladies-footwear-sneakers" },
+              { name: "バレエシューズ", slug: "ladies-footwear-ballet" },
+              {
+                name: "ローファー・ドレスシューズ",
+                slug: "ladies-footwear-loafers-dress",
+              },
+              {
+                name: "モカシン・カジュアルシューズ",
+                slug: "ladies-footwear-moccasin-casual",
+              },
+              {
+                name: "レイン・スノーシューズ",
+                slug: "ladies-footwear-rain-snow",
+              },
+              { name: "コンフォートシューズ", slug: "ladies-footwear-comfort" },
+              { name: "シューケア・靴用品", slug: "ladies-footwear-care" },
+            ],
+          },
+          clothing: {
+            name: "アパレル",
+            slug: "ladies-clothing",
+            subcategories: [
+              { name: "トップス", slug: "ladies-clothing-tops" },
+              { name: "スカート", slug: "ladies-clothing-skirts" },
+              { name: "パンツ", slug: "ladies-clothing-pants" },
+              { name: "ワンピース", slug: "ladies-clothing-one-piece" },
+              { name: "ドレス", slug: "ladies-clothing-dresses" },
+              {
+                name: "ジャケット・アウター",
+                slug: "ladies-clothing-jacket-outer",
+              },
+              {
+                name: "スーツ・フォーマル",
+                slug: "ladies-clothing-suits-formal",
+              },
+              {
+                name: "オールインワン・セットアップ",
+                slug: "ladies-clothing-all-in-one-setup",
+              },
+              {
+                name: "下着・ルームウェア",
+                slug: "ladies-clothing-underwear-roomwear",
+              },
+              {
+                name: "靴下・フットウェア",
+                slug: "ladies-clothing-socks-footwear",
+              },
+              { name: "マタニティウェア", slug: "ladies-clothing-maternity" },
+              { name: "浴衣・下駄", slug: "ladies-clothing-yukata-geta" },
+              {
+                name: "水着・マリンウェア",
+                slug: "ladies-clothing-swimwear-marine",
+              },
+            ],
+          },
+          bags: {
+            name: "バッグ",
+            slug: "ladies-bags",
+            subcategories: [
+              { name: "ハンドバッグ", slug: "ladies-bags-handbag" },
+              { name: "トートバッグ", slug: "ladies-bags-tote" },
+              { name: "ショルダーバッグ", slug: "ladies-bags-shoulder" },
+              { name: "リュック・バックパック", slug: "ladies-bags-backpack" },
+              {
+                name: "ボディバッグ・サコッシュ",
+                slug: "ladies-bags-body-sacoche",
+              },
+              {
+                name: "クラッチ・パーティバッグ",
+                slug: "ladies-bags-clutch-party",
+              },
+              { name: "カゴバッグ", slug: "ladies-bags-basket" },
+              { name: "クリアバッグ", slug: "ladies-bags-clear" },
+              { name: "ファーバッグ", slug: "ladies-bags-fur" },
+              { name: "ボストンバッグ", slug: "ladies-bags-boston" },
+              {
+                name: "スーツケース・トランク",
+                slug: "ladies-bags-suitcase-trunk",
+              },
+              {
+                name: "ビジネス・オフィスバッグ",
+                slug: "ladies-bags-business-office",
+              },
+              { name: "エコバッグ", slug: "ladies-bags-eco" },
+              { name: "ママバッグ", slug: "ladies-bags-mama" },
+              { name: "バッグアクセサリー", slug: "ladies-bags-accessories" },
+            ],
+          },
+          wallets: {
+            name: "財布・ケース・小物",
+            slug: "ladies-wallets-cases",
+            subcategories: [
+              { name: "長財布", slug: "ladies-wallets-long" },
+              { name: "折りたたみ財布", slug: "ladies-wallets-foldable" },
+              { name: "ウォレットバッグ", slug: "ladies-wallets-wallet-bag" },
+              { name: "コインケース", slug: "ladies-wallets-coin-case" },
+              { name: "カードケース", slug: "ladies-wallets-card-case" },
+              { name: "パスケース", slug: "ladies-wallets-pass-case" },
+              { name: "キーケース", slug: "ladies-wallets-key-case" },
+              { name: "マネークリップ", slug: "ladies-wallets-money-clip" },
+              { name: "ポーチ", slug: "ladies-wallets-pouch" },
+              {
+                name: "スマホ・PC・タブレットケース",
+                slug: "ladies-wallets-device-cases",
+              },
+              { name: "ペンケース", slug: "ladies-wallets-pen-case" },
+              {
+                name: "手帳ケース・カバー",
+                slug: "ladies-wallets-planner-case",
+              },
+              { name: "キーホルダー", slug: "ladies-wallets-keyholder" },
+              { name: "チャーム", slug: "ladies-wallets-charm" },
+            ],
+          },
+          fashionAccessories: {
+            name: "ファッション雑貨",
+            slug: "ladies-fashion-accessories",
+            subcategories: [
+              { name: "ネックウェア", slug: "ladies-accessories-neckwear" },
+              { name: "帽子", slug: "ladies-accessories-hats" },
+              { name: "イヤーマフ", slug: "ladies-accessories-earmuffs" },
+              { name: "手袋", slug: "ladies-accessories-gloves" },
+              { name: "ベルト", slug: "ladies-accessories-belts" },
+              { name: "ヘアアクセサリー", slug: "ladies-accessories-hair" },
+              { name: "サスペンダー", slug: "ladies-accessories-suspenders" },
+              { name: "つけ襟", slug: "ladies-accessories-collar" },
+              {
+                name: "サングラス・眼鏡",
+                slug: "ladies-accessories-sunglasses-glasses",
+              },
+              { name: "マスク・マスクグッズ", slug: "ladies-accessories-mask" },
+              {
+                name: "タオル・ハンカチ",
+                slug: "ladies-accessories-towel-handkerchief",
+              },
+              { name: "レイングッズ", slug: "ladies-accessories-rain" },
+            ],
+          },
+        },
+      },
+      mens: {
+        name: "メンズ",
+        slug: "mens",
+        primaryCategories: {
+          footwear: {
+            name: "シューズ",
+            slug: "mens-footwear",
+            subcategories: [
+              { name: "スニーカー", slug: "mens-footwear-sneakers" },
+              {
+                name: "ビジネス・ドレスシューズ",
+                slug: "mens-footwear-business-dress",
+              },
+              { name: "カジュアルシューズ", slug: "mens-footwear-casual" },
+              { name: "ブーツ", slug: "mens-footwear-boots" },
+              { name: "サンダル", slug: "mens-footwear-sandals" },
+              {
+                name: "レインシューズ・スノーブーツ",
+                slug: "mens-footwear-rain-snow",
+              },
+              { name: "シューケア・靴用品", slug: "mens-footwear-care" },
+            ],
+          },
+          clothing: {
+            name: "アパレル",
+            slug: "mens-clothing",
+            subcategories: [
+              { name: "トップス", slug: "mens-clothing-tops" },
+              { name: "パンツ", slug: "mens-clothing-pants" },
+              {
+                name: "ジャケット・アウター",
+                slug: "mens-clothing-jacket-outer",
+              },
+              { name: "スーツ", slug: "mens-clothing-suits" },
+              {
+                name: "オーバーオール・セットアップ",
+                slug: "mens-clothing-overall-setup",
+              },
+              {
+                name: "下着・ルームウェア",
+                slug: "mens-clothing-underwear-roomwear",
+              },
+              {
+                name: "靴下・フットウェア",
+                slug: "mens-clothing-socks-footwear",
+              },
+              { name: "浴衣・下駄", slug: "mens-clothing-yukata-geta" },
+              {
+                name: "水着・マリンウェア",
+                slug: "mens-clothing-swimwear-marine",
+              },
+            ],
+          },
+          bags: {
+            name: "バッグ",
+            slug: "mens-bags",
+            subcategories: [
+              { name: "トートバッグ", slug: "mens-bags-tote" },
+              { name: "ショルダーバッグ", slug: "mens-bags-shoulder" },
+              { name: "リュック・バックパック", slug: "mens-bags-backpack" },
+              {
+                name: "ボディバッグ・サコッシュ",
+                slug: "mens-bags-body-sacoche",
+              },
+              {
+                name: "ビジネス・オフィスバッグ",
+                slug: "mens-bags-business-office",
+              },
+              { name: "クラッチバッグ", slug: "mens-bags-clutch" },
+              { name: "ボストンバッグ", slug: "mens-bags-boston" },
+              {
+                name: "スーツケース・トランク",
+                slug: "mens-bags-suitcase-trunk",
+              },
+              { name: "エコバッグ", slug: "mens-bags-eco" },
+              { name: "バッグアクセサリー", slug: "mens-bags-accessories" },
+            ],
+          },
+          wallets: {
+            name: "財布・ケース・小物",
+            slug: "mens-wallets-cases",
+            subcategories: [
+              { name: "長財布", slug: "mens-wallets-long" },
+              { name: "折りたたみ財布", slug: "mens-wallets-foldable" },
+              { name: "コインケース", slug: "mens-wallets-coin-case" },
+              { name: "カードケース", slug: "mens-wallets-card-case" },
+              { name: "パスケース", slug: "mens-wallets-pass-case" },
+              { name: "キーケース", slug: "mens-wallets-key-case" },
+              { name: "マネークリップ", slug: "mens-wallets-money-clip" },
+              { name: "ポーチ", slug: "mens-wallets-pouch" },
+              {
+                name: "スマホ・PC・タブレットケース",
+                slug: "mens-wallets-device-cases",
+              },
+              { name: "ペンケース", slug: "mens-wallets-pen-case" },
+              { name: "手帳ケース・カバー", slug: "mens-wallets-planner-case" },
+              { name: "キーホルダー", slug: "mens-wallets-keyholder" },
+              { name: "チャーム", slug: "mens-wallets-charm" },
+            ],
+          },
+          fashionAccessories: {
+            name: "ファッション雑貨",
+            slug: "mens-fashion-accessories",
+            subcategories: [
+              {
+                name: "ネックウェア・ネクタイ",
+                slug: "mens-accessories-neckwear-tie",
+              },
+              { name: "帽子", slug: "mens-accessories-hats" },
+              { name: "イヤーマフ", slug: "mens-accessories-earmuffs" },
+              { name: "手袋", slug: "mens-accessories-gloves" },
+              { name: "ベルト", slug: "mens-accessories-belts" },
+              { name: "サスペンダー", slug: "mens-accessories-suspenders" },
+              {
+                name: "サングラス・眼鏡",
+                slug: "mens-accessories-sunglasses-glasses",
+              },
+              { name: "マスク", slug: "mens-accessories-mask" },
+              {
+                name: "タオル・ハンカチ",
+                slug: "mens-accessories-towel-handkerchief",
+              },
+              { name: "レイングッズ", slug: "mens-accessories-rain" },
+            ],
+          },
+        },
+      },
+    };
+
+    // Create categories
+    for (const [genderKey, genderData] of Object.entries(categoryStructure)) {
+      // Create gender category (Level 1)
+      const genderId = uuidv4();
+      await pool.query(
+        `INSERT INTO categories (id, name, slug, parent_id, level, sort_order, is_active)
+         VALUES (?, ?, ?, NULL, 1, ?, TRUE)`,
+        [
+          genderId,
+          genderData.name,
+          genderData.slug,
+          genderKey === "mens" ? 1 : 2,
+        ]
+      );
+      console.log(`✅ Created gender category: ${genderData.name}`);
+
+      // Create primary categories (Level 2)
+      let primarySortOrder = 1;
+      for (const [primaryKey, primaryData] of Object.entries(
+        genderData.primaryCategories
+      )) {
+        const primaryId = uuidv4();
+        await pool.query(
+          `INSERT INTO categories (id, name, slug, parent_id, level, sort_order, is_active)
+           VALUES (?, ?, ?, ?, 2, ?, TRUE)`,
+          [
+            primaryId,
+            primaryData.name,
+            primaryData.slug,
+            genderId,
+            primarySortOrder,
+          ]
+        );
+        console.log(`  ✅ Created primary category: ${primaryData.name}`);
+
+        // Create subcategories (Level 3)
+        let subSortOrder = 1;
+        for (const subcategory of primaryData.subcategories) {
+          const subId = uuidv4();
+          await pool.query(
+            `INSERT INTO categories (id, name, slug, parent_id, level, sort_order, is_active)
+             VALUES (?, ?, ?, ?, 3, ?, TRUE)`,
+            [subId, subcategory.name, subcategory.slug, primaryId, subSortOrder]
+          );
+          subSortOrder++;
+        }
+        console.log(
+          `    ✅ Created ${primaryData.subcategories.length} subcategories for ${primaryData.name}`
+        );
+        primarySortOrder++;
+      }
+    }
+
+    console.log("✅ Categories initialized successfully");
+  } catch (error) {
+    console.error("❌ Error initializing categories:", error.message);
+    // Don't throw - allow app to continue even if category init fails
   }
 }
 

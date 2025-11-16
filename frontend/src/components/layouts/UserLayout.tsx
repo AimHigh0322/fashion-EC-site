@@ -13,6 +13,7 @@ import {
 import { useAuth } from "../../contexts/AuthContext";
 import { useFavorites } from "../../contexts/FavoritesContext";
 import { useCart } from "../../contexts/CartContext";
+import { useCategory } from "../../contexts/CategoryContext";
 import { apiService } from "../../services/api";
 
 interface Category {
@@ -33,6 +34,7 @@ export const UserLayout = ({ children }: UserLayoutProps) => {
   const { isAuthenticated, logout } = useAuth();
   const { favorites } = useFavorites();
   const { cartCount } = useCart();
+  const { setSelectedCategoryId, setSelectedCategoryName } = useCategory();
   const [favoritesCount, setFavoritesCount] = useState(0);
   const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
   const [selectedGender, setSelectedGender] = useState<string | null>(null);
@@ -320,32 +322,48 @@ export const UserLayout = ({ children }: UserLayoutProps) => {
                           return (
                             <div key={category.id} className="flex flex-col">
                               {/* Category Header */}
-                              <Link
-                                to={`/category/${category.slug}`}
-                                className="text-xs sm:text-sm font-semibold text-gray-900 mb-2 sm:mb-3 hover:text-[#c95a42] transition-colors"
+                              <button
                                 onClick={() => {
+                                  setSelectedCategoryId(category.id);
+                                  setSelectedCategoryName(category.name);
                                   setIsCategoryDropdownOpen(false);
                                   setSelectedGender(null);
+                                  // Scroll to recommended products section
+                                  setTimeout(() => {
+                                    const element = document.getElementById("recommended-products");
+                                    if (element) {
+                                      element.scrollIntoView({ behavior: "smooth", block: "start" });
+                                    }
+                                  }, 100);
                                 }}
+                                className="text-xs sm:text-sm font-semibold text-gray-900 mb-2 sm:mb-3 hover:text-[#c95a42] transition-colors text-left"
                               >
                                 {category.name}
-                              </Link>
+                              </button>
 
                               {/* Subcategories List */}
                               {subcategories.length > 0 && (
                                 <div className="flex flex-col space-y-0.5 sm:space-y-1">
                                   {subcategories.map((subcat) => (
-                                    <Link
+                                    <button
                                       key={subcat.id}
-                                      to={`/category/${subcat.slug}`}
-                                      className="text-xs sm:text-sm text-gray-600 hover:text-[#c95a42] hover:underline transition-colors py-0.5 sm:py-1"
                                       onClick={() => {
+                                        setSelectedCategoryId(subcat.id);
+                                        setSelectedCategoryName(subcat.name);
                                         setIsCategoryDropdownOpen(false);
                                         setSelectedGender(null);
+                                        // Scroll to recommended products section
+                                        setTimeout(() => {
+                                          const element = document.getElementById("recommended-products");
+                                          if (element) {
+                                            element.scrollIntoView({ behavior: "smooth", block: "start" });
+                                          }
+                                        }, 100);
                                       }}
+                                      className="text-xs sm:text-sm text-gray-600 hover:text-[#c95a42] hover:underline transition-colors py-0.5 sm:py-1 text-left"
                                     >
                                       {subcat.name}
-                                    </Link>
+                                    </button>
                                   ))}
                                 </div>
                               )}

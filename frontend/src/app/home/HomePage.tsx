@@ -5,6 +5,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import { useFavorites } from "../../contexts/FavoritesContext";
 import { useCart } from "../../contexts/CartContext";
 import { useToast } from "../../contexts/ToastContext";
+import { useCategory } from "../../contexts/CategoryContext";
 import { apiService } from "../../services/api";
 import { AddToCartButton } from "../../components/molecules/AddToCartButton";
 import { UserLayout } from "../../components/layouts/UserLayout";
@@ -16,6 +17,8 @@ export const HomePage = () => {
   const { addToCart: addToCartContext, removeFromCart: removeFromCartContext } =
     useCart();
   const { showToast, success, error } = useToast();
+  const { selectedCategoryId, selectedCategoryName, setSelectedCategoryId } =
+    useCategory();
   const [mainBannerIndex, setMainBannerIndex] = useState(0);
   const [thumbnailIndex, setThumbnailIndex] = useState(0);
   const thumbnailCarouselRef = useRef<HTMLDivElement>(null);
@@ -138,6 +141,7 @@ export const HomePage = () => {
       weight: number | null;
       dimensions: string | null;
       category_names: string;
+      category_ids: string[];
       createdAt: string;
       updatedAt: string;
     }>
@@ -204,6 +208,8 @@ export const HomePage = () => {
           is_featured?: boolean;
           category_count?: number;
           category_names?: string;
+          category_ids?: string[];
+          categories?: Array<{ id: string; name: string; level: number }>;
           createdAt?: string;
           updatedAt?: string;
           [key: string]: unknown;
@@ -217,6 +223,7 @@ export const HomePage = () => {
           const response = await apiService.getProducts({
             limit,
             offset,
+            category_id: selectedCategoryId || undefined,
           });
 
           if (response.data && Array.isArray(response.data)) {
@@ -288,6 +295,17 @@ export const HomePage = () => {
                 badges.push("セール");
               }
 
+              // Extract category IDs from product data
+              const categories = Array.isArray(product.categories)
+                ? product.categories
+                : [];
+              const categoryIds =
+                product.category_ids && Array.isArray(product.category_ids)
+                  ? product.category_ids
+                  : categories
+                      .map((cat: { id?: string }) => cat.id || "")
+                      .filter(Boolean);
+
               return {
                 id: product.id,
                 sku: product.sku || "",
@@ -308,6 +326,7 @@ export const HomePage = () => {
                 weight: product.weight || null,
                 dimensions: product.dimensions || null,
                 category_names: product.category_names || "",
+                category_ids: categoryIds, // Add category IDs for filtering
                 createdAt: product.createdAt || "",
                 updatedAt: product.updatedAt || "",
               };
@@ -329,7 +348,19 @@ export const HomePage = () => {
     };
 
     loadProducts();
-  }, []);
+  }, [selectedCategoryId]);
+
+  // Filter products by selected category
+  const filteredRecommendedProducts = useMemo(() => {
+    if (!selectedCategoryId) {
+      return recommendedProducts;
+    }
+    return recommendedProducts.filter(
+      (product) =>
+        product.category_ids &&
+        product.category_ids.includes(selectedCategoryId)
+    );
+  }, [recommendedProducts, selectedCategoryId]);
 
   // Check scroll position for product carousel
   useEffect(() => {
@@ -346,7 +377,7 @@ export const HomePage = () => {
     checkScrollPosition();
     window.addEventListener("resize", checkScrollPosition);
 
-    // Check on scroll
+    // Check on scroll and when filtered products change
     const scrollContainer = recommendedProductsRef.current;
     if (scrollContainer) {
       scrollContainer.addEventListener("scroll", checkScrollPosition);
@@ -358,7 +389,7 @@ export const HomePage = () => {
         scrollContainer.removeEventListener("scroll", checkScrollPosition);
       }
     };
-  }, [recommendedProducts]);
+  }, [filteredRecommendedProducts]);
 
   // トップピックバナー
   const topPicks = [
@@ -816,15 +847,15 @@ export const HomePage = () => {
                 <>
                   <button
                     onClick={handleMainBannerPrev}
-                    className="absolute left-2 sm:left-4 top-1/2 transform -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 bg-white/90 rounded-full flex items-center justify-center z-20 shadow-lg cursor-pointer"
+                    className="group absolute left-2 sm:left-4 top-1/2 transform -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 bg-white/90 rounded-full flex items-center justify-center z-20 shadow-lg cursor-pointer transition-all duration-200 hover:bg-[#e2603f] hover:scale-110 active:scale-95"
                   >
-                    <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 text-gray-800" />
+                    <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 text-gray-800 transition-colors duration-200 group-hover:text-white" />
                   </button>
                   <button
                     onClick={handleMainBannerNext}
-                    className="absolute right-2 sm:right-4 top-1/2 transform -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 bg-white/90 rounded-full flex items-center justify-center z-20 shadow-lg cursor-pointer"
+                    className="group absolute right-2 sm:right-4 top-1/2 transform -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 bg-white/90 rounded-full flex items-center justify-center z-20 shadow-lg cursor-pointer transition-all duration-200 hover:bg-[#e2603f] hover:scale-110 active:scale-95"
                   >
-                    <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-gray-800" />
+                    <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-gray-800 transition-colors duration-200 group-hover:text-white" />
                   </button>
                 </>
               )}
@@ -1016,15 +1047,15 @@ export const HomePage = () => {
                 <>
                   <button
                     onClick={handleThumbnailCarouselPrev}
-                    className="absolute left-2 sm:left-4 top-1/2 transform -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 bg-white/90 rounded-full flex items-center justify-center z-20 shadow-lg cursor-pointer"
+                    className="group absolute left-2 sm:left-4 top-1/2 transform -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 bg-white/90 rounded-full flex items-center justify-center z-20 shadow-lg cursor-pointer transition-all duration-200 hover:bg-[#e2603f] hover:scale-110 active:scale-95"
                   >
-                    <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 text-gray-800" />
+                    <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 text-gray-800 transition-colors duration-200 group-hover:text-white" />
                   </button>
                   <button
                     onClick={handleThumbnailCarouselNext}
-                    className="absolute right-2 sm:right-4 top-1/2 transform -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 bg-white/90 rounded-full flex items-center justify-center z-20 shadow-lg cursor-pointer"
+                    className="group absolute right-2 sm:right-4 top-1/2 transform -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 bg-white/90 rounded-full flex items-center justify-center z-20 shadow-lg cursor-pointer transition-all duration-200 hover:bg-[#e2603f] hover:scale-110 active:scale-95"
                   >
-                    <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-gray-800" />
+                    <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-gray-800 transition-colors duration-200 group-hover:text-white" />
                   </button>
                 </>
               )}
@@ -1033,12 +1064,27 @@ export const HomePage = () => {
         </div>
 
         {/* Product Carousel */}
-        <div className="mb-8 bg-gray-200  p-4 sm:p-6">
+        <div id="recommended-products" className="mb-8 bg-gray-200  p-4 sm:p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg sm:text-xl md:text-2xl font-bold">
-              おすすめ商品
-            </h2>
-            {recommendedProducts.length > 0 && (
+            <div className="flex items-center gap-3">
+              <h2 className="text-lg sm:text-xl md:text-2xl font-bold">
+                おすすめ商品
+              </h2>
+              {selectedCategoryName && (
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-600">
+                    ({selectedCategoryName})
+                  </span>
+                  <button
+                    onClick={() => setSelectedCategoryId(null)}
+                    className="text-xs text-gray-500 hover:text-gray-700 underline"
+                  >
+                    フィルター解除
+                  </button>
+                </div>
+              )}
+            </div>
+            {filteredRecommendedProducts.length > 0 && (
               <div className="hidden sm:flex space-x-2">
                 <button
                   onClick={() => {
@@ -1067,13 +1113,15 @@ export const HomePage = () => {
                     }
                   }}
                   disabled={!canScrollLeft}
-                  className={`w-8 h-8 sm:w-10 sm:h-10 border border-gray-300 bg-white flex items-center justify-center rounded-md shadow-sm ${
+                  className={`group w-8 h-8 sm:w-10 sm:h-10 border border-gray-300 bg-white flex items-center justify-center rounded-md shadow-sm transition-all duration-200 ${
                     !canScrollLeft
                       ? "opacity-50 cursor-not-allowed"
-                      : "cursor-pointer"
+                      : "cursor-pointer hover:bg-[#e2603f] hover:border-[#e2603f] hover:scale-110 active:scale-95"
                   }`}
                 >
-                  <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 text-gray-700" />
+                  <ChevronLeft className={`w-4 h-4 sm:w-5 sm:h-5 transition-colors duration-200 ${
+                    !canScrollLeft ? "text-gray-700" : "text-gray-700 group-hover:text-white"
+                  }`} />
                 </button>
                 <button
                   onClick={() => {
@@ -1102,13 +1150,15 @@ export const HomePage = () => {
                     }
                   }}
                   disabled={!canScrollRight}
-                  className={`w-8 h-8 sm:w-10 sm:h-10 border border-gray-300 bg-white flex items-center justify-center rounded-md shadow-sm ${
+                  className={`group w-8 h-8 sm:w-10 sm:h-10 border border-gray-300 bg-white flex items-center justify-center rounded-md shadow-sm transition-all duration-200 ${
                     !canScrollRight
                       ? "opacity-50 cursor-not-allowed"
-                      : "cursor-pointer"
+                      : "cursor-pointer hover:bg-[#e2603f] hover:border-[#e2603f] hover:scale-110 active:scale-95"
                   }`}
                 >
-                  <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-gray-700" />
+                  <ChevronRight className={`w-4 h-4 sm:w-5 sm:h-5 transition-colors duration-200 ${
+                    !canScrollRight ? "text-gray-700" : "text-gray-700 group-hover:text-white"
+                  }`} />
                 </button>
               </div>
             )}
@@ -1118,9 +1168,13 @@ export const HomePage = () => {
               <div className="flex items-center justify-center py-8">
                 <div className="text-gray-500">商品を読み込み中...</div>
               </div>
-            ) : recommendedProducts.length === 0 ? (
+            ) : filteredRecommendedProducts.length === 0 ? (
               <div className="flex items-center justify-center py-8">
-                <div className="text-gray-500">商品がありません</div>
+                <div className="text-gray-500">
+                  {selectedCategoryId
+                    ? "このカテゴリに該当する商品がありません"
+                    : "商品がありません"}
+                </div>
               </div>
             ) : (
               <div className="relative">
@@ -1129,7 +1183,7 @@ export const HomePage = () => {
                   className="flex space-x-3 sm:space-x-4 overflow-x-auto pb-4 scrollbar-hide scroll-smooth"
                   style={{ scrollBehavior: "smooth" }}
                 >
-                  {recommendedProducts.map((product) => (
+                  {filteredRecommendedProducts.map((product) => (
                     <Link
                       key={product.id}
                       to={`/product/${product.id}`}

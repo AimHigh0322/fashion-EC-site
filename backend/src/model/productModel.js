@@ -664,6 +664,22 @@ async function getProducts(filters = {}) {
   }
 
   const [products] = await pool.query(dataQuery, dataParams);
+
+  // Add category information to each product
+  for (const product of products) {
+    const [categories] = await pool.query(
+      `SELECT c.*, pc.is_primary
+       FROM product_categories pc
+       JOIN categories c ON pc.category_id = c.id
+       WHERE pc.product_id = ?
+       ORDER BY pc.is_primary DESC, c.level, c.name`,
+      [product.id]
+    );
+    product.categories = categories;
+    // Also add category_ids array for easier filtering
+    product.category_ids = categories.map((cat) => cat.id);
+  }
+
   return { products, total };
 }
 

@@ -24,6 +24,7 @@ interface Product {
   product_url?: string;
   category_names?: string;
   image?: string;
+  images?: Array<{ id: string; image_url: string; sort_order: number }>;
   [key: string]: unknown;
 }
 
@@ -74,20 +75,55 @@ export const ProductDetail = () => {
             : (response.data as { data?: Product }).data || response.data;
           setProduct(productData as Product);
 
-          // Set images
+          // Set images - get all product images like admin page
           const baseUrl = (
             import.meta.env.VITE_API_URL || "http://localhost:8888/api"
           ).replace(/\/api$/, "");
 
-          const mainImage = (productData as Product).main_image_url || "";
-          const imageUrl =
-            mainImage && !mainImage.startsWith("http")
-              ? `${baseUrl}${
-                  mainImage.startsWith("/") ? mainImage : `/${mainImage}`
-                }`
-              : mainImage;
+          const getImageUrl = (imagePath: string | undefined) => {
+            if (!imagePath) return null;
+            if (imagePath.startsWith("http")) return imagePath;
+            const path = imagePath.startsWith("/")
+              ? imagePath
+              : `/${imagePath}`;
+            return `${baseUrl}${path}`;
+          };
 
-          setImages([imageUrl || "/img/model/model (1).png"]);
+          // Get all product images
+          const allImages: string[] = [];
+          const productWithImages = productData as Product;
+
+          // Add main image first
+          if (productWithImages.main_image_url) {
+            const mainImageUrl = getImageUrl(productWithImages.main_image_url);
+            if (mainImageUrl) {
+              allImages.push(mainImageUrl);
+            }
+          }
+
+          // Add other images from images array
+          if (productWithImages.images && productWithImages.images.length > 0) {
+            // Sort by sort_order
+            const sortedImages = [...productWithImages.images].sort(
+              (a, b) => (a.sort_order || 0) - (b.sort_order || 0)
+            );
+
+            sortedImages.forEach((img) => {
+              if (img.image_url) {
+                const imageUrl = getImageUrl(img.image_url);
+                if (imageUrl && !allImages.includes(imageUrl)) {
+                  allImages.push(imageUrl);
+                }
+              }
+            });
+          }
+
+          // If no images found, use placeholder
+          if (allImages.length === 0) {
+            allImages.push("/img/model/model (1).png");
+          }
+
+          setImages(allImages);
         }
       } catch (err) {
         console.error("Failed to load product:", err);

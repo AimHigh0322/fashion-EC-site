@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { FavoritesProvider } from "./contexts/FavoritesContext";
 import { CartProvider } from "./contexts/CartContext";
 import { ToastProvider } from "./contexts/ToastContext";
+import { CategoryProvider } from "./contexts/CategoryContext";
 import { Login } from "./app/user/auth/Login";
 import { Register } from "./app/user/auth/Register";
 import { Dashboard } from "./app/admin/Dashboard";
@@ -81,9 +82,10 @@ function App() {
   return (
     <ToastProvider>
       <AuthProvider>
-        <FavoritesProvider>
-          <CartProvider>
-          <BrowserRouter>
+        <CategoryProvider>
+          <FavoritesProvider>
+            <CartProvider>
+            <BrowserRouter>
           <Routes>
             <Route path="/login" element={<AuthPages />} />
             <Route
@@ -211,6 +213,7 @@ function App() {
         </BrowserRouter>
           </CartProvider>
         </FavoritesProvider>
+        </CategoryProvider>
       </AuthProvider>
     </ToastProvider>
   );
