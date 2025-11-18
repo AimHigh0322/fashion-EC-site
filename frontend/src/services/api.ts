@@ -133,17 +133,26 @@ class ApiService {
         };
       }
 
-      // Handle backend response structure: { success: true, data: ..., total: ... } or direct data
-      if (data && typeof data === "object" && "success" in data && "data" in data) {
-        // Preserve metadata like total, count, etc.
-        const response: ApiResponse<T> = { data: data.data };
-        if ("total" in data && typeof data.total === "number") {
-          response.total = data.total;
+      // Handle backend response structure: { success: true/false, data: ..., message: ..., total: ... } or direct data
+      if (data && typeof data === "object" && "success" in data) {
+        // If success is false, return error
+        if (data.success === false) {
+          return {
+            error: data.message || data.error || "リクエストに失敗しました。",
+          };
         }
-        if ("count" in data && typeof data.count === "number") {
-          response.count = data.count;
+        
+        // If success is true and has data, return the data
+        if ("data" in data) {
+          const response: ApiResponse<T> = { data: data.data };
+          if ("total" in data && typeof data.total === "number") {
+            response.total = data.total;
+          }
+          if ("count" in data && typeof data.count === "number") {
+            response.count = data.count;
+          }
+          return response;
         }
-        return response;
       }
 
       return { data };
@@ -832,15 +841,276 @@ class ApiService {
     });
   }
 
-  // Checkout endpoints
-  async createCheckoutSession() {
+  // Shipping address endpoints
+  async getShippingAddresses() {
+    return this.request<
+      Array<{
+        id: string;
+        user_id: string;
+        name: string;
+        postal_code: string;
+        prefecture: string;
+        city: string;
+        address_line1: string;
+        address_line2?: string;
+        phone: string;
+        is_default: boolean;
+        createdAt: string;
+        updatedAt: string;
+      }>
+    >("/shipping-addresses");
+  }
+
+  async getShippingAddress(id: string) {
     return this.request<{
-      sessionId: string;
-      url: string;
-    }>("/checkout/create-session", {
+      id: string;
+      user_id: string;
+      name: string;
+      postal_code: string;
+      prefecture: string;
+      city: string;
+      address_line1: string;
+      address_line2?: string;
+      phone: string;
+      is_default: boolean;
+      createdAt: string;
+      updatedAt: string;
+    }>(`/shipping-addresses/${id}`);
+  }
+
+  async createShippingAddress(data: {
+    name: string;
+    postal_code: string;
+    prefecture: string;
+    city: string;
+    address_line1: string;
+    address_line2?: string;
+    phone: string;
+    is_default?: boolean;
+  }) {
+    return this.request<{ id: string }>("/shipping-addresses", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateShippingAddress(
+    id: string,
+    data: {
+      name?: string;
+      postal_code?: string;
+      prefecture?: string;
+      city?: string;
+      address_line1?: string;
+      address_line2?: string;
+      phone?: string;
+      is_default?: boolean;
+    }
+  ) {
+    return this.request<{ id: string }>(`/shipping-addresses/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteShippingAddress(id: string) {
+    return this.request<{ id: string }>(`/shipping-addresses/${id}`, {
+      method: "DELETE",
+    });
+  }
+
+  async setDefaultShippingAddress(id: string) {
+    return this.request<{ id: string }>(`/shipping-addresses/${id}/set-default`, {
       method: "POST",
     });
   }
+
+  async calculateShipping(prefecture: string, cartTotal: number) {
+    return this.request<{ shipping_cost: number }>("/shipping-addresses/calculate-shipping", {
+      method: "POST",
+      body: JSON.stringify({ prefecture, cart_total: cartTotal }),
+    });
+  }
+
+  // Checkout endpoints
+  async createCheckoutSession(shippingAddressId: string) {
+    return this.request<{ session_id: string; url: string }>("/checkout/create-session", {
+      method: "POST",
+      body: JSON.stringify({ shipping_address_id: shippingAddressId }),
+    });
+  }
+
+  async verifyPaymentAndCreateOrder(sessionId: string) {
+    return this.request<{ order_id: string; order_number: string }>(
+      `/checkout/verify-payment?session_id=${sessionId}`
+    );
+  }
+
+  async processRefund(orderId: string, amount?: number, reason?: string) {
+    return this.request<{ refund_id: string; amount: number; status: string }>(
+      `/checkout/refund/${orderId}`,
+      {
+        method: "POST",
+        body: JSON.stringify({ amount, reason }),
+      }
+    );
+  }
+
+  // Enhanced order endpoints
+  async cancelOrder(orderId: string) {
+    return this.request<{ id: string; status: string }>(`/orders/${orderId}/cancel`, {
+      method: "POST",
+    });
+  }
+
+  // Profile endpoints
+  async getUserProfile() {
+    return this.request<any>("/profile");
+  }
+
+  async updateUserProfile(data: any) {
+    return this.request<any>("/profile", {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async changePassword(data: { currentPassword: string; newPassword: string }) {
+    return this.request<{ success: boolean; message: string }>("/profile/change-password", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async getNotificationSettings() {
+    return this.request<any>("/profile/notifications");
+  }
+
+  async updateNotificationSettings(data: any) {
+    return this.request<any>("/profile/notifications", {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async getPurchaseHistory(limit = 50, offset = 0) {
+    return this.request<{ orders: any[]; total: number; limit: number; offset: number }>(
+      `/profile/purchase-history?limit=${limit}&offset=${offset}`
+    );
+  }
+
+  // Review endpoints
+  async createReview(data: {
+    productId: string;
+    orderId: string;
+    rating: number;
+    title?: string;
+    comment?: string;
+  }) {
+    return this.request<any>("/reviews", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async getProductReviews(productId: string, status = "approved", limit = 50, offset = 0) {
+    return this.request<{ reviews: any[]; total: number }>(
+      `/reviews/product/${productId}?status=${status}&limit=${limit}&offset=${offset}`
+    );
+  }
+
+  async getUserReviews(limit = 50, offset = 0) {
+    return this.request<{ reviews: any[]; total: number }>(
+      `/reviews/user?limit=${limit}&offset=${offset}`
+    );
+  }
+
+  async getReviewableProducts() {
+    return this.request<any[]>("/reviews/reviewable");
+  }
+
+  async updateReview(reviewId: string, data: any) {
+    return this.request<any>(`/reviews/${reviewId}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteReview(reviewId: string) {
+    return this.request<{ success: boolean; message: string }>(`/reviews/${reviewId}`, {
+      method: "DELETE",
+    });
+  }
+
+  // Admin review endpoints
+  async getAllReviews(filters: any = {}, limit = 50, offset = 0) {
+    const queryParams = new URLSearchParams({
+      ...filters,
+      limit: limit.toString(),
+      offset: offset.toString(),
+    });
+    return this.request<{ reviews: any[]; total: number }>(
+      `/reviews/admin/all?${queryParams.toString()}`
+    );
+  }
+
+  async moderateReview(reviewId: string, status: string) {
+    return this.request<any>(`/reviews/${reviewId}/moderate`, {
+      method: "POST",
+      body: JSON.stringify({ status }),
+    });
+  }
+
+  async addAdminReplyToReview(reviewId: string, reply: string) {
+    return this.request<any>(`/reviews/${reviewId}/reply`, {
+      method: "POST",
+      body: JSON.stringify({ reply }),
+    });
+  }
+
+  // Stock management endpoints
+  async getStockHistory(productId: string, limit = 50, offset = 0) {
+    return this.request<{ history: any[]; total: number }>(
+      `/stock/history/${productId}?limit=${limit}&offset=${offset}`
+    );
+  }
+
+  async getAllStockHistory(filters: any = {}, limit = 100, offset = 0) {
+    const queryParams = new URLSearchParams({
+      ...filters,
+      limit: limit.toString(),
+      offset: offset.toString(),
+    });
+    return this.request<{ history: any[]; total: number }>(
+      `/stock/history?${queryParams.toString()}`
+    );
+  }
+
+  async getLowStockProducts() {
+    return this.request<any[]>("/stock/low-stock");
+  }
+
+  async updateProductStock(productId: string, data: {
+    quantityChange: number;
+    changeType: string;
+    notes?: string;
+  }) {
+    return this.request<any>(`/stock/${productId}/update`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async bulkUpdateStock(updates: any[]) {
+    return this.request<{ success: number; failed: number; results: any[]; errors: any[] }>(
+      "/stock/bulk-update",
+      {
+        method: "POST",
+        body: JSON.stringify({ updates }),
+      }
+    );
+  }
+
 }
 
 export const apiService = new ApiService();

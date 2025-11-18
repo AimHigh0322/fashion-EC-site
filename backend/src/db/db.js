@@ -102,6 +102,17 @@ async function initializeDatabase() {
         email VARCHAR(255) UNIQUE NOT NULL,
         password VARCHAR(255) NOT NULL,
         role VARCHAR(50) DEFAULT 'user',
+        first_name VARCHAR(100),
+        last_name VARCHAR(100),
+        phone VARCHAR(50),
+        postal_code VARCHAR(10),
+        prefecture VARCHAR(50),
+        city VARCHAR(100),
+        street_address VARCHAR(255),
+        apartment VARCHAR(255),
+        birth_date DATE,
+        avatar_url VARCHAR(500),
+        bio TEXT,
         createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         INDEX idx_email (email),
@@ -109,6 +120,43 @@ async function initializeDatabase() {
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     `);
     console.log("✅ Users table initialized");
+
+    // Add missing columns if they don't exist (for existing tables)
+    const columnsToAdd = [
+      { name: "first_name", type: "VARCHAR(100)" },
+      { name: "last_name", type: "VARCHAR(100)" },
+      { name: "phone", type: "VARCHAR(50)" },
+      { name: "postal_code", type: "VARCHAR(10)" },
+      { name: "prefecture", type: "VARCHAR(50)" },
+      { name: "city", type: "VARCHAR(100)" },
+      { name: "street_address", type: "VARCHAR(255)" },
+      { name: "apartment", type: "VARCHAR(255)" },
+    ];
+
+    for (const column of columnsToAdd) {
+      try {
+        const [columns] = await pool.query(
+          `
+          SELECT COLUMN_NAME 
+          FROM INFORMATION_SCHEMA.COLUMNS 
+          WHERE TABLE_SCHEMA = ? 
+          AND TABLE_NAME = 'users' 
+          AND COLUMN_NAME = ?
+        `,
+          [dbConfig.database, column.name]
+        );
+
+        if (columns.length === 0) {
+          await pool.query(`
+            ALTER TABLE users 
+            ADD COLUMN ${column.name} ${column.type}
+          `);
+          console.log(`✅ Added ${column.name} column to users table`);
+        }
+      } catch (error) {
+        console.log(`Note: ${column.name} column check:`, error.message);
+      }
+    }
 
     // Categories table (supports 5-level hierarchy)
     await pool.query(`
@@ -176,6 +224,9 @@ async function initializeDatabase() {
         compare_price DECIMAL(10, 2),
         cost_price DECIMAL(10, 2),
         stock_quantity INT DEFAULT 0,
+        low_stock_threshold INT DEFAULT 5,
+        restock_date DATE NULL,
+        restock_quantity INT NULL,
         status ENUM('active', 'inactive', 'out_of_stock', 'draft', 'reservation') DEFAULT 'draft',
         brand_id VARCHAR(255),
         main_image_url VARCHAR(500),
@@ -185,6 +236,8 @@ async function initializeDatabase() {
         seo_title VARCHAR(255),
         seo_description TEXT,
         is_featured BOOLEAN DEFAULT FALSE,
+        average_rating DECIMAL(3, 2) DEFAULT 0,
+        review_count INT DEFAULT 0,
         createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         INDEX idx_sku (sku),
@@ -192,6 +245,7 @@ async function initializeDatabase() {
         INDEX idx_brand (brand_id),
         INDEX idx_created (createdAt),
         INDEX idx_product_url (product_url),
+        INDEX idx_stock (stock_quantity),
         FOREIGN KEY (brand_id) REFERENCES brands(id) ON DELETE SET NULL
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     `);
@@ -662,6 +716,143 @@ async function initializeDatabase() {
     `);
     console.log("✅ Cart table initialized");
 
+    // Shipping addresses table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS shipping_addresses (
+        id VARCHAR(255) PRIMARY KEY,
+        user_id VARCHAR(255) NOT NULL,
+        name VARCHAR(255) NOT NULL,
+        postal_code VARCHAR(20) NOT NULL,
+        prefecture VARCHAR(100) NOT NULL,
+        city VARCHAR(100) NOT NULL,
+        address_line1 TEXT NOT NULL,
+        address_line2 TEXT,
+        phone VARCHAR(50) NOT NULL,
+        is_default BOOLEAN DEFAULT FALSE,
+        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        INDEX idx_user (user_id),
+        INDEX idx_default (user_id, is_default),
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    `);
+    console.log("✅ Shipping addresses table initialized");
+
+    // Add missing columns to shipping_addresses table if they don't exist (for existing tables)
+    const shippingAddressColumnsToAdd = [
+      { name: "name", type: "VARCHAR(255)" },
+    ];
+
+    for (const column of shippingAddressColumnsToAdd) {
+      try {
+        const [columns] = await pool.query(
+          `
+          SELECT COLUMN_NAME 
+          FROM INFORMATION_SCHEMA.COLUMNS 
+          WHERE TABLE_SCHEMA = ? 
+          AND TABLE_NAME = 'shipping_addresses' 
+          AND COLUMN_NAME = ?
+        `,
+          [dbConfig.database, column.name]
+        );
+
+        if (columns.length === 0) {
+          if (column.name === "name") {
+            // Add name column with default value first, then update existing rows
+            await pool.query(
+              `ALTER TABLE shipping_addresses ADD COLUMN ${column.name} ${column.type} DEFAULT ''`
+            );
+            // Update existing rows to have a default name
+            await pool.query(
+              `UPDATE shipping_addresses SET ${column.name} = CONCAT(prefecture, ' ', city) WHERE ${column.name} = '' OR ${column.name} IS NULL`
+            );
+            // Now make it NOT NULL
+            await pool.query(
+              `ALTER TABLE shipping_addresses MODIFY COLUMN ${column.name} ${column.type} NOT NULL`
+            );
+          } else {
+            await pool.query(
+              `ALTER TABLE shipping_addresses ADD COLUMN ${column.name} ${column.type}`
+            );
+          }
+          console.log(`✅ Added ${column.name} column to shipping_addresses table`);
+        }
+      } catch (error) {
+        console.log(`Note: ${column.name} column check:`, error.message);
+      }
+    }
+
+    // User notification settings table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS user_notification_settings (
+        id VARCHAR(255) PRIMARY KEY,
+        user_id VARCHAR(255) NOT NULL,
+        email_order_updates BOOLEAN DEFAULT TRUE,
+        email_promotions BOOLEAN DEFAULT TRUE,
+        email_new_products BOOLEAN DEFAULT FALSE,
+        email_price_drops BOOLEAN DEFAULT FALSE,
+        email_back_in_stock BOOLEAN DEFAULT TRUE,
+        email_newsletter BOOLEAN DEFAULT FALSE,
+        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        UNIQUE KEY unique_user (user_id),
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    `);
+    console.log("✅ User notification settings table initialized");
+
+    // Product reviews table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS product_reviews (
+        id VARCHAR(255) PRIMARY KEY,
+        product_id VARCHAR(255) NOT NULL,
+        user_id VARCHAR(255) NOT NULL,
+        order_id VARCHAR(255),
+        rating INT NOT NULL,
+        title VARCHAR(255),
+        comment TEXT,
+        status ENUM('pending', 'approved', 'rejected') DEFAULT 'pending',
+        admin_reply TEXT,
+        admin_reply_at TIMESTAMP NULL,
+        helpful_count INT DEFAULT 0,
+        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        INDEX idx_product (product_id),
+        INDEX idx_user (user_id),
+        INDEX idx_order (order_id),
+        INDEX idx_status (status),
+        INDEX idx_rating (rating),
+        FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE SET NULL,
+        UNIQUE KEY unique_user_product (user_id, product_id, order_id)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    `);
+    console.log("✅ Product reviews table initialized");
+
+    // Stock history table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS stock_history (
+        id VARCHAR(255) PRIMARY KEY,
+        product_id VARCHAR(255) NOT NULL,
+        change_type ENUM('order', 'restock', 'adjustment', 'cancel', 'return') NOT NULL,
+        quantity_change INT NOT NULL,
+        quantity_before INT NOT NULL,
+        quantity_after INT NOT NULL,
+        reference_id VARCHAR(255),
+        reference_type VARCHAR(50),
+        notes TEXT,
+        created_by VARCHAR(255),
+        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        INDEX idx_product (product_id),
+        INDEX idx_type (change_type),
+        INDEX idx_created (createdAt),
+        FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+        FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    `);
+    console.log("✅ Stock history table initialized");
+
     // Webhook logs table (to track Stripe webhook events)
     await pool.query(`
       CREATE TABLE IF NOT EXISTS webhook_logs (
@@ -757,6 +948,34 @@ async function initializeDatabase() {
         console.log("Note: Status column already exists");
       } else {
         console.log("Note: Status column check completed");
+      }
+    }
+
+    // Add home_address column if it doesn't exist (for existing databases)
+    try {
+      const [addressColumns] = await pool.query(`
+        SELECT COLUMN_NAME 
+        FROM INFORMATION_SCHEMA.COLUMNS 
+        WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = 'users' 
+        AND COLUMN_NAME = 'home_address'
+      `);
+
+      if (addressColumns.length === 0) {
+        await pool.query(`
+          ALTER TABLE users 
+          ADD COLUMN home_address TEXT AFTER phone
+        `);
+        console.log("✅ Home address column added to users table");
+      }
+    } catch (error) {
+      if (
+        error.message.includes("Duplicate column name") ||
+        error.message.includes("Duplicate key name")
+      ) {
+        console.log("Note: Home address column already exists");
+      } else {
+        console.log("Note: Home address column check completed");
       }
     }
 
@@ -1177,10 +1396,17 @@ module.exports = new Proxy(
       }
       // If pool is not yet initialized, return a function that will wait
       if (prop === "query" || prop === "getConnection" || prop === "execute") {
-        return function (...args) {
+        return async function (...args) {
+          // Wait for pool to be initialized (max 10 seconds)
+          let attempts = 0;
+          const maxAttempts = 100;
+          while (!pool && attempts < maxAttempts) {
+            await new Promise((resolve) => setTimeout(resolve, 100));
+            attempts++;
+          }
           if (!pool) {
             throw new Error(
-              "Database pool is not initialized yet. Please wait a moment and try again."
+              "Database pool is not initialized. Please check database connection."
             );
           }
           return pool[prop](...args);

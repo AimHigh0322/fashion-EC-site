@@ -25,6 +25,14 @@ export const Register = ({ onSwitchToLogin }: RegisterProps) => {
       return;
     }
 
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email || !emailRegex.test(email)) {
+      const errorMessage = "有効なメールアドレスを入力してください";
+      showError(errorMessage);
+      return;
+    }
+
     if (password !== confirmPassword) {
       const errorMessage = "パスワードが一致しません";
       showError(errorMessage);

@@ -160,9 +160,13 @@ export const UserLayout = ({ children }: UserLayoutProps) => {
                   >
                     <Bell className="w-5 h-5 text-white" />
                   </button>
-                  <div className="flex items-center p-1.5 rounded-lg transition-all duration-300 hover:opacity-90 cursor-pointer">
+                  <Link
+                    to="/profile"
+                    className="p-1.5 rounded-lg transition-all duration-300 hover:opacity-90 cursor-pointer"
+                    title="マイページ"
+                  >
                     <User className="w-5 h-5 text-white" />
-                  </div>
+                  </Link>
                   <button
                     onClick={logout}
                     className="p-1.5 rounded-lg transition-all duration-300 hover:opacity-90 cursor-pointer"
@@ -241,9 +245,13 @@ export const UserLayout = ({ children }: UserLayoutProps) => {
                   >
                     <Bell className="w-5 h-5 transition-all duration-300" />
                   </button>
-                  <div className="flex items-center cursor-pointer p-2 rounded-lg transition-all duration-300 hover:scale-110 hover:opacity-90 group">
-                    <User className="w-5 h-5 text-white transition-all duration-300" />
-                  </div>
+                  <Link
+                    to="/profile"
+                    className="flex items-center text-white transition-all duration-300 p-2 rounded-lg hover:scale-110 hover:opacity-90 cursor-pointer group"
+                    title="マイページ"
+                  >
+                    <User className="w-5 h-5 transition-all duration-300" />
+                  </Link>
                   <button
                     onClick={logout}
                     className="flex items-center space-x-2 text-sm font-medium text-white transition-all duration-300 uppercase tracking-wide cursor-pointer p-2 rounded-lg hover:scale-110 hover:opacity-90 group"
@@ -330,9 +338,14 @@ export const UserLayout = ({ children }: UserLayoutProps) => {
                                   setSelectedGender(null);
                                   // Scroll to recommended products section
                                   setTimeout(() => {
-                                    const element = document.getElementById("recommended-products");
+                                    const element = document.getElementById(
+                                      "recommended-products"
+                                    );
                                     if (element) {
-                                      element.scrollIntoView({ behavior: "smooth", block: "start" });
+                                      element.scrollIntoView({
+                                        behavior: "smooth",
+                                        block: "start",
+                                      });
                                     }
                                   }, 100);
                                 }}
@@ -354,9 +367,15 @@ export const UserLayout = ({ children }: UserLayoutProps) => {
                                         setSelectedGender(null);
                                         // Scroll to recommended products section
                                         setTimeout(() => {
-                                          const element = document.getElementById("recommended-products");
+                                          const element =
+                                            document.getElementById(
+                                              "recommended-products"
+                                            );
                                           if (element) {
-                                            element.scrollIntoView({ behavior: "smooth", block: "start" });
+                                            element.scrollIntoView({
+                                              behavior: "smooth",
+                                              block: "start",
+                                            });
                                           }
                                         }, 100);
                                       }}
@@ -497,14 +516,6 @@ export const UserLayout = ({ children }: UserLayoutProps) => {
                   会員サービス
                 </h3>
                 <ul className="space-y-2.5 sm:space-y-3 text-sm">
-                  <li>
-                    <a
-                      href="#"
-                      className="text-[#f5e8e4] hover:text-white transition-colors cursor-pointer"
-                    >
-                      マイページ
-                    </a>
-                  </li>
                   <li>
                     <a
                       href="#"

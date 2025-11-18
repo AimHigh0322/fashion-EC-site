@@ -46,9 +46,6 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
-// Stripe webhook needs raw body, so it must be before JSON middleware
-// But we'll handle it in the router with express.raw()
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -114,13 +111,29 @@ app.use("/api/favorites", favoriteRoutes);
 const cartRoutes = require("./router/cart/cart");
 app.use("/api/cart", cartRoutes);
 
-// Checkout routes (must be before JSON middleware for webhook)
-const checkoutRoutes = require("./router/checkout/checkout");
-app.use("/api/checkout", checkoutRoutes);
-
 // User management routes
 const userRoutes = require("./router/users/users");
 app.use("/api/users", userRoutes);
+
+// Shipping address routes
+const shippingAddressRoutes = require("./router/shipping-addresses/shipping-addresses");
+app.use("/api/shipping-addresses", shippingAddressRoutes);
+
+// Checkout routes
+const checkoutRoutes = require("./router/checkout/checkout");
+app.use("/api/checkout", checkoutRoutes);
+
+// Stock management routes
+const stockRoutes = require("./router/stock/stock");
+app.use("/api/stock", stockRoutes);
+
+// Reviews routes
+const reviewRoutes = require("./router/reviews/reviews");
+app.use("/api/reviews", reviewRoutes);
+
+// Profile routes
+const profileRoutes = require("./router/profile/profile");
+app.use("/api/profile", profileRoutes);
 
 // 404 handler for undefined routes
 app.use((req, res) => {

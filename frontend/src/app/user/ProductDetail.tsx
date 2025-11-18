@@ -156,25 +156,45 @@ export const ProductDetail = () => {
     checkCartStatus();
   }, [isAuthenticated, product]);
 
-  // Load reviews (mock data for now)
+  // Load reviews from API
   useEffect(() => {
-    setReviews([
-      {
-        id: "1",
-        user_name: "山田太郎",
-        rating: 5,
-        comment: "とても良い商品です。品質も良く、使いやすいです。",
-        createdAt: "2024-01-15",
-      },
-      {
-        id: "2",
-        user_name: "佐藤花子",
-        rating: 4,
-        comment: "良い商品ですが、もう少し安いと嬉しいです。",
-        createdAt: "2024-01-10",
-      },
-    ]);
-  }, []);
+    const fetchReviews = async () => {
+      if (!id) return;
+      try {
+        const response = await apiService.getProductReviews(
+          id,
+          "approved",
+          10,
+          0
+        );
+        if (response.data && response.data.reviews) {
+          setReviews(
+            response.data.reviews.map(
+              (r: {
+                id: string;
+                username?: string;
+                first_name?: string;
+                rating: number;
+                comment?: string;
+                title?: string;
+                createdAt: string;
+              }) => ({
+                id: r.id,
+                user_name: r.username || r.first_name || "匿名",
+                rating: r.rating,
+                comment: r.comment || r.title || "",
+                createdAt: r.createdAt,
+              })
+            )
+          );
+        }
+      } catch (error) {
+        console.error("Failed to load reviews:", error);
+        setReviews([]);
+      }
+    };
+    fetchReviews();
+  }, [id]);
 
   // Load similar products (from same category)
   useEffect(() => {

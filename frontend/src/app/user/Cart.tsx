@@ -1,12 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import {
-  ShoppingCart,
-  Trash2,
-  Plus,
-  Minus,
-  Check,
-} from "lucide-react";
+import { ShoppingCart, Trash2, Plus, Minus } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import { useCart } from "../../contexts/CartContext";
 import { useToast } from "../../contexts/ToastContext";
@@ -35,17 +29,8 @@ export const Cart = () => {
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState<string | null>(null);
   const [removing, setRemoving] = useState<string | null>(null);
-  const [checkingOut, setCheckingOut] = useState(false);
 
-  useEffect(() => {
-    if (!isAuthenticated) {
-      navigate("/login");
-      return;
-    }
-    loadCart();
-  }, [isAuthenticated, navigate]);
-
-  const loadCart = async () => {
+  const loadCart = useCallback(async () => {
     try {
       setLoading(true);
       const response = await apiService.getCart();
@@ -61,7 +46,15 @@ export const Cart = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [error]);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate("/login");
+      return;
+    }
+    loadCart();
+  }, [isAuthenticated, navigate, loadCart]);
 
   const updateQuantity = async (productId: string, newQuantity: number) => {
     if (newQuantity < 1) {
@@ -108,49 +101,6 @@ export const Cart = () => {
     }
   };
 
-  const handleCheckout = async () => {
-    if (cartItems.length === 0) {
-      error("カートが空です");
-      return;
-    }
-
-    setCheckingOut(true);
-    try {
-      const response = await apiService.createCheckoutSession();
-      if (response.error) {
-        // Check if it's a stock issue
-        if (
-          response.data?.stockIssues &&
-          Array.isArray(response.data.stockIssues)
-        ) {
-          const stockMessages = response.data.stockIssues
-            .map(
-              (issue: {
-                name: string;
-                sku: string;
-                requested: number;
-                available: number;
-              }) =>
-                `${issue.name} (SKU: ${issue.sku}): 在庫 ${issue.available}個、ご希望数量 ${issue.requested}個`
-            )
-            .join("\n");
-          error(`在庫が不足している商品があります:\n${stockMessages}`);
-        } else {
-          error(response.error);
-        }
-      } else if (response.data?.url) {
-        // Redirect to Stripe Checkout
-        window.location.href = response.data.url;
-      } else {
-        error("チェックアウトセッションの作成に失敗しました");
-      }
-    } catch (err) {
-      error("決済処理の開始に失敗しました");
-    } finally {
-      setCheckingOut(false);
-    }
-  };
-
   const getImageUrl = (imageUrl: string) => {
     if (!imageUrl) return "/img/model/model (1).png";
     if (imageUrl.startsWith("http")) return imageUrl;
@@ -193,7 +143,7 @@ export const Cart = () => {
               ]}
             />
             <h1 className="text-2xl font-bold text-gray-900 flex items-center mt-4">
-              <ShoppingCart className="w-6 h-6 mr-2 text-indigo-600" />
+              <ShoppingCart className="w-6 h-6 mr-2 text-[#e2603f]" />
               ショッピングカート
             </h1>
           </div>
@@ -212,7 +162,7 @@ export const Cart = () => {
               </p>
               <Link
                 to="/"
-                className="inline-flex items-center px-4 sm:px-6 py-2 sm:py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-sm sm:text-base font-medium rounded-lg transition-colors shadow-md"
+                className="inline-flex items-center px-4 sm:px-6 py-2 sm:py-3 bg-[#e2603f] hover:bg-[#c95a42] text-white text-sm sm:text-base font-medium rounded-lg transition-colors shadow-md"
               >
                 商品を見る
               </Link>
@@ -378,26 +328,15 @@ export const Cart = () => {
                   </div>
 
                   <button
-                    onClick={handleCheckout}
-                    disabled={checkingOut || cartItems.length === 0}
-                    className="w-full bg-[#e2603f] hover:bg-[#c95a42] disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-4 px-6 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg flex items-center justify-center space-x-2 cursor-pointer"
+                    onClick={() => navigate("/checkout")}
+                    className="w-full bg-[#e2603f] hover:bg-[#c95a42] text-white font-bold py-3 px-4 rounded-lg transition-colors shadow-md"
                   >
-                    {checkingOut ? (
-                      <>
-                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                        <span>処理中...</span>
-                      </>
-                    ) : (
-                      <>
-                        <Check className="w-5 h-5" />
-                        <span>レジに進む</span>
-                      </>
-                    )}
+                    レジに進む
                   </button>
 
                   <Link
                     to="/"
-                    className="block mt-4 text-center text-indigo-600 hover:text-indigo-700 font-medium text-sm transition-colors cursor-pointer"
+                    className="block mt-4 text-center text-[#e2603f] hover:text-[#c95a42] font-medium text-sm transition-colors cursor-pointer"
                   >
                     買い物を続ける
                   </Link>

@@ -16,12 +16,20 @@ async function createOrder(req, res) {
 
 async function getOrders(req, res) {
   try {
-    const orders = await orderModel.getOrders({
+    const filters = {
       status: req.query.status,
       order_number: req.query.order_number,
       customer_email: req.query.customer_email,
+      payment_status: req.query.payment_status,
       limit: req.query.limit || 50,
-    });
+    };
+
+    // If user is not admin, only show their own orders
+    if (req.user && req.user.role !== "admin") {
+      filters.user_id = req.user.id;
+    }
+
+    const orders = await orderModel.getOrders(filters);
     res.json({ success: true, data: orders });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -75,6 +83,24 @@ async function exportOrders(req, res) {
   }
 }
 
+async function cancelOrder(req, res) {
+  try {
+    // Allow users to cancel their own orders, admins can cancel any order
+    const userId = req.user.role === "admin" ? null : req.user.id;
+    const result = await orderModel.cancelOrder(req.params.id, userId);
+    await logAudit(req, "cancel", "order", req.params.id, null, result);
+    res.json({ success: true, data: result });
+  } catch (error) {
+    if (error.message.includes("見つかりません") || error.message.includes("権限がありません")) {
+      return res.status(404).json({ success: false, message: error.message });
+    }
+    if (error.message.includes("キャンセルできません")) {
+      return res.status(400).json({ success: false, message: error.message });
+    }
+    res.status(500).json({ success: false, message: error.message });
+  }
+}
+
 module.exports = {
   createOrder,
   getOrders,
@@ -82,5 +108,6 @@ module.exports = {
   updateOrderStatus,
   addShippingTracking,
   exportOrders,
+  cancelOrder,
 };
 

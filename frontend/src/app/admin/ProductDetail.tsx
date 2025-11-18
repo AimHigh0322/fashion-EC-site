@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
-import { Edit, Trash2, ArrowLeft, X, ZoomIn } from "lucide-react";
+import { useParams, useNavigate } from "react-router-dom";
+import { Edit, Trash2, ArrowLeft, X, ZoomIn, ChevronRight } from "lucide-react";
 import { AdminLayout } from "../../components/layouts/AdminLayout";
 import { apiService } from "../../services/api";
 import { useToast } from "../../contexts/ToastContext";

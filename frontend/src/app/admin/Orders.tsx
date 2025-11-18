@@ -18,6 +18,7 @@ interface Order {
 export const Orders = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
+  const [paymentFilter, setPaymentFilter] = useState("");
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
@@ -28,6 +29,7 @@ export const Orders = () => {
     try {
       const response = await apiService.getOrders({
         status: statusFilter || undefined,
+        payment_status: paymentFilter || undefined,
         limit: 100,
       });
       if (response.data) {
@@ -42,7 +44,7 @@ export const Orders = () => {
     } finally {
       setLoading(false);
     }
-  }, [statusFilter, showToast]);
+  }, [statusFilter, paymentFilter, showToast]);
 
   useEffect(() => {
     loadOrders();
@@ -81,6 +83,8 @@ export const Orders = () => {
         return "bg-purple-100 text-purple-800";
       case "delivered":
         return "bg-green-100 text-green-800";
+      case "cancelled":
+        return "bg-red-100 text-red-800";
       default:
         return "bg-gray-100 text-gray-800";
     }
@@ -197,6 +201,17 @@ export const Orders = () => {
               <option value="processing">処理中</option>
               <option value="shipped">発送済み</option>
               <option value="delivered">配送済み</option>
+              <option value="cancelled">キャンセル</option>
+            </select>
+            <select
+              value={paymentFilter}
+              onChange={(e) => setPaymentFilter(e.target.value)}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
+            >
+              <option value="">すべての支払い</option>
+              <option value="pending">未払い</option>
+              <option value="paid">支払済</option>
+              <option value="refunded">返金済</option>
             </select>
           </div>
         </div>
@@ -267,6 +282,7 @@ export const Orders = () => {
                           <option value="processing">処理中</option>
                           <option value="shipped">発送済み</option>
                           <option value="delivered">配送済み</option>
+                          <option value="cancelled">キャンセル</option>
                         </select>
                       </td>
                       <td className="px-4 py-4 whitespace-nowrap">

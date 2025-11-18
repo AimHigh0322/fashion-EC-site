@@ -36,6 +36,26 @@ function authenticateRequest(request, response, next) {
 	}
 }
 
-module.exports = { authenticateRequest };
+// Alias for consistency with new routes
+const authenticateToken = authenticateRequest;
+
+// Middleware to require admin role
+function requireAdmin(request, response, next) {
+	if (!request.user) {
+		return response.status(401).json({ error: '認証が必要です。' });
+	}
+	
+	if (request.user.role !== 'admin') {
+		return response.status(403).json({ error: 'この操作には管理者権限が必要です。' });
+	}
+	
+	return next();
+}
+
+module.exports = { 
+	authenticateRequest, 
+	authenticateToken,
+	requireAdmin 
+};
 
 

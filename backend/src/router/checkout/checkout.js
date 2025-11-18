@@ -3,20 +3,29 @@ const router = express.Router();
 const checkoutController = require("../../controllers/checkoutController");
 const { authenticateRequest } = require("../../middleware/auth-middleware/middleware");
 
-// Create checkout session (requires authentication)
-router.post("/create-session", authenticateRequest, checkoutController.createCheckoutSession);
+// Protected routes (require authentication)
+router.post(
+  "/create-session",
+  authenticateRequest,
+  checkoutController.createCheckoutSession
+);
+router.get(
+  "/verify-payment",
+  authenticateRequest,
+  checkoutController.verifyPaymentAndCreateOrder
+);
+router.post(
+  "/refund/:order_id",
+  authenticateRequest,
+  checkoutController.processRefund
+);
 
-// Webhook endpoint (no authentication, uses Stripe signature verification)
-// Note: This route must use express.raw() to get the raw body for signature verification
+// Webhook endpoint (no auth required, verified by Stripe signature)
 router.post(
   "/webhook",
   express.raw({ type: "application/json" }),
-  checkoutController.handleWebhook
+  checkoutController.handleStripeWebhook
 );
-
-// Get webhook logs (requires authentication, admin only recommended)
-router.get("/webhook-logs", authenticateRequest, checkoutController.getWebhookLogs);
-router.get("/webhook-logs/:id", authenticateRequest, checkoutController.getWebhookLogById);
 
 module.exports = router;
 
