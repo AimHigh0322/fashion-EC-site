@@ -1,4 +1,10 @@
-import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  type ReactNode,
+} from "react";
 import { apiService } from "../services/api";
 import { useAuth } from "./AuthContext";
 
@@ -14,6 +20,7 @@ const FavoritesContext = createContext<FavoritesContextType | undefined>(
   undefined
 );
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useFavorites = () => {
   const context = useContext(FavoritesContext);
   if (!context) {
@@ -39,6 +46,7 @@ export const FavoritesProvider = ({ children }: FavoritesProviderProps) => {
       // Clear favorites when user logs out
       setFavorites(new Set());
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated]);
 
   const loadFavorites = async () => {
@@ -129,4 +137,3 @@ export const FavoritesProvider = ({ children }: FavoritesProviderProps) => {
     </FavoritesContext.Provider>
   );
 };
-

@@ -152,7 +152,7 @@ export const Cart = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
           {cartItems.length === 0 ? (
             /* Empty Cart */
-            <div className="bg-white rounded-lg shadow-sm p-6 sm:p-8 md:p-12 text-center">
+            <div className="bg-white  shadow-sm p-6 sm:p-8 md:p-12 text-center">
               <ShoppingCart className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 text-gray-300 mx-auto mb-4 sm:mb-6" />
               <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
                 カートは空です
@@ -162,7 +162,7 @@ export const Cart = () => {
               </p>
               <Link
                 to="/"
-                className="inline-flex items-center px-4 sm:px-6 py-2 sm:py-3 bg-[#e2603f] hover:bg-[#c95a42] text-white text-sm sm:text-base font-medium rounded-lg transition-colors shadow-md"
+                className="inline-flex items-center px-4 sm:px-6 py-2 sm:py-3 bg-[#e2603f] hover:bg-[#c95a42] text-white text-sm sm:text-base font-medium  transition-colors shadow-md"
               >
                 商品を見る
               </Link>
@@ -174,7 +174,7 @@ export const Cart = () => {
                 {cartItems.map((item) => (
                   <div
                     key={item.id}
-                    className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 hover:shadow-md transition-shadow"
+                    className="bg-white  shadow-sm border border-gray-200 p-4 sm:p-6 hover:shadow-md transition-shadow"
                   >
                     <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                       {/* Product Image */}
@@ -182,7 +182,7 @@ export const Cart = () => {
                         <img
                           src={getImageUrl(item.main_image_url)}
                           alt={item.name}
-                          className="w-24 h-24 sm:w-32 sm:h-32 object-cover rounded-lg border border-gray-200"
+                          className="w-24 h-24 sm:w-32 sm:h-32 object-cover  border border-gray-200"
                           onError={(e) => {
                             (e.target as HTMLImageElement).src =
                               "/img/model/model (1).png";
@@ -226,7 +226,7 @@ export const Cart = () => {
                                 updating === item.product_id ||
                                 item.quantity <= 1
                               }
-                              className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                              className="w-8 h-8 flex items-center justify-center border border-gray-300  hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
                             >
                               <Minus className="w-4 h-4" />
                             </button>
@@ -249,7 +249,7 @@ export const Cart = () => {
                                 (item.stock_quantity > 0 &&
                                   item.quantity >= item.stock_quantity)
                               }
-                              className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                              className="w-8 h-8 flex items-center justify-center border border-gray-300  hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
                             >
                               <Plus className="w-4 h-4" />
                             </button>
@@ -282,7 +282,7 @@ export const Cart = () => {
 
               {/* Order Summary */}
               <div className="lg:col-span-1">
-                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 sticky top-4 sm:top-8">
+                <div className="bg-white  shadow-sm border border-gray-200 p-4 sm:p-6 sticky top-4 sm:top-8">
                   <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4 sm:mb-6">
                     注文内容
                   </h2>
@@ -329,7 +329,7 @@ export const Cart = () => {
 
                   <button
                     onClick={() => navigate("/checkout")}
-                    className="w-full bg-[#e2603f] hover:bg-[#c95a42] text-white font-bold py-3 px-4 rounded-lg transition-colors shadow-md"
+                    className="w-full bg-[#e2603f] hover:bg-[#c95a42] text-white font-bold py-3 px-4  transition-colors shadow-md"
                   >
                     レジに進む
                   </button>

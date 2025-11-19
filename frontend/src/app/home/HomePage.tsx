@@ -41,85 +41,6 @@ export const HomePage = () => {
   >([]);
   const [loadingBanners, setLoadingBanners] = useState(true);
 
-  // カテゴリデータ
-  const categories = [
-    {
-      name: "上着",
-      image: "/img/product/top/top (2).png",
-      color: "from-blue-500 to-blue-600",
-    },
-    {
-      name: "下着",
-      image: "/img/product/top/top (1).jpg",
-      color: "from-pink-500 to-pink-600",
-    },
-    {
-      name: "靴",
-      image: "/img/product/shoe/shoe (9).jpg",
-      color: "bg-[#e2603f]",
-    },
-    {
-      name: "バッグ",
-      image: "/img/product/bag/bag (2).jpg",
-      color: "from-amber-500 to-amber-600",
-    },
-    {
-      name: "靴下",
-      image: "/img/product/sock/sock (2).jpg",
-      color: "from-green-500 to-green-600",
-    },
-    {
-      name: "帽子",
-      image: "/img/product/cap/cap.jpg",
-      color: "from-yellow-500 to-yellow-600",
-    },
-    {
-      name: "シャツ",
-      image: "/img/product/top/top (4).png",
-      color: "from-purple-500 to-purple-600",
-    },
-    {
-      name: "ズボン",
-      image: "/img/product/trousers/trousers.jpg",
-      color: "from-indigo-500 to-indigo-600",
-    },
-    {
-      name: "スーツ",
-      image: "/img/product/top/top (5).jpg",
-      color: "from-gray-500 to-gray-600",
-    },
-    {
-      name: "財布",
-      image: "/img/product/bag/bag (2).jpg",
-      color: "from-rose-500 to-rose-600",
-    },
-    {
-      name: "イヤリング",
-      image: "/img/product/ear/ear.jpg",
-      color: "from-teal-500 to-teal-600",
-    },
-    {
-      name: "マフラー",
-      image: "/img/product/neck/neck.jpg",
-      color: "from-red-500 to-red-600",
-    },
-    {
-      name: "手袋",
-      image: "/img/product/glove/glove.jpg",
-      color: "from-emerald-500 to-emerald-600",
-    },
-    {
-      name: "マスク",
-      image: "/img/product/mask/mask.jpg",
-      color: "from-slate-500 to-slate-600",
-    },
-    {
-      name: "メガネ",
-      image: "/img/product/glass/glass.jpg",
-      color: "from-cyan-500 to-cyan-600",
-    },
-  ];
-
   // おすすめ商品データ - Load from API
   const [recommendedProducts, setRecommendedProducts] = useState<
     Array<{
@@ -151,6 +72,18 @@ export const HomePage = () => {
   const recommendedProductsRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
+  const [recentlyViewed, setRecentlyViewed] = useState<
+    Array<{
+      id: string;
+      name: string;
+      price: number;
+      compare_price?: number;
+      main_image_url?: string;
+      image?: string;
+      brand_name?: string;
+      [key: string]: unknown;
+    }>
+  >([]);
 
   // Load cart product IDs
   useEffect(() => {
@@ -391,34 +324,6 @@ export const HomePage = () => {
     };
   }, [filteredRecommendedProducts]);
 
-  // トップピックバナー
-  const topPicks = [
-    {
-      id: 1,
-      title: "2025年春夏コレクション新入荷!トレンドを先取り",
-      product: "春夏新作コレクション",
-      image: "/img/model/model (5).png",
-    },
-    {
-      id: 2,
-      title: "ビジネスシーンに最適!上質なスーツコレクション",
-      product: "メンズスーツ",
-      image: "/img/model/model (3).png",
-    },
-    {
-      id: 3,
-      title: "カジュアルからフォーマルまで!ワードローブを充実",
-      product: "レディースコレクション",
-      image: "/img/model/model (7).png",
-    },
-    {
-      id: 4,
-      title: "機能性とデザイン性を兼ね備えたシューズ特集",
-      product: "シューズコレクション",
-      image: "/img/model/model (8).png",
-    },
-  ];
-
   // Load banners from API
   useEffect(() => {
     const loadBanners = async () => {
@@ -556,6 +461,82 @@ export const HomePage = () => {
     };
 
     loadBanners();
+  }, []);
+
+  // Load recently viewed products
+  useEffect(() => {
+    const loadRecentlyViewed = () => {
+      try {
+        const viewed = localStorage.getItem("recentlyViewed");
+        if (viewed) {
+          const viewedIds: string[] = JSON.parse(viewed);
+
+          if (viewedIds.length > 0) {
+            // Load products for recently viewed IDs
+            Promise.all(
+              viewedIds.slice(0, 8).map(async (productId) => {
+                try {
+                  const response = await apiService.getProduct(productId);
+                  if (response.data) {
+                    const productData = Array.isArray(response.data)
+                      ? response.data[0]
+                      : (response.data as { data?: unknown }).data ||
+                        response.data;
+
+                    const baseUrl = (
+                      import.meta.env.VITE_API_URL ||
+                      "http://localhost:8888/api"
+                    ).replace(/\/api$/, "");
+
+                    const product = productData as {
+                      id: string;
+                      name: string;
+                      price: number;
+                      compare_price?: number;
+                      main_image_url?: string;
+                      brand_name?: string;
+                      [key: string]: unknown;
+                    };
+
+                    let imageUrl = product.main_image_url || "";
+                    if (imageUrl && !imageUrl.startsWith("http")) {
+                      const cleanPath = imageUrl.startsWith("/")
+                        ? imageUrl
+                        : `/${imageUrl}`;
+                      imageUrl = `${baseUrl}${cleanPath}`;
+                    }
+
+                    return {
+                      ...product,
+                      image: imageUrl || "/img/model/model (1).png",
+                    };
+                  }
+                } catch {
+                  return null;
+                }
+              })
+            ).then((products) => {
+              setRecentlyViewed(
+                products.filter((p) => p !== null) as Array<{
+                  id: string;
+                  name: string;
+                  price: number;
+                  compare_price?: number;
+                  main_image_url?: string;
+                  image?: string;
+                  brand_name?: string;
+                  [key: string]: unknown;
+                }>
+              );
+            });
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load recently viewed:", err);
+      }
+    };
+
+    loadRecentlyViewed();
   }, []);
 
   // Use banners from API, fallback to empty array
@@ -864,7 +845,7 @@ export const HomePage = () => {
             {/* Right Side Promotional Sections (Right - 1/3 width) */}
             <div className="w-full lg:flex-1 grid grid-cols-2 gap-3">
               {/* 01 即日翌日配送 */}
-              <div className="bg-[#f0f7ff] rounded-lg p-2 sm:p-3 relative overflow-hidden">
+              <div className="bg-[#f0f7ff]  p-2 sm:p-3 relative overflow-hidden">
                 <div className="flex flex-row gap-1 sm:gap-2 items-center">
                   <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-[#1565c0] mb-1 sm:mb-2">
                     01
@@ -886,7 +867,7 @@ export const HomePage = () => {
                       </span>
                     </div>
                   </div>
-                  <div className="absolute top-0 left-0 bg-[#b3d9ff] border-2 border-white rounded-lg px-1.5 sm:px-2 py-0.5 sm:py-1 text-[#1565c0] text-[8px] sm:text-[10px] font-medium">
+                  <div className="absolute top-0 left-0 bg-[#b3d9ff] border-2 border-white  px-1.5 sm:px-2 py-0.5 sm:py-1 text-[#1565c0] text-[8px] sm:text-[10px] font-medium">
                     ファッションアイテムがすぐ届く!
                   </div>
                 </div>
@@ -896,7 +877,7 @@ export const HomePage = () => {
               </div>
 
               {/* 02 当日お届け */}
-              <div className="bg-[#f0f7ff] rounded-lg p-2 sm:p-3 relative overflow-hidden">
+              <div className="bg-[#f0f7ff]  p-2 sm:p-3 relative overflow-hidden">
                 <div className="flex flex-row gap-1 sm:gap-2 items-center">
                   <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-[#1565c0] mb-1 sm:mb-2">
                     02
@@ -912,7 +893,7 @@ export const HomePage = () => {
                       配達員
                     </span>
                   </div>
-                  <div className="absolute top-1 sm:top-2 right-1 sm:right-2 bg-[#b3d9ff] border-2 border-white rounded-lg px-1.5 sm:px-2 py-0.5 sm:py-1 text-[#1565c0] text-[8px] sm:text-[10px] font-medium">
+                  <div className="absolute top-1 sm:top-2 right-1 sm:right-2 bg-[#b3d9ff] border-2 border-white  px-1.5 sm:px-2 py-0.5 sm:py-1 text-[#1565c0] text-[8px] sm:text-[10px] font-medium">
                     スタッフがお届け!
                   </div>
                 </div>
@@ -922,7 +903,7 @@ export const HomePage = () => {
               </div>
 
               {/* 03 おみせde受取 */}
-              <div className="bg-[#283593] rounded-lg p-2 sm:p-3 relative overflow-hidden">
+              <div className="bg-[#283593]  p-2 sm:p-3 relative overflow-hidden">
                 <div className="flex flex-row gap-1 sm:gap-2 items-center">
                   <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-1 sm:mb-2">
                     03
@@ -937,7 +918,7 @@ export const HomePage = () => {
                       店舗
                     </span>
                   </div>
-                  <div className="absolute top-0 right-1 sm:right-2 bg-[#e2603f] border-2 border-white rounded-lg px-1.5 sm:px-2 py-0.5 sm:py-1 text-white text-[8px] sm:text-[10px] font-bold">
+                  <div className="absolute top-0 right-1 sm:right-2 bg-[#e2603f] border-2 border-white  px-1.5 sm:px-2 py-0.5 sm:py-1 text-white text-[8px] sm:text-[10px] font-bold">
                     新サービス開始!
                   </div>
                 </div>
@@ -947,7 +928,7 @@ export const HomePage = () => {
               </div>
 
               {/* 04 返品・交換保証 */}
-              <div className="bg-[#f0f7ff] rounded-lg p-2 sm:p-3 relative overflow-hidden">
+              <div className="bg-[#f0f7ff]  p-2 sm:p-3 relative overflow-hidden">
                 <div className="flex flex-row gap-1 sm:gap-2 items-center">
                   <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-[#1565c0] mb-1 sm:mb-2">
                     04
@@ -982,7 +963,7 @@ export const HomePage = () => {
                       </div>
                     </div>
                   </div>
-                  <div className="absolute top-0 right-1 sm:right-2 bg-[#b3d9ff] border-2 border-white rounded-lg px-1.5 sm:px-2 py-0.5 sm:py-1 text-[#1565c0] text-[8px] sm:text-[10px] font-medium">
+                  <div className="absolute top-0 right-1 sm:right-2 bg-[#b3d9ff] border-2 border-white  px-1.5 sm:px-2 py-0.5 sm:py-1 text-[#1565c0] text-[8px] sm:text-[10px] font-medium">
                     6ヶ月間のあんしん
                   </div>
                 </div>
@@ -1063,6 +1044,55 @@ export const HomePage = () => {
           )}
         </div>
 
+        {/* Recently Viewed Products Section */}
+        {recentlyViewed.length > 0 && (
+          <div className="mb-8  p-4 sm:p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg sm:text-xl md:text-2xl font-bold">
+                最近閲覧した商品
+              </h2>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+              {recentlyViewed.map((item) => (
+                <Link
+                  key={item.id}
+                  to={`/product/${item.id}`}
+                  className="group bg-white border border-gray-200 overflow-hidden shadow-sm flex flex-col cursor-pointer transition-all duration-300 hover:shadow-lg"
+                >
+                  <div className="relative overflow-hidden">
+                    <img
+                      src={item.image || "/img/model/model (1).png"}
+                      alt={item.name}
+                      className="w-full h-40 sm:h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  </div>
+                  <div className="p-3 sm:p-4 flex flex-col flex-grow">
+                    <div className="text-xs text-gray-500 mb-1 line-clamp-1">
+                      {item.brand_name || ""}
+                    </div>
+                    <div className="text-sm font-semibold text-gray-800 line-clamp-2 mb-2 flex-grow">
+                      {item.name}
+                    </div>
+                    <div className="mt-auto">
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-base font-bold text-red-600">
+                          ¥{item.price.toLocaleString()}
+                        </span>
+                        {item.compare_price &&
+                          item.compare_price > item.price && (
+                            <span className="text-xs text-gray-400 line-through">
+                              ¥{item.compare_price.toLocaleString()}
+                            </span>
+                          )}
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Product Carousel */}
         <div id="recommended-products" className="mb-8 bg-gray-200  p-4 sm:p-6">
           <div className="flex items-center justify-between mb-4">
@@ -1113,15 +1143,19 @@ export const HomePage = () => {
                     }
                   }}
                   disabled={!canScrollLeft}
-                  className={`group w-8 h-8 sm:w-10 sm:h-10 border border-gray-300 bg-white flex items-center justify-center rounded-md shadow-sm transition-all duration-200 ${
+                  className={`group w-8 h-8 sm:w-10 sm:h-10 border border-gray-300 bg-white flex items-center justify-center  shadow-sm transition-all duration-200 ${
                     !canScrollLeft
                       ? "opacity-50 cursor-not-allowed"
                       : "cursor-pointer hover:bg-[#e2603f] hover:border-[#e2603f] hover:scale-110 active:scale-95"
                   }`}
                 >
-                  <ChevronLeft className={`w-4 h-4 sm:w-5 sm:h-5 transition-colors duration-200 ${
-                    !canScrollLeft ? "text-gray-700" : "text-gray-700 group-hover:text-white"
-                  }`} />
+                  <ChevronLeft
+                    className={`w-4 h-4 sm:w-5 sm:h-5 transition-colors duration-200 ${
+                      !canScrollLeft
+                        ? "text-gray-700"
+                        : "text-gray-700 group-hover:text-white"
+                    }`}
+                  />
                 </button>
                 <button
                   onClick={() => {
@@ -1150,15 +1184,19 @@ export const HomePage = () => {
                     }
                   }}
                   disabled={!canScrollRight}
-                  className={`group w-8 h-8 sm:w-10 sm:h-10 border border-gray-300 bg-white flex items-center justify-center rounded-md shadow-sm transition-all duration-200 ${
+                  className={`group w-8 h-8 sm:w-10 sm:h-10 border border-gray-300 bg-white flex items-center justify-center  shadow-sm transition-all duration-200 ${
                     !canScrollRight
                       ? "opacity-50 cursor-not-allowed"
                       : "cursor-pointer hover:bg-[#e2603f] hover:border-[#e2603f] hover:scale-110 active:scale-95"
                   }`}
                 >
-                  <ChevronRight className={`w-4 h-4 sm:w-5 sm:h-5 transition-colors duration-200 ${
-                    !canScrollRight ? "text-gray-700" : "text-gray-700 group-hover:text-white"
-                  }`} />
+                  <ChevronRight
+                    className={`w-4 h-4 sm:w-5 sm:h-5 transition-colors duration-200 ${
+                      !canScrollRight
+                        ? "text-gray-700"
+                        : "text-gray-700 group-hover:text-white"
+                    }`}
+                  />
                 </button>
               </div>
             )}
@@ -1187,7 +1225,7 @@ export const HomePage = () => {
                     <Link
                       key={product.id}
                       to={`/product/${product.id}`}
-                      className="group flex-shrink-0 w-[calc((100%-60px)/6)] sm:w-[calc((100%-80px)/6)] min-w-[180px] sm:min-w-[200px] bg-white border border-gray-200 rounded-md overflow-hidden shadow-sm flex flex-col cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-105 hover:-translate-y-1"
+                      className="group flex-shrink-0 w-[calc((100%-60px)/6)] sm:w-[calc((100%-80px)/6)] min-w-[180px] sm:min-w-[200px] bg-white border border-gray-200 overflow-hidden shadow-sm flex flex-col cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-105 hover:-translate-y-1"
                     >
                       <div className="relative overflow-hidden">
                         <img
@@ -1366,63 +1404,210 @@ export const HomePage = () => {
           </div>
         </div>
 
-        {/* カテゴリから探す */}
-        <div className="mb-8">
-          <h2 className="text-lg sm:text-xl md:text-2xl font-bold mb-6 text-gray-900">
-            カテゴリから探す
-          </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-3 sm:gap-4">
-            {categories.map((category, index) => {
-              return (
-                <div
-                  key={index}
-                  className="group bg-white border border-gray-200 hover:shadow-lg cursor-pointer rounded-lg transition-all duration-300 overflow-hidden"
+        {/* Best Sellers Section */}
+        <div className="mb-12 bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl p-6 sm:p-8">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
+                ベストセラー
+              </h2>
+              <p className="text-sm text-gray-600">人気商品トップ10</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+            {filteredRecommendedProducts
+              .filter((p) => p.reviews > 0)
+              .sort((a, b) => b.reviews - a.reviews)
+              .slice(0, 10)
+              .map((product, index) => (
+                <Link
+                  key={product.id}
+                  to={`/product/${product.id}`}
+                  className="group bg-white shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden relative"
                 >
-                  <div className="p-4 sm:p-5 flex flex-col items-center justify-center min-h-[100px] sm:min-h-[120px]">
-                    <div className="w-12 h-12 sm:w-14 sm:h-14 mb-3 rounded-full overflow-hidden group-hover:scale-110 transition-transform duration-300 shadow-md">
-                      <img
-                        src={category.image}
-                        alt={category.name}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <span className="text-xs sm:text-sm text-gray-700 group-hover:text-[#e2603f] font-medium text-center leading-tight transition-colors duration-300">
-                      {category.name}
-                    </span>
+                  <div className="absolute top-2 left-2 bg-[#e2603f] text-white text-xs font-bold px-2 py-1 rounded-full z-10 shadow-md">
+                    #{index + 1}
                   </div>
-                </div>
-              );
-            })}
+                  <div className="relative aspect-square overflow-hidden bg-gray-50">
+                    <img
+                      src={product.image || "/img/placeholder.png"}
+                      alt={product.title}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                    />
+                  </div>
+                  <div className="p-3">
+                    <h3 className="font-semibold text-sm mb-1 line-clamp-2 text-gray-900">
+                      {product.title}
+                    </h3>
+                    <div className="text-lg font-bold text-[#e2603f] mb-1">
+                      ¥{product.price.toLocaleString()}
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                      <span className="text-xs text-gray-600">
+                        {product.rating.toFixed(1)} ({product.reviews})
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+              ))}
           </div>
         </div>
 
-        {/* おすすめ商品 */}
-        <div className="mb-8">
-          <h2 className="text-lg sm:text-xl md:text-2xl font-bold mb-4">
-            当店おすすめ商品
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-            {topPicks.map((pick) => (
-              <div
-                key={pick.id}
-                className="bg-white border border-gray-200 relative rounded-md overflow-hidden"
-              >
-                <div className="absolute top-2 left-2 bg-[#e2603f] text-white text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 z-10 rounded-md">
-                  ③ 当店おすすめ
-                </div>
+        {/* Flash Sale Section */}
+        <div className="mb-12 bg-gradient-to-r from-red-500 to-pink-500 rounded-2xl p-6 sm:p-8 text-white">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6">
+            <div>
+              <h2 className="text-2xl sm:text-3xl font-bold mb-2">
+                ⚡ フラッシュセール
+              </h2>
+              <p className="text-sm text-white/90">
+                期間限定！特別価格でご提供
+              </p>
+            </div>
+            <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm  px-4 py-2 mt-4 sm:mt-0">
+              <span className="text-sm font-medium">残り時間:</span>
+              <span className="text-xl font-bold">23:59:45</span>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            {filteredRecommendedProducts
+              .filter((p) => p.compare_price && p.compare_price > p.price)
+              .slice(0, 8)
+              .map((product) => {
+                const discountPercent = product.compare_price
+                  ? Math.round(
+                      ((product.compare_price - product.price) /
+                        product.compare_price) *
+                        100
+                    )
+                  : 0;
+                return (
+                  <Link
+                    key={product.id}
+                    to={`/product/${product.id}`}
+                    className="group bg-white overflow-hidden hover:shadow-2xl transition-all duration-300"
+                  >
+                    <div className="relative aspect-square overflow-hidden bg-gray-50">
+                      <div className="absolute top-2 left-2 bg-red-600 text-white text-sm font-bold px-3 py-1 rounded-full z-10 shadow-lg">
+                        -{discountPercent}%
+                      </div>
+                      <img
+                        src={product.image || "/img/placeholder.png"}
+                        alt={product.title}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                      />
+                    </div>
+                    <div className="p-3 bg-white">
+                      <h3 className="font-semibold text-sm mb-2 line-clamp-2 text-gray-900">
+                        {product.title}
+                      </h3>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-xl font-bold text-red-600">
+                          ¥{product.price.toLocaleString()}
+                        </span>
+                        <span className="text-xs text-gray-400 line-through">
+                          ¥{product.compare_price?.toLocaleString()}
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2 mb-1">
+                        <div
+                          className="bg-red-500 h-2 rounded-full transition-all duration-500"
+                          style={{
+                            width: `${Math.min(80, Math.random() * 100)}%`,
+                          }}
+                        />
+                      </div>
+                      <p className="text-xs text-gray-500">在庫わずか！</p>
+                    </div>
+                  </Link>
+                );
+              })}
+          </div>
+        </div>
+
+        {/* Featured Collections */}
+        <div className="mb-12">
+          <div className="mb-6">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
+              特集コレクション
+            </h2>
+            <p className="text-sm text-gray-600">シーズンごとの厳選アイテム</p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <Link
+              to="/products?category=上着"
+              className="group relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300"
+            >
+              <div className="aspect-[4/3] relative">
                 <img
-                  src={pick.image}
-                  alt={pick.product}
-                  className="w-full h-40 sm:h-48 object-cover"
+                  src="/img/product/top/top (2).png"
+                  alt="冬物コレクション"
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                 />
-                <div className="p-3 sm:p-4">
-                  <h3 className="font-bold text-xs sm:text-sm mb-1 sm:mb-2 line-clamp-2">
-                    {pick.title}
-                  </h3>
-                  <p className="text-xs text-gray-600">{pick.product}</p>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
+                <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+                  <h3 className="text-2xl font-bold mb-2">冬物コレクション</h3>
+                  <p className="text-sm text-white/90 mb-3">
+                    暖かくておしゃれなアウター
+                  </p>
+                  <span className="inline-flex items-center text-sm font-medium">
+                    詳細を見る
+                    <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+                  </span>
                 </div>
               </div>
-            ))}
+            </Link>
+            <Link
+              to="/products?category=靴"
+              className="group relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300"
+            >
+              <div className="aspect-[4/3] relative">
+                <img
+                  src="/img/product/shoe/shoe (9).jpg"
+                  alt="シューズコレクション"
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
+                <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+                  <h3 className="text-2xl font-bold mb-2">
+                    シューズコレクション
+                  </h3>
+                  <p className="text-sm text-white/90 mb-3">
+                    快適な履き心地を追求
+                  </p>
+                  <span className="inline-flex items-center text-sm font-medium">
+                    詳細を見る
+                    <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+                  </span>
+                </div>
+              </div>
+            </Link>
+            <Link
+              to="/products?category=バッグ"
+              className="group relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300"
+            >
+              <div className="aspect-[4/3] relative">
+                <img
+                  src="/img/product/bag/bag (2).jpg"
+                  alt="バッグコレクション"
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
+                <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+                  <h3 className="text-2xl font-bold mb-2">
+                    バッグコレクション
+                  </h3>
+                  <p className="text-sm text-white/90 mb-3">
+                    機能性とデザインの融合
+                  </p>
+                  <span className="inline-flex items-center text-sm font-medium">
+                    詳細を見る
+                    <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+                  </span>
+                </div>
+              </div>
+            </Link>
           </div>
         </div>
       </div>

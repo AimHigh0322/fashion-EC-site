@@ -1,6 +1,15 @@
 import { useState, useEffect, useRef } from "react";
-import { useParams, Link } from "react-router-dom";
-import { Heart, ChevronLeft, ChevronRight, Star } from "lucide-react";
+import { useParams, Link, useNavigate } from "react-router-dom";
+import {
+  Heart,
+  ChevronLeft,
+  ChevronRight,
+  Star,
+  ZoomIn,
+  X,
+  Plus,
+  Minus,
+} from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import { useFavorites } from "../../contexts/FavoritesContext";
 import { useCart } from "../../contexts/CartContext";
@@ -25,6 +34,19 @@ interface Product {
   category_names?: string;
   image?: string;
   images?: Array<{ id: string; image_url: string; sort_order: number }>;
+  average_rating?: number;
+  review_count?: number;
+  campaigns?: Array<{
+    id: string;
+    name: string;
+    description?: string;
+    type: string;
+    discount_percent?: number;
+    fixed_price?: number;
+    start_date: string;
+    end_date: string;
+    is_active: boolean;
+  }>;
   [key: string]: unknown;
 }
 
@@ -38,6 +60,7 @@ interface Review {
 
 export const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
   const { isFavorited, toggleFavorite } = useFavorites();
   const { addToCart, removeFromCart } = useCart();
@@ -50,8 +73,12 @@ export const ProductDetail = () => {
   const [brandProducts, setBrandProducts] = useState<Product[]>([]);
   const [addingToCart, setAddingToCart] = useState(false);
   const [isInCart, setIsInCart] = useState(false);
-  const [favoriteCount, setFavoriteCount] = useState(1);
+  const [favoriteCount, setFavoriteCount] = useState(0);
   const [images, setImages] = useState<string[]>([]);
+  const [quantity, setQuantity] = useState(1);
+  const [showZoom, setShowZoom] = useState(false);
+  const [zoomImageIndex, setZoomImageIndex] = useState(0);
+  const [recentlyViewed, setRecentlyViewed] = useState<Product[]>([]);
 
   // Refs for flow sections
   const similarProductsRef = useRef<HTMLDivElement>(null);
@@ -89,21 +116,14 @@ export const ProductDetail = () => {
             return `${baseUrl}${path}`;
           };
 
-          // Get all product images
+          // Get all product images - ordered by sort_order from database
           const allImages: string[] = [];
           const productWithImages = productData as Product;
 
-          // Add main image first
-          if (productWithImages.main_image_url) {
-            const mainImageUrl = getImageUrl(productWithImages.main_image_url);
-            if (mainImageUrl) {
-              allImages.push(mainImageUrl);
-            }
-          }
-
-          // Add other images from images array
+          // Get images from images array - sorted by sort_order (ascending)
+          // This maintains the upload order as stored in the database
           if (productWithImages.images && productWithImages.images.length > 0) {
-            // Sort by sort_order
+            // Sort by sort_order (ascending) to maintain upload order
             const sortedImages = [...productWithImages.images].sort(
               (a, b) => (a.sort_order || 0) - (b.sort_order || 0)
             );
@@ -116,6 +136,16 @@ export const ProductDetail = () => {
                 }
               }
             });
+          }
+
+          // If main_image_url exists and is not in the sorted images, add it at the beginning
+          // Otherwise, if we have sorted images, they already include the main image in correct order
+          if (productWithImages.main_image_url) {
+            const mainImageUrl = getImageUrl(productWithImages.main_image_url);
+            if (mainImageUrl && !allImages.includes(mainImageUrl)) {
+              // Main image not in sorted list, add it first
+              allImages.unshift(mainImageUrl);
+            }
           }
 
           // If no images found, use placeholder
@@ -155,6 +185,25 @@ export const ProductDetail = () => {
     };
     checkCartStatus();
   }, [isAuthenticated, product]);
+
+  // Load favorite count from database
+  useEffect(() => {
+    const loadFavoriteCount = async () => {
+      if (!product?.id) return;
+
+      try {
+        const response = await apiService.getProductFavoriteCount(product.id);
+        if (response.data && typeof response.data.count === "number") {
+          setFavoriteCount(response.data.count);
+        }
+      } catch (error) {
+        console.error("Failed to load favorite count:", error);
+        // Keep default value of 0
+      }
+    };
+
+    loadFavoriteCount();
+  }, [product?.id]);
 
   // Load reviews from API
   useEffect(() => {
@@ -285,6 +334,82 @@ export const ProductDetail = () => {
     loadBrandProducts();
   }, [product]);
 
+  // Load recently viewed products
+  useEffect(() => {
+    const loadRecentlyViewed = () => {
+      try {
+        const viewed = localStorage.getItem("recentlyViewed");
+        if (viewed) {
+          const viewedIds: string[] = JSON.parse(viewed);
+          // Remove current product from list
+          const filteredIds = viewedIds.filter((viewedId) => viewedId !== id);
+
+          if (filteredIds.length > 0) {
+            // Load products for recently viewed IDs
+            Promise.all(
+              filteredIds.slice(0, 8).map(async (productId) => {
+                try {
+                  const response = await apiService.getProduct(productId);
+                  if (response.data) {
+                    const productData = Array.isArray(response.data)
+                      ? response.data[0]
+                      : (response.data as { data?: Product }).data ||
+                        response.data;
+
+                    const baseUrl = (
+                      import.meta.env.VITE_API_URL ||
+                      "http://localhost:8888/api"
+                    ).replace(/\/api$/, "");
+
+                    let imageUrl =
+                      (productData as Product).main_image_url || "";
+                    if (imageUrl && !imageUrl.startsWith("http")) {
+                      const cleanPath = imageUrl.startsWith("/")
+                        ? imageUrl
+                        : `/${imageUrl}`;
+                      imageUrl = `${baseUrl}${cleanPath}`;
+                    }
+
+                    return {
+                      ...(productData as Product),
+                      image: imageUrl || "/img/model/model (1).png",
+                    };
+                  }
+                } catch {
+                  return null;
+                }
+              })
+            ).then((products) => {
+              setRecentlyViewed(
+                products.filter((p) => p !== null) as Product[]
+              );
+            });
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load recently viewed:", err);
+      }
+    };
+
+    loadRecentlyViewed();
+  }, [id]);
+
+  // Save current product to recently viewed
+  useEffect(() => {
+    if (product && id) {
+      try {
+        const viewed = localStorage.getItem("recentlyViewed");
+        const viewedIds: string[] = viewed ? JSON.parse(viewed) : [];
+        // Remove current product if exists, then add to front
+        const filteredIds = viewedIds.filter((viewedId) => viewedId !== id);
+        const updatedIds = [id, ...filteredIds].slice(0, 20); // Keep last 20
+        localStorage.setItem("recentlyViewed", JSON.stringify(updatedIds));
+      } catch (err) {
+        console.error("Failed to save recently viewed:", err);
+      }
+    }
+  }, [product, id]);
+
   // Check scroll position for similar products
   useEffect(() => {
     const checkScrollPosition = () => {
@@ -351,10 +476,17 @@ export const ProductDetail = () => {
     if (toggleSuccess) {
       if (wasFavorited) {
         success("お気に入りから削除しました");
-        setFavoriteCount(Math.max(0, favoriteCount - 1));
       } else {
         success("お気に入りに追加しました");
-        setFavoriteCount(favoriteCount + 1);
+      }
+      // Reload favorite count from database
+      try {
+        const response = await apiService.getProductFavoriteCount(product.id);
+        if (response.data && typeof response.data.count === "number") {
+          setFavoriteCount(response.data.count);
+        }
+      } catch (error) {
+        console.error("Failed to reload favorite count:", error);
       }
     } else {
       error("お気に入りの更新に失敗しました");
@@ -371,9 +503,9 @@ export const ProductDetail = () => {
 
     setAddingToCart(true);
     try {
-      const success = await addToCart(product.id, 1);
+      const success = await addToCart(product.id, quantity);
       if (success) {
-        showToast("カートに追加しました", "success");
+        showToast(`${quantity}個の商品をカートに追加しました`, "success");
         setIsInCart(true);
       } else {
         error("カートへの追加に失敗しました");
@@ -382,6 +514,67 @@ export const ProductDetail = () => {
       error("カートへの追加に失敗しました");
     } finally {
       setAddingToCart(false);
+    }
+  };
+
+  const handleBuyNow = async () => {
+    if (!isAuthenticated) {
+      showToast("ログインが必要です", "warning");
+      return;
+    }
+
+    if (!product) return;
+
+    setAddingToCart(true);
+    try {
+      // Add to cart first
+      const success = await addToCart(product.id, quantity);
+      if (success) {
+        // Navigate to checkout
+        navigate("/checkout");
+      } else {
+        error("カートへの追加に失敗しました");
+      }
+    } catch {
+      error("カートへの追加に失敗しました");
+    } finally {
+      setAddingToCart(false);
+    }
+  };
+
+  const handleQuantityChange = (newQuantity: number) => {
+    if (!product) return;
+    const maxQuantity = product.stock_quantity || 99;
+    const minQuantity = 1;
+
+    if (newQuantity < minQuantity) {
+      setQuantity(minQuantity);
+    } else if (newQuantity > maxQuantity) {
+      setQuantity(maxQuantity);
+      showToast(`在庫数は${maxQuantity}個までです`, "warning");
+    } else {
+      setQuantity(newQuantity);
+    }
+  };
+
+  const openZoom = (index: number) => {
+    setZoomImageIndex(index);
+    setShowZoom(true);
+  };
+
+  const closeZoom = () => {
+    setShowZoom(false);
+  };
+
+  const handleZoomImageChange = (direction: "prev" | "next") => {
+    if (direction === "prev") {
+      setZoomImageIndex(
+        zoomImageIndex > 0 ? zoomImageIndex - 1 : images.length - 1
+      );
+    } else {
+      setZoomImageIndex(
+        zoomImageIndex < images.length - 1 ? zoomImageIndex + 1 : 0
+      );
     }
   };
 
@@ -434,13 +627,48 @@ export const ProductDetail = () => {
       ? `${baseUrl}${mainImage.startsWith("/") ? mainImage : `/${mainImage}`}`
       : mainImage;
 
-  const discountPercentage =
-    product.compare_price && product.price
+  // Calculate discount rate (割引率)
+  const discountRate =
+    product.compare_price &&
+    product.price &&
+    product.compare_price > product.price
       ? Math.round(
           ((product.compare_price - product.price) / product.compare_price) *
             100
         )
       : 0;
+
+  // Base price (通常価格) - compare_price or price if no compare_price
+  const basePrice =
+    product.compare_price && product.compare_price > product.price
+      ? product.compare_price
+      : product.price;
+
+  // Sale price (セール価格) - current price if discounted, otherwise same as base
+  const salePrice = product.price;
+
+  // Check if product is on sale
+  const isOnSale =
+    product.compare_price && product.compare_price > product.price;
+
+  // Stock status
+  const isInStock = (product.stock_quantity || 0) > 0;
+  const stockStatus = isInStock ? "在庫あり" : "在庫切れ";
+
+  // Average rating and review count
+  const averageRating = product.average_rating || 0;
+  const reviewCount = product.review_count || 0;
+
+  // Active campaigns
+  const activeCampaigns =
+    product.campaigns?.filter((campaign) => campaign.is_active) || [];
+
+  // Shipping time estimate (出荷目安)
+  const getShippingEstimate = () => {
+    if (!isInStock) return "在庫切れのため出荷できません";
+    // Default: 1-3 business days
+    return "1-3営業日";
+  };
 
   const couponDiscount = Math.floor(product.price * 0.05);
 
@@ -453,7 +681,7 @@ export const ProductDetail = () => {
         />
 
         {/* Return Policy */}
-        <div className="border border-red-200 rounded-lg p-3 mb-6 bg-white">
+        <div className="border border-red-200  p-3 mb-6 bg-white">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-medium text-gray-900">
               この商品は返品可能です
@@ -471,8 +699,8 @@ export const ProductDetail = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
           {/* Product Images */}
           <div className="space-y-4">
-            {/* Main Image */}
-            <div className="relative bg-gray-100 rounded-lg overflow-hidden aspect-square">
+            {/* Main Image with Zoom */}
+            <div className="relative bg-gray-100  overflow-hidden aspect-square group cursor-zoom-in">
               <img
                 src={
                   images[selectedImageIndex] ||
@@ -480,31 +708,38 @@ export const ProductDetail = () => {
                   "/img/model/model (1).png"
                 }
                 alt={product.name}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                onClick={() => openZoom(selectedImageIndex)}
               />
+              {/* Zoom Icon Overlay */}
+              <div className="absolute top-4 right-4 bg-black/50 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+                <ZoomIn className="w-5 h-5" />
+              </div>
               {images.length > 1 && (
                 <>
                   <button
-                    onClick={() =>
+                    onClick={(e) => {
+                      e.stopPropagation();
                       setSelectedImageIndex(
                         selectedImageIndex > 0
                           ? selectedImageIndex - 1
                           : images.length - 1
-                      )
-                    }
-                    className="absolute left-2 top-1/2 transform -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 bg-white/90 rounded-full flex items-center justify-center z-20 shadow-lg cursor-pointer"
+                      );
+                    }}
+                    className="absolute left-2 top-1/2 transform -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 bg-white/90 rounded-full flex items-center justify-center z-20 shadow-lg cursor-pointer hover:bg-white transition-colors"
                   >
                     <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 text-gray-800" />
                   </button>
                   <button
-                    onClick={() =>
+                    onClick={(e) => {
+                      e.stopPropagation();
                       setSelectedImageIndex(
                         selectedImageIndex < images.length - 1
                           ? selectedImageIndex + 1
                           : 0
-                      )
-                    }
-                    className="absolute right-2 top-1/2 transform -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 bg-white/90 rounded-full flex items-center justify-center z-20 shadow-lg cursor-pointer"
+                      );
+                    }}
+                    className="absolute right-2 top-1/2 transform -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 bg-white/90 rounded-full flex items-center justify-center z-20 shadow-lg cursor-pointer hover:bg-white transition-colors"
                   >
                     <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-gray-800" />
                   </button>
@@ -512,16 +747,16 @@ export const ProductDetail = () => {
               )}
             </div>
 
-            {/* Thumbnail Gallery */}
+            {/* Thumbnail Gallery - Ordered by sort_order */}
             {images.length > 1 && (
-              <div className="flex gap-2 overflow-x-auto scrollbar-hide">
+              <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-2">
                 {images.map((img, idx) => (
                   <button
                     key={idx}
                     onClick={() => setSelectedImageIndex(idx)}
-                    className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${
+                    className={`flex-shrink-0 w-20 h-20  overflow-hidden border-2 transition-all hover:border-[#e2603f] ${
                       idx === selectedImageIndex
-                        ? "border-[#e2603f]"
+                        ? "border-[#e2603f] ring-2 ring-[#e2603f] ring-opacity-50"
                         : "border-gray-200"
                     }`}
                   >
@@ -540,35 +775,148 @@ export const ProductDetail = () => {
           <div className="space-y-4">
             {/* Brand */}
             <div className="text-sm text-gray-600">
-              {product.brand_name || "BACKYARD FAMILY (バックヤードファミリー)"}
+              Brand Name: {product.brand_name || "データなし"}
             </div>
 
             {/* Product Name */}
             <h1 className="text-2xl font-bold text-gray-900">{product.name}</h1>
 
-            {/* Price */}
+            {/* Campaign/Event Labels */}
+            {activeCampaigns.length > 0 && (
+              <div className="space-y-2">
+                {activeCampaigns.map((campaign) => {
+                  const startDate = new Date(campaign.start_date);
+                  const endDate = new Date(campaign.end_date);
+                  const now = new Date();
+                  const isActive = now >= startDate && now <= endDate;
+
+                  if (!isActive) return null;
+
+                  return (
+                    <div
+                      key={campaign.id}
+                      className="bg-gradient-to-r from-red-500 to-pink-500 text-white  p-3"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="font-bold text-sm mb-1">
+                            {campaign.name}
+                          </div>
+                          {campaign.description && (
+                            <div className="text-xs opacity-90">
+                              {campaign.description}
+                            </div>
+                          )}
+                        </div>
+                        <div className="text-right">
+                          <div className="text-xs opacity-90 mb-1">
+                            割引期間
+                          </div>
+                          <div className="text-xs font-medium">
+                            {startDate.toLocaleDateString("ja-JP", {
+                              month: "short",
+                              day: "numeric",
+                            })}{" "}
+                            -{" "}
+                            {endDate.toLocaleDateString("ja-JP", {
+                              month: "short",
+                              day: "numeric",
+                            })}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Average Rating and Review Count */}
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <div className="flex items-center">
+                  {[...Array(5)].map((_, i) => (
+                    <Star
+                      key={i}
+                      className={`w-5 h-5 ${
+                        i < Math.round(averageRating)
+                          ? "fill-yellow-400 text-yellow-400"
+                          : "fill-none stroke-gray-300 text-gray-300"
+                      }`}
+                    />
+                  ))}
+                </div>
+                <span className="text-sm font-medium text-gray-700">
+                  {averageRating.toFixed(1)}
+                </span>
+              </div>
+              <div className="text-sm text-gray-600">
+                ({reviewCount}件のレビュー)
+              </div>
+            </div>
+
+            {/* Stock Status Indicator */}
+            <div className="flex items-center gap-2">
+              <div
+                className={`px-5 py-1 rounded-full text-sm font-medium ${
+                  isInStock
+                    ? "bg-green-100 text-green-800"
+                    : "bg-red-100 text-red-800"
+                }`}
+              >
+                {stockStatus}
+              </div>
+              <span className="text-sm text-gray-600">
+                在庫数: {product.stock_quantity || 0}個
+              </span>
+            </div>
+
+            {/* Shipping Time Estimate */}
+            <div className="bg-blue-50 border border-blue-200 p-3">
+              <div className="text-sm text-blue-900">
+                <span className="font-medium">出荷目安:</span>{" "}
+                {getShippingEstimate()}
+              </div>
+            </div>
+
+            {/* Price Section */}
             <div className="space-y-2">
+              {/* Base Price (通常価格) - Only show if different from sale price */}
+              {isOnSale && (
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-500">通常価格:</span>
+                  <span className="text-lg text-gray-400 line-through">
+                    ¥{basePrice.toLocaleString()}
+                  </span>
+                </div>
+              )}
+
+              {/* Sale Price / Current Price */}
               <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-bold text-gray-900">
-                  ¥{product.price.toLocaleString()}
+                <span className="text-3xl font-bold text-[#e2603f]">
+                  ¥{salePrice.toLocaleString()}
                 </span>
                 <span className="text-sm text-gray-500">税込</span>
-              </div>
-              {product.compare_price &&
-                product.compare_price > product.price && (
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg text-gray-400 line-through">
-                      ¥{product.compare_price.toLocaleString()}
-                    </span>
-                    <span className="text-sm text-red-600 font-medium">
-                      {discountPercentage}%OFF
-                    </span>
-                  </div>
+                {isOnSale && discountRate > 0 && (
+                  <span className="ml-2 px-2 py-1 bg-red-100 text-red-600 text-sm font-bold rounded">
+                    {discountRate}%OFF
+                  </span>
                 )}
+              </div>
+
+              {/* Discount Rate Badge */}
+              {isOnSale && discountRate > 0 && (
+                <div className="flex items-center gap-2 text-sm">
+                  <span className="text-gray-600">割引率:</span>
+                  <span className="text-red-600 font-bold">
+                    {discountRate}%
+                  </span>
+                </div>
+              )}
             </div>
 
             {/* Coupon Info */}
-            <div className="bg-gray-100 rounded-lg p-3">
+            <div className="bg-gray-100  p-3">
               <p className="text-sm text-gray-700">
                 クーポンを使えばさらに{couponDiscount.toLocaleString()}
                 円引きできます!
@@ -576,10 +924,23 @@ export const ProductDetail = () => {
               </p>
             </div>
 
-            {/* Shop Info */}
-            <div className="text-sm text-gray-600">
-              ショップ:{" "}
-              {product.brand_name || "BACKYARD FAMILY バックヤードファミリー"}
+            {/* Shipping Method (配送方法) */}
+            <div className="bg-white border border-gray-200  p-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-gray-700">
+                  配送方法:
+                </span>
+                <span className="text-sm text-gray-900">
+                  {isInStock
+                    ? "宅配便（ヤマト運輸・佐川急便）"
+                    : "在庫切れのため配送不可"}
+                </span>
+              </div>
+              {isInStock && (
+                <div className="mt-2 text-xs text-gray-500">
+                  全国送料無料（一部地域を除く）
+                </div>
+              )}
             </div>
 
             {/* Favorites */}
@@ -606,8 +967,64 @@ export const ProductDetail = () => {
               お気に入りに登録すると値下げや再入荷の際にご連絡します
             </p>
 
-            {/* Add to Cart */}
+            {/* Quantity Selector */}
             <div className="pt-4 border-t">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                数量
+              </label>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="flex items-center space-x-2">
+                  <button
+                    type="button"
+                    onClick={() => handleQuantityChange(quantity - 1)}
+                    disabled={quantity <= 1}
+                    className="w-8 h-8 flex items-center justify-center border border-gray-300  hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                  >
+                    <Minus className="w-4 h-4" />
+                  </button>
+                  <span className="w-12 text-center font-medium">
+                    {quantity}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => handleQuantityChange(quantity + 1)}
+                    disabled={quantity >= (product.stock_quantity || 99)}
+                    className="w-8 h-8 flex items-center justify-center border border-gray-300  hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </button>
+                </div>
+                <span className="text-sm text-gray-500">
+                  在庫: {product.stock_quantity || 0}個
+                </span>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="space-y-3">
+              {/* Buy Now Button */}
+              <button
+                onClick={handleBuyNow}
+                disabled={
+                  addingToCart ||
+                  !isAuthenticated ||
+                  product.stock_quantity === 0
+                }
+                className="w-full transition-all duration-200 shadow-sm flex items-center justify-center gap-2 text-xs sm:text-sm font-medium py-2 px-4 rounded-full cursor-pointer bg-[#e2603f] hover:bg-[#c95a42] disabled:bg-gray-300 disabled:cursor-not-allowed text-white"
+              >
+                {addingToCart ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <span>処理中...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>今すぐ購入</span>
+                  </>
+                )}
+              </button>
+
+              {/* Add to Cart Button */}
               <AddToCartButton
                 productId={product.id}
                 isAuthenticated={isAuthenticated}
@@ -632,46 +1049,132 @@ export const ProductDetail = () => {
 
         {/* Reviews Section */}
         <div className="mb-12">
-          <h2 className="text-2xl font-bold mb-6">レビュー</h2>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold">レビュー</h2>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <div className="flex items-center">
+                  {[...Array(5)].map((_, i) => (
+                    <Star
+                      key={i}
+                      className={`w-5 h-5 ${
+                        i < Math.round(averageRating)
+                          ? "fill-yellow-400 text-yellow-400"
+                          : "fill-none stroke-gray-300 text-gray-300"
+                      }`}
+                    />
+                  ))}
+                </div>
+                <span className="text-lg font-bold text-gray-900">
+                  {averageRating.toFixed(1)}
+                </span>
+              </div>
+              <span className="text-sm text-gray-600">全{reviewCount}件</span>
+            </div>
+          </div>
           <div className="space-y-6">
             {reviews.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                レビューはまだありません
+              <div className="text-center py-8 text-gray-500 bg-gray-50 ">
+                <Star className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                <p className="text-lg font-medium mb-2">
+                  レビューはまだありません
+                </p>
+                <p className="text-sm text-gray-500">
+                  この商品の最初のレビューを書いてみませんか？
+                </p>
               </div>
             ) : (
               reviews.map((review) => (
                 <div
                   key={review.id}
-                  className="bg-white border border-gray-200 rounded-lg p-6"
+                  className="bg-white border border-gray-200  p-6 hover:shadow-md transition-shadow"
                 >
                   <div className="flex items-start justify-between mb-3">
-                    <div>
-                      <div className="font-medium text-gray-900">
-                        {review.user_name}
-                      </div>
-                      <div className="flex items-center gap-1 mt-1">
-                        {[...Array(5)].map((_, i) => (
-                          <Star
-                            key={i}
-                            className={`w-4 h-4 ${
-                              i < review.rating
-                                ? "fill-yellow-400 text-yellow-400"
-                                : "fill-none stroke-gray-300 text-gray-300"
-                            }`}
-                          />
-                        ))}
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className="font-medium text-gray-900">
+                          {review.user_name}
+                        </div>
+                        <div className="flex items-center gap-1">
+                          {[...Array(5)].map((_, i) => (
+                            <Star
+                              key={i}
+                              className={`w-4 h-4 ${
+                                i < review.rating
+                                  ? "fill-yellow-400 text-yellow-400"
+                                  : "fill-none stroke-gray-300 text-gray-300"
+                              }`}
+                            />
+                          ))}
+                          <span className="ml-2 text-sm text-gray-500">
+                            {review.rating}/5
+                          </span>
+                        </div>
                       </div>
                     </div>
                     <div className="text-sm text-gray-500">
-                      {new Date(review.createdAt).toLocaleDateString("ja-JP")}
+                      {new Date(review.createdAt).toLocaleDateString("ja-JP", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })}
                     </div>
                   </div>
-                  <p className="text-gray-700">{review.comment}</p>
+                  {review.comment && (
+                    <p className="text-gray-700 leading-relaxed">
+                      {review.comment}
+                    </p>
+                  )}
                 </div>
               ))
             )}
           </div>
         </div>
+
+        {/* Recently Viewed Products */}
+        {recentlyViewed.length > 0 && (
+          <div className="mb-12">
+            <h2 className="text-2xl font-bold mb-4">最近閲覧した商品</h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+              {recentlyViewed.map((item) => (
+                <Link
+                  key={item.id}
+                  to={`/product/${item.id}`}
+                  className="group bg-white border border-gray-200 overflow-hidden shadow-sm flex flex-col cursor-pointer transition-all duration-300 hover:shadow-lg"
+                >
+                  <div className="relative overflow-hidden">
+                    <img
+                      src={item.image || "/img/model/model (1).png"}
+                      alt={item.name}
+                      className="w-full h-40 sm:h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  </div>
+                  <div className="p-3 sm:p-4 flex flex-col flex-grow">
+                    <div className="text-xs text-gray-500 mb-1 line-clamp-1">
+                      {item.brand_name || ""}
+                    </div>
+                    <div className="text-sm font-semibold text-gray-800 line-clamp-2 mb-2 flex-grow">
+                      {item.name}
+                    </div>
+                    <div className="mt-auto">
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-base font-bold text-red-600">
+                          ¥{item.price.toLocaleString()}
+                        </span>
+                        {item.compare_price &&
+                          item.compare_price > item.price && (
+                            <span className="text-xs text-gray-400 line-through">
+                              ¥{item.compare_price.toLocaleString()}
+                            </span>
+                          )}
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Similar Products Section */}
         {similarProducts.length > 0 && (
@@ -697,7 +1200,7 @@ export const ProductDetail = () => {
                       }
                     }}
                     disabled={!canScrollLeftSimilar}
-                    className={`w-8 h-8 sm:w-10 sm:h-10 border border-gray-300 bg-white flex items-center justify-center rounded-md shadow-sm ${
+                    className={`w-8 h-8 sm:w-10 sm:h-10 border border-gray-300 bg-white flex items-center justify-center  shadow-sm ${
                       !canScrollLeftSimilar
                         ? "opacity-50 cursor-not-allowed"
                         : "cursor-pointer"
@@ -722,7 +1225,7 @@ export const ProductDetail = () => {
                       }
                     }}
                     disabled={!canScrollRightSimilar}
-                    className={`w-8 h-8 sm:w-10 sm:h-10 border border-gray-300 bg-white flex items-center justify-center rounded-md shadow-sm ${
+                    className={`w-8 h-8 sm:w-10 sm:h-10 border border-gray-300 bg-white flex items-center justify-center  shadow-sm ${
                       !canScrollRightSimilar
                         ? "opacity-50 cursor-not-allowed"
                         : "cursor-pointer"
@@ -743,7 +1246,7 @@ export const ProductDetail = () => {
                   <Link
                     key={item.id}
                     to={`/product/${item.id}`}
-                    className="group flex-shrink-0 w-[calc((100%-80px)/6)] min-w-[180px] sm:min-w-[200px] bg-white border border-gray-200 rounded-md overflow-hidden shadow-sm flex flex-col cursor-pointer transition-all duration-300 hover:shadow-lg"
+                    className="group flex-shrink-0 w-[calc((100%-80px)/6)] min-w-[180px] sm:min-w-[200px] bg-white border border-gray-200 overflow-hidden shadow-sm flex flex-col cursor-pointer transition-all duration-300 hover:shadow-lg"
                   >
                     <div className="relative overflow-hidden">
                       <img
@@ -806,7 +1309,7 @@ export const ProductDetail = () => {
                       }
                     }}
                     disabled={!canScrollLeftBrand}
-                    className={`w-8 h-8 sm:w-10 sm:h-10 border border-gray-300 bg-white flex items-center justify-center rounded-md shadow-sm ${
+                    className={`w-8 h-8 sm:w-10 sm:h-10 border border-gray-300 bg-white flex items-center justify-center  shadow-sm ${
                       !canScrollLeftBrand
                         ? "opacity-50 cursor-not-allowed"
                         : "cursor-pointer"
@@ -831,7 +1334,7 @@ export const ProductDetail = () => {
                       }
                     }}
                     disabled={!canScrollRightBrand}
-                    className={`w-8 h-8 sm:w-10 sm:h-10 border border-gray-300 bg-white flex items-center justify-center rounded-md shadow-sm ${
+                    className={`w-8 h-8 sm:w-10 sm:h-10 border border-gray-300 bg-white flex items-center justify-center  shadow-sm ${
                       !canScrollRightBrand
                         ? "opacity-50 cursor-not-allowed"
                         : "cursor-pointer"
@@ -852,7 +1355,7 @@ export const ProductDetail = () => {
                   <Link
                     key={item.id}
                     to={`/product/${item.id}`}
-                    className="group flex-shrink-0 w-[calc((100%-80px)/6)] min-w-[180px] sm:min-w-[200px] bg-white border border-gray-200 rounded-md overflow-hidden shadow-sm flex flex-col cursor-pointer transition-all duration-300 hover:shadow-lg"
+                    className="group flex-shrink-0 w-[calc((100%-80px)/6)] min-w-[180px] sm:min-w-[200px] bg-white border border-gray-200 overflow-hidden shadow-sm flex flex-col cursor-pointer transition-all duration-300 hover:shadow-lg"
                   >
                     <div className="relative overflow-hidden">
                       <img
@@ -889,6 +1392,60 @@ export const ProductDetail = () => {
           </div>
         )}
       </div>
+
+      {/* Image Zoom Modal */}
+      {showZoom && (
+        <div
+          className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
+          onClick={closeZoom}
+        >
+          <button
+            onClick={closeZoom}
+            className="absolute top-4 right-4 text-white hover:text-gray-300 z-10"
+          >
+            <X className="w-8 h-8" />
+          </button>
+
+          <div className="relative max-w-7xl max-h-[90vh] w-full h-full flex items-center justify-center">
+            <img
+              src={
+                images[zoomImageIndex] || imageUrl || "/img/model/model (1).png"
+              }
+              alt={product.name}
+              className="max-w-full max-h-full object-contain"
+              onClick={(e) => e.stopPropagation()}
+            />
+
+            {images.length > 1 && (
+              <>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleZoomImageChange("prev");
+                  }}
+                  className="absolute left-4 top-1/2 transform -translate-y-1/2 w-12 h-12 bg-white/20 hover:bg-white/30 text-white rounded-full flex items-center justify-center transition-colors"
+                >
+                  <ChevronLeft className="w-6 h-6" />
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleZoomImageChange("next");
+                  }}
+                  className="absolute right-4 top-1/2 transform -translate-y-1/2 w-12 h-12 bg-white/20 hover:bg-white/30 text-white rounded-full flex items-center justify-center transition-colors"
+                >
+                  <ChevronRight className="w-6 h-6" />
+                </button>
+
+                {/* Image Counter */}
+                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/50 text-white px-4 py-2 rounded-full text-sm">
+                  {zoomImageIndex + 1} / {images.length}
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </UserLayout>
   );
 };

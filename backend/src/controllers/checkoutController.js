@@ -60,27 +60,49 @@ async function createCheckoutSession(req, res) {
     const tax = Math.floor(subtotal * 0.1); // 10% tax
     const totalAmount = subtotal + tax + shippingCost;
 
+    // Get base URL for images - ensure it's publicly accessible
+    // Stripe requires publicly accessible image URLs
+    const baseUrl = process.env.API_URL || process.env.BACKEND_URL || "http://localhost:8888";
+    const cleanBaseUrl = baseUrl.replace(/\/api$/, "").replace(/\/$/, "");
+
     // Create line items for Stripe
-    const line_items = cartItems.map((item) => ({
-      price_data: {
-        currency: "jpy",
-        product_data: {
-          name: item.name,
-          description: `SKU: ${item.sku}`,
-          images: item.main_image_url
-            ? [
-                item.main_image_url.startsWith("http")
-                  ? item.main_image_url
-                  : `${process.env.FRONTEND_URL || "http://localhost:5555"}${
-                      item.main_image_url
-                    }`,
-              ]
-            : [],
+    const line_items = cartItems.map((item) => {
+      let imageUrl = null;
+      if (item.main_image_url) {
+        if (item.main_image_url.startsWith("http://") || item.main_image_url.startsWith("https://")) {
+          // Already a full URL - use as is
+          imageUrl = item.main_image_url;
+        } else {
+          // Construct full URL from relative path
+          // Images are stored as /uploads/products/filename.jpg
+          // Server serves them from /uploads route
+          let imagePath = item.main_image_url;
+          // Ensure path starts with /uploads
+          if (!imagePath.startsWith("/uploads")) {
+            if (imagePath.startsWith("/")) {
+              imagePath = `/uploads${imagePath}`;
+            } else {
+              imagePath = `/uploads/${imagePath}`;
+            }
+          }
+          // Construct full URL
+          imageUrl = `${cleanBaseUrl}${imagePath}`;
+        }
+      }
+
+      return {
+        price_data: {
+          currency: "jpy",
+          product_data: {
+            name: item.name,
+            description: `SKU: ${item.sku}`,
+            images: imageUrl ? [imageUrl] : [],
+          },
+          unit_amount: Math.round(item.price),
         },
-        unit_amount: Math.round(item.price),
-      },
-      quantity: item.quantity,
-    }));
+        quantity: item.quantity,
+      };
+    });
 
     // Add shipping as a line item
     if (shippingCost > 0) {
@@ -114,6 +136,7 @@ async function createCheckoutSession(req, res) {
       payment_method_types: ["card"],
       line_items,
       mode: "payment",
+      locale: "ja", // Set language to Japanese - translates Stripe UI elements
       success_url: `${
         process.env.FRONTEND_URL || "http://localhost:5555"
       }/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
@@ -128,6 +151,11 @@ async function createCheckoutSession(req, res) {
         total_amount: totalAmount.toString(),
       },
       customer_email: req.user.email,
+      // Additional settings for better Japanese experience
+      billing_address_collection: "auto",
+      shipping_address_collection: {
+        allowed_countries: ["JP"], // Japan only
+      },
     });
 
     res.json({

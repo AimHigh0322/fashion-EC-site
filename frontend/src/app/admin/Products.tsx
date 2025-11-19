@@ -359,7 +359,7 @@ export const Products = () => {
             {selectedProducts.size > 0 && (
               <button
                 onClick={handleDeleteSelected}
-                className="flex items-center justify-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                className="flex items-center justify-center space-x-2 px-4 py-2 bg-red-600 text-white  hover:bg-red-700"
               >
                 <Trash2 className="w-5 h-5" />
                 <span>選択した商品を削除 ({selectedProducts.size})</span>
@@ -367,21 +367,21 @@ export const Products = () => {
             )}
             <button
               onClick={() => setShowBulkUpload(true)}
-              className="flex items-center justify-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+              className="flex items-center justify-center space-x-2 px-4 py-2 border border-gray-300  hover:bg-gray-50"
             >
               <Upload className="w-5 h-5" />
               <span>CSV一括登録</span>
             </button>
             <button
               onClick={() => setShowBulkStatus(true)}
-              className="flex items-center justify-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+              className="flex items-center justify-center space-x-2 px-4 py-2 border border-gray-300  hover:bg-gray-50"
             >
               <Upload className="w-5 h-5" />
               <span>ステータス一括更新</span>
             </button>
             <button
               onClick={handleExport}
-              className="flex items-center justify-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+              className="flex items-center justify-center space-x-2 px-4 py-2 border border-gray-300  hover:bg-gray-50"
             >
               <Download className="w-5 h-5" />
               <span>CSVエクスポート</span>
@@ -391,7 +391,7 @@ export const Products = () => {
                 setEditingProduct(null);
                 setShowModal(true);
               }}
-              className="flex items-center justify-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              className="flex items-center justify-center space-x-2 px-4 py-2 bg-blue-600 text-white  hover:bg-blue-700"
             >
               <Plus className="w-5 h-5" />
               <span>商品追加</span>
@@ -400,7 +400,7 @@ export const Products = () => {
         </div>
 
         {/* Filters and Search */}
-        <div className="bg-white rounded-lg shadow p-4">
+        <div className="bg-white  shadow p-4">
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -409,13 +409,13 @@ export const Products = () => {
                 placeholder="商品名・SKUで検索..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors"
               />
             </div>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
+              className="px-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors"
             >
               <option value="">すべてのステータス</option>
               <option value="active">有効（販売中）</option>
@@ -428,7 +428,7 @@ export const Products = () => {
         </div>
 
         {/* Products Table */}
-        <div className="bg-white rounded-lg shadow overflow-hidden">
+        <div className="bg-white  shadow overflow-hidden">
           {loading ? (
             <div className="p-8 text-center text-gray-500">読み込み中...</div>
           ) : (
@@ -673,7 +673,7 @@ export const Products = () => {
                         </td>
                         <td className="px-2 sm:px-4 py-4 whitespace-nowrap">
                           <span
-                            className={`px-1.5 sm:px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs font-medium rounded-md ${
+                            className={`px-1.5 sm:px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs font-medium  ${
                               product.status === "active"
                                 ? "bg-green-100 text-green-800"
                                 : product.status === "out_of_stock"
@@ -836,7 +836,7 @@ const BulkUploadModal = ({
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg max-w-md w-full">
+      <div className="bg-white  max-w-md w-full">
         <div className="flex items-center justify-between p-6 border-b">
           <h2 className="text-xl font-bold">{title}</h2>
           <button
@@ -855,20 +855,20 @@ const BulkUploadModal = ({
               type="file"
               accept=".csv"
               onChange={handleFileChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+              className="w-full px-4 py-2 border border-gray-300 "
             />
           </div>
           <div className="flex justify-end space-x-3">
             <button
               onClick={onClose}
-              className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+              className="px-4 py-2 border border-gray-300  hover:bg-gray-50"
             >
               キャンセル
             </button>
             <button
               onClick={handleUpload}
               disabled={!file || uploading}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+              className="px-4 py-2 bg-blue-600 text-white  hover:bg-blue-700 disabled:opacity-50"
             >
               {uploading ? "アップロード中..." : "アップロード"}
             </button>

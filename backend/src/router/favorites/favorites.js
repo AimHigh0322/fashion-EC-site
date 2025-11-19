@@ -3,7 +3,10 @@ const router = express.Router();
 const favoriteController = require("../../controllers/favoriteController");
 const { authenticateRequest } = require("../../middleware/auth-middleware/middleware");
 
-// All routes require authentication
+// Get favorite count for a product (public endpoint, no auth required)
+router.get("/count/:product_id", favoriteController.getProductFavoriteCount);
+
+// All other routes require authentication
 router.use(authenticateRequest);
 
 // Add product to favorites

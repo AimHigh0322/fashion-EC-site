@@ -1,6 +1,15 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { MapPin, Plus, Edit2, Trash2, Star, Check, User, Phone } from "lucide-react";
+import {
+  MapPin,
+  Plus,
+  Edit2,
+  Trash2,
+  Star,
+  Check,
+  User,
+  Phone,
+} from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import { useToast } from "../../contexts/ToastContext";
 import { apiService } from "../../services/api";
@@ -167,10 +176,11 @@ export const ShippingAddresses = () => {
           setLoadingProfile(false);
         }
       }
-      
+
       // Set default values from profile
-      const fullName = profile 
-        ? `${profile.last_name || ""} ${profile.first_name || ""}`.trim() || "配送先"
+      const fullName = profile
+        ? `${profile.last_name || ""} ${profile.first_name || ""}`.trim() ||
+          "配送先"
         : "配送先";
       setFormData({
         name: fullName,
@@ -264,7 +274,7 @@ export const ShippingAddresses = () => {
           setLoadingProfile(false);
         }
       }
-      
+
       // Use profile phone if not provided in form
       const submitData = {
         name: formData.name.trim(),
@@ -304,7 +314,9 @@ export const ShippingAddresses = () => {
         return;
       }
       if (!submitData.phone) {
-        error("電話番号がプロフィールに設定されていません。マイページで設定してください。");
+        error(
+          "電話番号がプロフィールに設定されていません。マイページで設定してください。"
+        );
         setSubmitting(false);
         return;
       }
@@ -405,7 +417,7 @@ export const ShippingAddresses = () => {
               </h1>
               <button
                 onClick={() => handleOpenModal()}
-                className="flex items-center px-4 py-2 bg-[#e2603f] hover:bg-[#c95a42] text-white font-medium rounded-lg transition-colors"
+                className="flex items-center px-4 py-2 bg-[#e2603f] hover:bg-[#c95a42] text-white font-medium  transition-colors"
               >
                 <Plus className="w-4 h-4 mr-2" />
                 新しい配送先を追加
@@ -416,7 +428,7 @@ export const ShippingAddresses = () => {
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {addresses.length === 0 ? (
-            <div className="bg-white rounded-lg shadow-sm p-12 text-center">
+            <div className="bg-white  shadow-sm p-12 text-center">
               <MapPin className="w-20 h-20 text-gray-300 mx-auto mb-4" />
               <h2 className="text-xl font-bold text-gray-900 mb-2">
                 配送先が登録されていません
@@ -426,7 +438,7 @@ export const ShippingAddresses = () => {
               </p>
               <button
                 onClick={() => handleOpenModal()}
-                className="inline-flex items-center px-6 py-3 bg-[#e2603f] hover:bg-[#c95a42] text-white font-medium rounded-lg transition-colors"
+                className="inline-flex items-center px-6 py-3 bg-[#e2603f] hover:bg-[#c95a42] text-white font-medium  transition-colors"
               >
                 <Plus className="w-5 h-5 mr-2" />
                 配送先を追加
@@ -437,7 +449,7 @@ export const ShippingAddresses = () => {
               {addresses.map((address) => (
                 <div
                   key={address.id}
-                  className="bg-white rounded-lg shadow-sm border-2 border-gray-200 hover:border-[#e2603f] transition-all p-6 relative"
+                  className="bg-white  shadow-sm border-2 border-gray-200 hover:border-[#e2603f] transition-all p-6 relative"
                 >
                   {address.is_default && (
                     <div className="absolute top-4 right-4">
@@ -503,7 +515,7 @@ export const ShippingAddresses = () => {
       {/* Add/Edit Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white  shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6 border-b border-gray-200">
               <h2 className="text-2xl font-bold text-gray-900">
                 {editingAddress ? "配送先を編集" : "新しい配送先を追加"}
@@ -513,7 +525,7 @@ export const ShippingAddresses = () => {
             <form onSubmit={handleSubmit} className="p-6">
               <div className="space-y-4">
                 {/* Profile Information Display */}
-                <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                <div className="bg-gray-50  p-4 border border-gray-200">
                   <h3 className="text-sm font-semibold text-gray-700 mb-3">
                     お客様情報（プロフィールから取得）
                   </h3>
@@ -526,7 +538,9 @@ export const ShippingAddresses = () => {
                           {loadingProfile
                             ? "読み込み中..."
                             : userProfile
-                            ? `${userProfile.last_name || ""} ${userProfile.first_name || ""}`.trim() || "未設定"
+                            ? `${userProfile.last_name || ""} ${
+                                userProfile.first_name || ""
+                              }`.trim() || "未設定"
                             : "未設定"}
                         </p>
                       </div>
@@ -548,7 +562,10 @@ export const ShippingAddresses = () => {
                 {/* Shipping Address Label */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    配送先の名前 <span className="text-gray-500 text-xs">(例: 自宅、会社など)</span>
+                    配送先の名前{" "}
+                    <span className="text-gray-500 text-xs">
+                      (例: 自宅、会社など)
+                    </span>
                   </label>
                   <input
                     type="text"
@@ -556,14 +573,14 @@ export const ShippingAddresses = () => {
                     onChange={(e) =>
                       setFormData({ ...formData, name: e.target.value })
                     }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#e2603f] focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300  focus:ring-2 focus:ring-[#e2603f] focus:border-transparent"
                     placeholder="自宅"
                   />
                 </div>
 
                 {/* Address Source Selection - Only show when adding new address */}
                 {!editingAddress && (
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <div className="bg-blue-50 border border-blue-200  p-4">
                     <label className="block text-sm font-semibold text-gray-700 mb-3">
                       住所の選択
                     </label>
@@ -595,16 +612,26 @@ export const ShippingAddresses = () => {
                     </div>
                     {useProfileAddress && (
                       <div className="mt-3 p-3 bg-white rounded border border-blue-200">
-                        <p className="text-xs text-gray-600 mb-1">プロフィール住所:</p>
+                        <p className="text-xs text-gray-600 mb-1">
+                          プロフィール住所:
+                        </p>
                         <p className="text-sm text-gray-900">
-                          {userProfile?.postal_code && `〒${userProfile.postal_code} `}
-                          {userProfile?.prefecture && `${userProfile.prefecture} `}
+                          {userProfile?.postal_code &&
+                            `〒${userProfile.postal_code} `}
+                          {userProfile?.prefecture &&
+                            `${userProfile.prefecture} `}
                           {userProfile?.city && `${userProfile.city} `}
-                          {userProfile?.street_address && `${userProfile.street_address} `}
+                          {userProfile?.street_address &&
+                            `${userProfile.street_address} `}
                           {userProfile?.apartment && userProfile.apartment}
-                          {!userProfile?.postal_code && !userProfile?.prefecture && !userProfile?.city && !userProfile?.street_address && (
-                            <span className="text-red-500">プロフィールに住所が登録されていません</span>
-                          )}
+                          {!userProfile?.postal_code &&
+                            !userProfile?.prefecture &&
+                            !userProfile?.city &&
+                            !userProfile?.street_address && (
+                              <span className="text-red-500">
+                                プロフィールに住所が登録されていません
+                              </span>
+                            )}
                         </p>
                       </div>
                     )}
@@ -627,7 +654,7 @@ export const ShippingAddresses = () => {
                         })
                       }
                       disabled={useProfileAddress && !editingAddress}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#e2603f] focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+                      className="w-full px-3 py-2 border border-gray-300  focus:ring-2 focus:ring-[#e2603f] focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
                       placeholder="123-4567"
                     />
                   </div>
@@ -643,7 +670,7 @@ export const ShippingAddresses = () => {
                         setFormData({ ...formData, prefecture: e.target.value })
                       }
                       disabled={useProfileAddress && !editingAddress}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#e2603f] focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+                      className="w-full px-3 py-2 border border-gray-300  focus:ring-2 focus:ring-[#e2603f] focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
                     >
                       <option value="">選択してください</option>
                       {PREFECTURES.map((pref) => (
@@ -667,7 +694,7 @@ export const ShippingAddresses = () => {
                       setFormData({ ...formData, city: e.target.value })
                     }
                     disabled={useProfileAddress && !editingAddress}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#e2603f] focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    className="w-full px-3 py-2 border border-gray-300  focus:ring-2 focus:ring-[#e2603f] focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
                     placeholder="渋谷区"
                   />
                 </div>
@@ -687,7 +714,7 @@ export const ShippingAddresses = () => {
                       })
                     }
                     disabled={useProfileAddress && !editingAddress}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#e2603f] focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    className="w-full px-3 py-2 border border-gray-300  focus:ring-2 focus:ring-[#e2603f] focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
                     placeholder="渋谷1-2-3"
                   />
                 </div>
@@ -706,11 +733,10 @@ export const ShippingAddresses = () => {
                       })
                     }
                     disabled={useProfileAddress && !editingAddress}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#e2603f] focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    className="w-full px-3 py-2 border border-gray-300  focus:ring-2 focus:ring-[#e2603f] focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
                     placeholder="渋谷マンション101号室"
                   />
                 </div>
-
 
                 <div className="flex items-center">
                   <input
@@ -736,14 +762,14 @@ export const ShippingAddresses = () => {
                   type="button"
                   onClick={handleCloseModal}
                   disabled={submitting}
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 px-4 py-2 border border-gray-300  text-gray-700 hover:bg-gray-50 font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   キャンセル
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="flex-1 px-4 py-2 bg-[#e2603f] hover:bg-[#c95a42] disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors"
+                  className="flex-1 px-4 py-2 bg-[#e2603f] hover:bg-[#c95a42] disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-medium  transition-colors"
                 >
                   {submitting ? (
                     <div className="flex items-center justify-center">

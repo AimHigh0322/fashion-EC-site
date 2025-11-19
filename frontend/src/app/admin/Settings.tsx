@@ -48,7 +48,7 @@ export const Settings = () => {
           </div>
           <button
             onClick={handleSave}
-            className="flex items-center justify-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="flex items-center justify-center space-x-2 px-4 py-2 bg-blue-600 text-white  hover:bg-blue-700 transition-colors"
           >
             <Save className="w-5 h-5" />
             <span>変更を保存</span>
@@ -56,7 +56,7 @@ export const Settings = () => {
         </div>
 
         {/* General Settings */}
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white  shadow p-6">
           <div className="flex items-center space-x-3 mb-6">
             <Globe className="w-6 h-6 text-blue-600" />
             <h2 className="text-lg font-semibold text-gray-900">一般設定</h2>
@@ -72,7 +72,7 @@ export const Settings = () => {
                 onChange={(e) =>
                   setSettings({ ...settings, siteName: e.target.value })
                 }
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
+                className="w-full px-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors"
               />
             </div>
             <div>
@@ -85,7 +85,7 @@ export const Settings = () => {
                 onChange={(e) =>
                   setSettings({ ...settings, siteEmail: e.target.value })
                 }
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
+                className="w-full px-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors"
               />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -98,7 +98,7 @@ export const Settings = () => {
                   onChange={(e) =>
                     setSettings({ ...settings, currency: e.target.value })
                   }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
+                  className="w-full px-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors"
                 >
                   <option value="JPY">JPY (¥)</option>
                   <option value="USD">USD ($)</option>
@@ -114,7 +114,7 @@ export const Settings = () => {
                   onChange={(e) =>
                     setSettings({ ...settings, timezone: e.target.value })
                   }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
+                  className="w-full px-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors"
                 >
                   <option value="Asia/Tokyo">Asia/Tokyo</option>
                   <option value="UTC">UTC</option>
@@ -126,22 +126,16 @@ export const Settings = () => {
         </div>
 
         {/* Notifications */}
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white  shadow p-6">
           <div className="flex items-center space-x-3 mb-6">
             <Bell className="w-6 h-6 text-blue-600" />
-            <h2 className="text-lg font-semibold text-gray-900">
-              通知設定
-            </h2>
+            <h2 className="text-lg font-semibold text-gray-900">通知設定</h2>
           </div>
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-900">
-                  メール通知
-                </p>
-                <p className="text-xs text-gray-500">
-                  メールで通知を受信
-                </p>
+                <p className="text-sm font-medium text-gray-900">メール通知</p>
+                <p className="text-xs text-gray-500">メールで通知を受信</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
                 <input
@@ -163,12 +157,8 @@ export const Settings = () => {
             </div>
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-900">
-                  SMS通知
-                </p>
-                <p className="text-xs text-gray-500">
-                  SMSで通知を受信
-                </p>
+                <p className="text-sm font-medium text-gray-900">SMS通知</p>
+                <p className="text-xs text-gray-500">SMSで通知を受信</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
                 <input
@@ -193,9 +183,7 @@ export const Settings = () => {
                 <p className="text-sm font-medium text-gray-900">
                   プッシュ通知
                 </p>
-                <p className="text-xs text-gray-500">
-                  プッシュ通知を受信
-                </p>
+                <p className="text-xs text-gray-500">プッシュ通知を受信</p>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
                 <input
@@ -219,17 +207,17 @@ export const Settings = () => {
         </div>
 
         {/* Security */}
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white  shadow p-6">
           <div className="flex items-center space-x-3 mb-6">
             <Shield className="w-6 h-6 text-blue-600" />
-            <h2 className="text-lg font-semibold text-gray-900">セキュリティ</h2>
+            <h2 className="text-lg font-semibold text-gray-900">
+              セキュリティ
+            </h2>
           </div>
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-900">
-                  二要素認証
-                </p>
+                <p className="text-sm font-medium text-gray-900">二要素認証</p>
                 <p className="text-xs text-gray-500">
                   セキュリティの追加レイヤー
                 </p>
@@ -268,7 +256,7 @@ export const Settings = () => {
                     },
                   })
                 }
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
+                className="w-full px-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors"
               />
             </div>
           </div>

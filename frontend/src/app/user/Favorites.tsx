@@ -162,27 +162,29 @@ export const Favorites = () => {
 
   return (
     <UserLayout>
-      <div className="min-h-screen bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
-          <Breadcrumbs
-            items={[{ label: "商品一覧", path: "/" }, { label: "お気に入り" }]}
-          />
-        </div>
-        {/* Header Section - Japanese Design */}
-        <div className="bg-[#e2603f] text-white py-8 sm:py-12">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center space-x-3 sm:space-x-4">
-              <div className="bg-white/20 rounded-full p-3 sm:p-4">
-                <Heart className="w-6 h-6 sm:w-8 sm:h-8 fill-current" />
-              </div>
-              <div>
-                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-1 sm:mb-2">
-                  お気に入り
-                </h1>
-                <p className="text-sm sm:text-base text-white/90">
-                  保存した商品を確認できます
-                </p>
-              </div>
+      <div className="bg-gray-50 min-h-screen">
+        <div className="bg-white border-b border-gray-200">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <Breadcrumbs
+              items={[
+                { label: "商品一覧", path: "/" },
+                { label: "お気に入り" },
+              ]}
+            />
+            <div className="flex items-center justify-between mt-4">
+              <h1 className="text-2xl font-bold text-gray-900 flex items-center">
+                <Heart className="w-6 h-6 mr-2 text-[#e2603f] fill-current" />
+                お気に入り
+              </h1>
+              {!loading && favoriteProducts.length > 0 && (
+                <div className="text-right">
+                  <p className="text-sm text-gray-600 mb-1">お気に入り商品数</p>
+                  <p className="text-xl font-bold text-gray-900">
+                    {favoriteProducts.length}
+                    <span className="text-base text-gray-600 ml-1">件</span>
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -197,7 +199,7 @@ export const Favorites = () => {
               </div>
             </div>
           ) : favoriteProducts.length === 0 ? (
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 sm:p-16 text-center">
+            <div className="bg-white  shadow-sm border border-gray-200 p-12 sm:p-16 text-center">
               <div className="max-w-md mx-auto">
                 <div className="bg-gray-100 rounded-full w-24 h-24 sm:w-32 sm:h-32 flex items-center justify-center mx-auto mb-6">
                   <Heart className="w-12 h-12 sm:w-16 sm:h-16 text-gray-400" />
@@ -210,7 +212,7 @@ export const Favorites = () => {
                 </p>
                 <Link
                   to="/"
-                  className="inline-flex items-center justify-center bg-[#e2603f] hover:bg-[#c95a42] text-white font-semibold py-3 px-8 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg cursor-pointer"
+                  className="inline-flex items-center justify-center bg-[#e2603f] hover:bg-[#c95a42] text-white font-semibold py-3 px-8  transition-all duration-200 shadow-md hover:shadow-lg cursor-pointer"
                 >
                   <ShoppingCart className="w-5 h-5 mr-2" />
                   商品を見る
@@ -219,33 +221,12 @@ export const Favorites = () => {
             </div>
           ) : (
             <>
-              {/* Stats Bar */}
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 mb-6 sm:mb-8">
-                <div className="flex items-center justify-between flex-wrap gap-4">
-                  <div>
-                    <p className="text-sm text-gray-600 mb-1">
-                      お気に入り商品数
-                    </p>
-                    <p className="text-2xl sm:text-3xl font-bold text-[#e2603f]">
-                      {favoriteProducts.length}
-                      <span className="text-lg sm:text-xl text-gray-600 ml-2">
-                        件
-                      </span>
-                    </p>
-                  </div>
-                  <div className="flex items-center space-x-2 text-sm text-gray-600">
-                    <Heart className="w-5 h-5 text-[#e2603f]" />
-                    <span>あなたの大切な商品</span>
-                  </div>
-                </div>
-              </div>
-
               {/* Products Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
                 {favoriteProducts.map((product) => (
                   <div
                     key={product.product_id}
-                    className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col group"
+                    className="bg-white border border-gray-200 overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col group"
                   >
                     {/* Image Section */}
                     <div className="relative overflow-hidden bg-gray-100">

@@ -1,4 +1,10 @@
-import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  type ReactNode,
+} from "react";
 import { apiService } from "../services/api";
 import { useAuth } from "./AuthContext";
 
@@ -13,6 +19,7 @@ interface CartContextType {
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useCart = () => {
   const context = useContext(CartContext);
   if (!context) {
@@ -40,6 +47,7 @@ export const CartProvider = ({ children }: CartProviderProps) => {
       setCartCount(0);
       setTotalQuantity(0);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated]);
 
   const refreshCart = async () => {
@@ -65,7 +73,10 @@ export const CartProvider = ({ children }: CartProviderProps) => {
     }
   };
 
-  const addToCart = async (productId: string, quantity: number = 1): Promise<boolean> => {
+  const addToCart = async (
+    productId: string,
+    quantity: number = 1
+  ): Promise<boolean> => {
     if (!isAuthenticated) {
       console.warn("User not authenticated, cannot add to cart");
       return false;
@@ -116,10 +127,5 @@ export const CartProvider = ({ children }: CartProviderProps) => {
     removeFromCart,
   };
 
-  return (
-    <CartContext.Provider value={value}>
-      {children}
-    </CartContext.Provider>
-  );
+  return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 };
-

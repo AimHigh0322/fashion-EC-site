@@ -40,7 +40,9 @@ export const ToastComponent = ({ toast, onClose }: ToastProps) => {
 
   return (
     <div
-      className={`flex items-center gap-3 px-4 py-3 rounded-lg border shadow-lg min-w-[300px] max-w-md animate-slide-in ${styles[toast.type]}`}
+      className={`flex items-center gap-3 px-4 py-3  border shadow-lg min-w-[300px] max-w-md animate-slide-in ${
+        styles[toast.type]
+      }`}
     >
       <div className="flex-shrink-0">{icons[toast.type]}</div>
       <p className="flex-1 text-sm font-medium">{toast.message}</p>
@@ -53,4 +55,3 @@ export const ToastComponent = ({ toast, onClose }: ToastProps) => {
     </div>
   );
 };
-

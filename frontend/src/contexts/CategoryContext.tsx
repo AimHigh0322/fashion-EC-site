@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, type ReactNode } from "react";
 
 interface CategoryContextType {
   selectedCategoryId: string | null;
@@ -33,6 +33,7 @@ export const CategoryProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useCategory = () => {
   const context = useContext(CategoryContext);
   if (context === undefined) {
@@ -40,4 +41,3 @@ export const useCategory = () => {
   }
   return context;
 };
-

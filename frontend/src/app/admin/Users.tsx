@@ -168,7 +168,7 @@ export const Users = () => {
         </div>
 
         {/* Filters and Search */}
-        <div className="bg-white rounded-lg shadow p-4">
+        <div className="bg-white  shadow p-4">
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -177,14 +177,14 @@ export const Users = () => {
                 placeholder="ユーザーを検索..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors"
               />
             </div>
           </div>
         </div>
 
         {/* Users Table */}
-        <div className="bg-white rounded-lg shadow overflow-hidden">
+        <div className="bg-white  shadow overflow-hidden">
           {loading && users.length === 0 ? (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
@@ -198,7 +198,7 @@ export const Users = () => {
             <>
               <div className="overflow-x-auto -mx-4 sm:mx-0">
                 <div className="inline-block min-w-full align-middle sm:px-0">
-                  <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
+                  <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:">
                     <table className="min-w-full divide-y divide-gray-200">
                       <thead className="bg-gray-50">
                         <tr>
@@ -255,7 +255,7 @@ export const Users = () => {
                             </td>
                             <td className="px-2 sm:px-4 py-4 whitespace-nowrap">
                               <span
-                                className={`px-1.5 sm:px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs font-medium rounded-md ${
+                                className={`px-1.5 sm:px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs font-medium  ${
                                   user.role === "admin"
                                     ? "bg-purple-100 text-purple-800"
                                     : "bg-gray-100 text-gray-800"
@@ -266,7 +266,7 @@ export const Users = () => {
                             </td>
                             <td className="px-2 sm:px-4 py-4 whitespace-nowrap">
                               <span
-                                className={`px-1.5 sm:px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs font-medium rounded-md ${
+                                className={`px-1.5 sm:px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs font-medium  ${
                                   user.status === "active"
                                     ? "bg-green-100 text-green-800"
                                     : "bg-red-100 text-red-800"
@@ -337,7 +337,7 @@ export const Users = () => {
                     <button
                       onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                       disabled={currentPage === 1}
-                      className="px-3 py-1 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                      className="px-3 py-1 border border-gray-300  disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
                     >
                       前へ
                     </button>
@@ -349,7 +349,7 @@ export const Users = () => {
                         setCurrentPage((p) => Math.min(totalPages, p + 1))
                       }
                       disabled={currentPage === totalPages}
-                      className="px-3 py-1 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                      className="px-3 py-1 border border-gray-300  disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
                     >
                       次へ
                     </button>

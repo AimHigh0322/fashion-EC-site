@@ -37,11 +37,18 @@ export function Reviews() {
       if (filter !== "all") {
         filters.status = filter;
       }
-      const data = await apiService.getAllReviews(filters, 50, 0);
-      setReviews(data.reviews || []);
-      setTotal(data.total || 0);
+      const response = await apiService.getAllReviews(filters, 50, 0);
+      if (response.data) {
+        setReviews(response.data.reviews || []);
+        setTotal(response.data.total || 0);
+      } else {
+        setReviews([]);
+        setTotal(0);
+      }
     } catch (error: any) {
       showToast(error.message || "レビューの読み込みに失敗しました", "error");
+      setReviews([]);
+      setTotal(0);
     } finally {
       setLoading(false);
     }
@@ -138,12 +145,8 @@ export function Reviews() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-800 mb-2">
-          レビュー管理
-        </h1>
-        <p className="text-gray-600">
-          商品レビューの承認・却下・返信を管理
-        </p>
+        <h1 className="text-2xl font-bold text-gray-800 mb-2">レビュー管理</h1>
+        <p className="text-gray-600">商品レビューの承認・却下・返信を管理</p>
       </div>
 
       {/* Filter Tabs */}
@@ -154,7 +157,7 @@ export function Reviews() {
             <button
               key={tab.value}
               onClick={() => setFilter(tab.value)}
-              className={`flex items-center px-4 py-2 rounded-lg font-medium transition-colors ${
+              className={`flex items-center px-4 py-2  font-medium transition-colors ${
                 filter === tab.value
                   ? "bg-[#e2603f] text-white"
                   : "bg-gray-100 text-gray-700 hover:bg-gray-200"
@@ -176,14 +179,14 @@ export function Reviews() {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="商品名、ユーザー名、コメントで検索..."
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#e2603f] focus:border-transparent"
+            className="w-full pl-10 pr-4 py-2 border border-gray-300  focus:ring-2 focus:ring-[#e2603f] focus:border-transparent"
           />
         </div>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white border border-gray-200 rounded-lg p-4">
+        <div className="bg-white border border-gray-200  p-4">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600">全レビュー</p>
@@ -192,7 +195,7 @@ export function Reviews() {
             <Filter className="w-8 h-8 text-gray-400" />
           </div>
         </div>
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+        <div className="bg-yellow-50 border border-yellow-200  p-4">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-yellow-600">審査待ち</p>
@@ -203,7 +206,7 @@ export function Reviews() {
             <Clock className="w-8 h-8 text-yellow-400" />
           </div>
         </div>
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+        <div className="bg-green-50 border border-green-200  p-4">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-green-600">承認済み</p>
@@ -214,7 +217,7 @@ export function Reviews() {
             <CheckCircle className="w-8 h-8 text-green-400" />
           </div>
         </div>
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+        <div className="bg-red-50 border border-red-200  p-4">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-red-600">却下</p>
@@ -229,7 +232,7 @@ export function Reviews() {
 
       {/* Reviews List */}
       {filteredReviews.length === 0 ? (
-        <div className="bg-white rounded-lg shadow-sm p-12 text-center">
+        <div className="bg-white  shadow-sm p-12 text-center">
           <MessageSquare className="w-16 h-16 mx-auto text-gray-300 mb-4" />
           <h3 className="text-lg font-medium text-gray-700 mb-2">
             レビューがありません
@@ -245,7 +248,7 @@ export function Reviews() {
           {filteredReviews.map((review) => (
             <div
               key={review.id}
-              className="bg-white border border-gray-200 rounded-lg p-6 hover:border-[#e2603f] transition-colors"
+              className="bg-white border border-gray-200  p-6 hover:border-[#e2603f] transition-colors"
             >
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
@@ -305,7 +308,7 @@ export function Reviews() {
                 {review.status !== "approved" && (
                   <button
                     onClick={() => handleModerateReview(review.id, "approved")}
-                    className="flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors"
+                    className="flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium  transition-colors"
                   >
                     <CheckCircle className="w-4 h-4 mr-2" />
                     承認
@@ -314,7 +317,7 @@ export function Reviews() {
                 {review.status !== "rejected" && (
                   <button
                     onClick={() => handleModerateReview(review.id, "rejected")}
-                    className="flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors"
+                    className="flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium  transition-colors"
                   >
                     <XCircle className="w-4 h-4 mr-2" />
                     却下
@@ -323,7 +326,7 @@ export function Reviews() {
                 {review.status === "approved" && (
                   <button
                     onClick={() => handleModerateReview(review.id, "pending")}
-                    className="flex items-center px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white text-sm font-medium rounded-lg transition-colors"
+                    className="flex items-center px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white text-sm font-medium  transition-colors"
                   >
                     <Clock className="w-4 h-4 mr-2" />
                     審査待ちに戻す
@@ -331,7 +334,7 @@ export function Reviews() {
                 )}
                 <button
                   onClick={() => handleOpenReplyModal(review)}
-                  className="flex items-center px-4 py-2 bg-[#e2603f] hover:bg-[#c95a42] text-white text-sm font-medium rounded-lg transition-colors"
+                  className="flex items-center px-4 py-2 bg-[#e2603f] hover:bg-[#c95a42] text-white text-sm font-medium  transition-colors"
                 >
                   <MessageSquare className="w-4 h-4 mr-2" />
                   {review.admin_reply ? "返信を編集" : "返信する"}
@@ -340,7 +343,7 @@ export function Reviews() {
                   onClick={() =>
                     navigate(`/admin/products/${review.product_id}`)
                   }
-                  className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm font-medium rounded-lg transition-colors"
+                  className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm font-medium  transition-colors"
                 >
                   商品を見る
                 </button>
@@ -353,12 +356,12 @@ export function Reviews() {
       {/* Reply Modal */}
       {showReplyModal && selectedReview && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full p-6">
+          <div className="bg-white  shadow-xl max-w-2xl w-full p-6">
             <h3 className="text-lg font-semibold text-gray-800 mb-4">
               レビューへの返信
             </h3>
 
-            <div className="mb-4 p-4 bg-gray-50 rounded-lg">
+            <div className="mb-4 p-4 bg-gray-50 ">
               <div className="flex items-center gap-2 mb-2">
                 {renderStars(selectedReview.rating)}
                 <span className="text-sm text-gray-600">
@@ -381,7 +384,7 @@ export function Reviews() {
                 value={reply}
                 onChange={(e) => setReply(e.target.value)}
                 rows={6}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#e2603f] focus:border-transparent resize-none"
+                className="w-full px-3 py-2 border border-gray-300  focus:ring-2 focus:ring-[#e2603f] focus:border-transparent resize-none"
                 placeholder="お客様へのメッセージを入力してください..."
               />
             </div>
@@ -390,14 +393,14 @@ export function Reviews() {
               <button
                 onClick={() => setShowReplyModal(false)}
                 disabled={submitting}
-                className="flex-1 px-4 py-2 bg-gray-200 hover:bg-gray-300 disabled:bg-gray-100 text-gray-700 font-medium rounded-lg transition-colors"
+                className="flex-1 px-4 py-2 bg-gray-200 hover:bg-gray-300 disabled:bg-gray-100 text-gray-700 font-medium  transition-colors"
               >
                 キャンセル
               </button>
               <button
                 onClick={handleSubmitReply}
                 disabled={submitting || !reply.trim()}
-                className="flex-1 px-4 py-2 bg-[#e2603f] hover:bg-[#c95a42] disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors"
+                className="flex-1 px-4 py-2 bg-[#e2603f] hover:bg-[#c95a42] disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-medium  transition-colors"
               >
                 {submitting ? "送信中..." : "返信を送信"}
               </button>
@@ -408,4 +411,3 @@ export function Reviews() {
     </div>
   );
 }
-

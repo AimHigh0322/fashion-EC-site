@@ -34,13 +34,15 @@ interface ShippingAddress {
 export const Checkout = () => {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
-  const { success, error } = useToast();
+  const { error } = useToast();
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [addresses, setAddresses] = useState<ShippingAddress[]>([]);
   const [selectedAddressId, setSelectedAddressId] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
   const [shippingCost, setShippingCost] = useState(0);
+  const [shippingMethod, setShippingMethod] = useState<string>("standard");
+  const [showConfirmation, setShowConfirmation] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -48,6 +50,7 @@ export const Checkout = () => {
       return;
     }
     loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, navigate]);
 
   const loadData = async () => {
@@ -71,13 +74,15 @@ export const Checkout = () => {
       } else if (addressResponse.data) {
         setAddresses(addressResponse.data);
         // Auto-select default address
-        const defaultAddress = addressResponse.data.find((addr) => addr.is_default);
+        const defaultAddress = addressResponse.data.find(
+          (addr) => addr.is_default
+        );
         if (defaultAddress) {
           setSelectedAddressId(defaultAddress.id);
           calculateShippingForAddress(defaultAddress);
         }
       }
-    } catch (err) {
+    } catch {
       error("データの読み込みに失敗しました");
     } finally {
       setLoading(false);
@@ -89,9 +94,27 @@ export const Checkout = () => {
       (sum, item) => sum + item.price * item.quantity,
       0
     );
-    const response = await apiService.calculateShipping(address.prefecture, subtotal);
+    const response = await apiService.calculateShipping(
+      address.prefecture,
+      subtotal
+    );
     if (response.data) {
-      setShippingCost(response.data.shipping_cost);
+      let baseShipping = response.data.shipping_cost || 0;
+      // Add express shipping cost if selected
+      if (shippingMethod === "express") {
+        baseShipping += 500; // Express shipping costs 500 yen more
+      }
+      setShippingCost(baseShipping);
+    }
+  };
+
+  const handleShippingMethodChange = (method: string) => {
+    setShippingMethod(method);
+    if (selectedAddressId) {
+      const address = addresses.find((addr) => addr.id === selectedAddressId);
+      if (address) {
+        calculateShippingForAddress(address);
+      }
     }
   };
 
@@ -114,19 +137,28 @@ export const Checkout = () => {
       return;
     }
 
+    // Show confirmation first
+    setShowConfirmation(true);
+  };
+
+  const handleConfirmOrder = async () => {
     setProcessing(true);
     try {
-      const response = await apiService.createCheckoutSession(selectedAddressId);
+      // Use Stripe checkout
+      const response = await apiService.createCheckoutSession(
+        selectedAddressId
+      );
       if (response.error) {
         error(response.error);
       } else if (response.data?.url) {
         // Redirect to Stripe Checkout
         window.location.href = response.data.url;
       }
-    } catch (err) {
+    } catch {
       error("決済セッションの作成に失敗しました");
     } finally {
       setProcessing(false);
+      setShowConfirmation(false);
     }
   };
 
@@ -182,7 +214,7 @@ export const Checkout = () => {
             {/* Left Column - Address Selection */}
             <div className="lg:col-span-2 space-y-6">
               {/* Shipping Address */}
-              <div className="bg-white rounded-lg shadow-sm p-6">
+              <div className="bg-white  shadow-sm p-6">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-xl font-bold text-gray-900 flex items-center">
                     <MapPin className="w-5 h-5 mr-2 text-[#e2603f]" />
@@ -200,10 +232,12 @@ export const Checkout = () => {
                 {addresses.length === 0 ? (
                   <div className="text-center py-8">
                     <MapPin className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                    <p className="text-gray-600 mb-4">配送先が登録されていません</p>
+                    <p className="text-gray-600 mb-4">
+                      配送先が登録されていません
+                    </p>
                     <button
                       onClick={() => navigate("/shipping-addresses/new")}
-                      className="inline-flex items-center px-4 py-2 bg-[#e2603f] hover:bg-[#c95a42] text-white font-medium rounded-lg transition-colors"
+                      className="inline-flex items-center px-4 py-2 bg-[#e2603f] hover:bg-[#c95a42] text-white font-medium  transition-colors"
                     >
                       <Plus className="w-4 h-4 mr-2" />
                       配送先を追加
@@ -215,11 +249,11 @@ export const Checkout = () => {
                       <div
                         key={address.id}
                         onClick={() => handleAddressSelect(address.id)}
-                  className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
-                    selectedAddressId === address.id
-                      ? "border-[#e2603f] bg-orange-50"
-                      : "border-gray-200 hover:border-gray-300"
-                  }`}
+                        className={`border-2  p-4 cursor-pointer transition-all ${
+                          selectedAddressId === address.id
+                            ? "border-[#e2603f] bg-orange-50"
+                            : "border-gray-200 hover:border-gray-300"
+                        }`}
                       >
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
@@ -265,8 +299,86 @@ export const Checkout = () => {
                 )}
               </div>
 
+              {/* Payment Method Selection */}
+              <div className="bg-white border border-gray-200 p-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                  <CreditCard className="w-5 h-5 mr-2 text-[#e2603f]" />
+                  お支払い方法
+                </h2>
+                <div className="bg-gray-50 border border-gray-200 p-4">
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">💳</span>
+                    <div>
+                      <p className="font-medium text-gray-900">
+                        クレジットカード (Stripe)
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        安全なオンライン決済
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Shipping Method Selection */}
+              <div className="bg-white  shadow-sm p-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                  <MapPin className="w-5 h-5 mr-2 text-[#e2603f]" />
+                  配送方法
+                </h2>
+                <div className="space-y-3">
+                  {[
+                    {
+                      value: "standard",
+                      label: "通常配送",
+                      description: "1-3営業日でお届け",
+                      cost: 0,
+                    },
+                    {
+                      value: "express",
+                      label: "速達配送",
+                      description: "翌日お届け",
+                      cost: 500,
+                    },
+                  ].map((method) => (
+                    <div
+                      key={method.value}
+                      onClick={() => handleShippingMethodChange(method.value)}
+                      className={`border-2  p-4 cursor-pointer transition-all ${
+                        shippingMethod === method.value
+                          ? "border-[#e2603f] bg-orange-50"
+                          : "border-gray-200 hover:border-gray-300"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium text-gray-900">
+                              {method.label}
+                            </span>
+                            {method.cost > 0 && (
+                              <span className="text-sm text-gray-600">
+                                (+¥{method.cost.toLocaleString()})
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-sm text-gray-500 mt-1">
+                            {method.description}
+                          </p>
+                        </div>
+                        {shippingMethod === method.value && (
+                          <div className="w-6 h-6 bg-[#e2603f] rounded-full flex items-center justify-center">
+                            <Check className="w-4 h-4 text-white" />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
               {/* Order Items */}
-              <div className="bg-white rounded-lg shadow-sm p-6">
+              <div className="bg-white  shadow-sm p-6">
                 <h2 className="text-xl font-bold text-gray-900 mb-4">
                   注文内容 ({cartItems.length}点)
                 </h2>
@@ -286,7 +398,9 @@ export const Checkout = () => {
                         }}
                       />
                       <div className="flex-1">
-                        <h3 className="font-semibold text-gray-900">{item.name}</h3>
+                        <h3 className="font-semibold text-gray-900">
+                          {item.name}
+                        </h3>
                         <p className="text-sm text-gray-500">SKU: {item.sku}</p>
                         <p className="text-sm text-gray-600 mt-1">
                           数量: {item.quantity}
@@ -305,7 +419,7 @@ export const Checkout = () => {
 
             {/* Right Column - Order Summary */}
             <div className="lg:col-span-1">
-              <div className="bg-white rounded-lg shadow-sm p-6 sticky top-4">
+              <div className="bg-white  shadow-sm p-6 sticky top-4">
                 <h2 className="text-xl font-bold text-gray-900 mb-6">
                   注文内容
                 </h2>
@@ -322,7 +436,9 @@ export const Checkout = () => {
                   <div className="flex justify-between text-gray-600">
                     <span>送料</span>
                     <span
-                      className={shippingCost === 0 ? "text-green-600 font-semibold" : ""}
+                      className={
+                        shippingCost === 0 ? "text-green-600 font-semibold" : ""
+                      }
                     >
                       {shippingCost === 0
                         ? "無料"
@@ -333,7 +449,9 @@ export const Checkout = () => {
 
                 <div className="border-t border-gray-200 pt-4 mb-6">
                   <div className="flex justify-between items-center">
-                    <span className="text-lg font-bold text-gray-900">合計</span>
+                    <span className="text-lg font-bold text-gray-900">
+                      合計
+                    </span>
                     <span className="text-2xl font-bold text-red-600">
                       ¥{total.toLocaleString()}
                     </span>
@@ -346,7 +464,7 @@ export const Checkout = () => {
                   disabled={
                     processing || !selectedAddressId || cartItems.length === 0
                   }
-                  className="w-full bg-[#e2603f] hover:bg-[#c95a42] disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold py-3 px-4 rounded-lg transition-colors shadow-md flex items-center justify-center"
+                  className="w-full bg-[#e2603f] hover:bg-[#c95a42] disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold py-3 px-4  transition-colors shadow-md flex items-center justify-center"
                 >
                   {processing ? (
                     <>
@@ -356,7 +474,7 @@ export const Checkout = () => {
                   ) : (
                     <>
                       <CreditCard className="w-5 h-5 mr-2" />
-                      お支払いへ進む
+                      注文を確認する
                     </>
                   )}
                 </button>
@@ -370,7 +488,152 @@ export const Checkout = () => {
           </div>
         </div>
       </div>
+
+      {/* Order Confirmation Modal */}
+      {showConfirmation && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white  shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">
+                注文内容の確認
+              </h2>
+
+              {/* Order Summary */}
+              <div className="space-y-4 mb-6">
+                <div>
+                  <h3 className="font-semibold text-gray-900 mb-2">注文商品</h3>
+                  <div className="space-y-2">
+                    {cartItems.map((item) => (
+                      <div
+                        key={item.id}
+                        className="flex justify-between text-sm text-gray-600"
+                      >
+                        <span>
+                          {item.name} × {item.quantity}
+                        </span>
+                        <span>
+                          ¥{(item.price * item.quantity).toLocaleString()}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="border-t pt-4">
+                  <h3 className="font-semibold text-gray-900 mb-2">配送先</h3>
+                  {addresses.find((addr) => addr.id === selectedAddressId)
+                    ?.name && (
+                    <div className="text-sm text-gray-600">
+                      <p>
+                        {
+                          addresses.find(
+                            (addr) => addr.id === selectedAddressId
+                          )?.name
+                        }
+                      </p>
+                      <p>
+                        〒
+                        {
+                          addresses.find(
+                            (addr) => addr.id === selectedAddressId
+                          )?.postal_code
+                        }
+                      </p>
+                      <p>
+                        {
+                          addresses.find(
+                            (addr) => addr.id === selectedAddressId
+                          )?.prefecture
+                        }{" "}
+                        {
+                          addresses.find(
+                            (addr) => addr.id === selectedAddressId
+                          )?.city
+                        }
+                      </p>
+                      <p>
+                        {
+                          addresses.find(
+                            (addr) => addr.id === selectedAddressId
+                          )?.address_line1
+                        }
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                <div className="border-t pt-4">
+                  <h3 className="font-semibold text-gray-900 mb-2">
+                    お支払い方法
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    クレジットカード (Stripe) - 安全なオンライン決済
+                  </p>
+                </div>
+
+                <div className="border-t pt-4">
+                  <h3 className="font-semibold text-gray-900 mb-2">配送方法</h3>
+                  <p className="text-sm text-gray-600">
+                    {shippingMethod === "standard" ? "通常配送" : "速達配送"}
+                  </p>
+                </div>
+
+                <div className="border-t pt-4">
+                  <div className="flex justify-between text-sm mb-2">
+                    <span className="text-gray-600">小計</span>
+                    <span className="text-gray-900">
+                      ¥{subtotal.toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-sm mb-2">
+                    <span className="text-gray-600">消費税 (10%)</span>
+                    <span className="text-gray-900">
+                      ¥{tax.toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-sm mb-2">
+                    <span className="text-gray-600">送料</span>
+                    <span className="text-gray-900">
+                      {shippingCost === 0
+                        ? "無料"
+                        : `¥${shippingCost.toLocaleString()}`}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-lg font-bold pt-2 border-t">
+                    <span className="text-gray-900">合計</span>
+                    <span className="text-red-600">
+                      ¥{total.toLocaleString()}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowConfirmation(false)}
+                  className="flex-1 px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-900 font-medium  transition-colors"
+                >
+                  戻る
+                </button>
+                <button
+                  onClick={handleConfirmOrder}
+                  disabled={processing}
+                  className="flex-1 px-4 py-2 bg-[#e2603f] hover:bg-[#c95a42] disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold  transition-colors flex items-center justify-center"
+                >
+                  {processing ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                      処理中...
+                    </>
+                  ) : (
+                    "注文を確定する"
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </UserLayout>
   );
 };
-

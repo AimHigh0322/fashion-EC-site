@@ -51,7 +51,7 @@ export const AdminSidebar = () => {
           <h1 className="text-xl font-bold text-gray-900">管理パネル</h1>
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="p-2 rounded-md text-gray-600 hover:bg-gray-100"
+            className="p-2  text-gray-600 hover:bg-gray-100"
           >
             {isMobileMenuOpen ? (
               <X className="w-6 h-6" />
@@ -89,7 +89,7 @@ export const AdminSidebar = () => {
             </div>
             <button
               onClick={() => setIsMobileMenuOpen(false)}
-              className="lg:hidden p-1 rounded-md text-gray-600 hover:bg-gray-100"
+              className="lg:hidden p-1  text-gray-600 hover:bg-gray-100"
             >
               <X className="w-5 h-5" />
             </button>
@@ -121,7 +121,7 @@ export const AdminSidebar = () => {
                     <Link
                       to={item.href}
                       onClick={() => setIsMobileMenuOpen(false)}
-                      className={`flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      className={`flex items-center space-x-3 px-3 py-2  text-sm font-medium transition-colors ${
                         active
                           ? "bg-blue-50 text-blue-700"
                           : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
@@ -140,7 +140,7 @@ export const AdminSidebar = () => {
           <div className="p-4 border-t border-gray-200">
             <button
               onClick={logout}
-              className="flex items-center space-x-3 w-full px-3 py-2 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
+              className="flex items-center space-x-3 w-full px-3 py-2  text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
             >
               <LogOut className="w-5 h-5" />
               <span>ログアウト</span>

@@ -207,21 +207,100 @@ async function updateOrderStatus(orderId, status) {
 }
 
 async function addShippingTracking(orderId, trackingData) {
-  const trackingId = uuidv4();
-  await pool.query(
-    `INSERT INTO shipping_tracking (id, order_id, tracking_number, carrier, carrier_url, status, shipped_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?)`,
-    [
-      trackingId,
-      orderId,
-      trackingData.tracking_number,
-      trackingData.carrier,
-      trackingData.carrier_url || null,
-      trackingData.status || "shipped",
-      trackingData.shipped_at ? new Date(trackingData.shipped_at) : new Date(),
-    ]
-  );
-  return { id: trackingId };
+  const connection = await pool.getConnection();
+  try {
+    await connection.beginTransaction();
+
+    const trackingId = uuidv4();
+    await connection.query(
+      `INSERT INTO shipping_tracking (id, order_id, tracking_number, carrier, carrier_url, status, shipped_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [
+        trackingId,
+        orderId,
+        trackingData.tracking_number,
+        trackingData.carrier,
+        trackingData.carrier_url || null,
+        trackingData.status || "shipped",
+        trackingData.shipped_at ? new Date(trackingData.shipped_at) : new Date(),
+      ]
+    );
+
+    // Update order status to shipped if not already
+    await connection.query(
+      `UPDATE orders SET status = 'shipped' WHERE id = ? AND status NOT IN ('cancelled', 'delivered')`,
+      [orderId]
+    );
+
+    await connection.commit();
+    return { id: trackingId };
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
+}
+
+async function updateShippingTracking(trackingId, trackingData) {
+  const connection = await pool.getConnection();
+  try {
+    await connection.beginTransaction();
+
+    const updates = [];
+    const values = [];
+
+    if (trackingData.status !== undefined) {
+      updates.push("status = ?");
+      values.push(trackingData.status);
+    }
+    if (trackingData.tracking_number !== undefined) {
+      updates.push("tracking_number = ?");
+      values.push(trackingData.tracking_number);
+    }
+    if (trackingData.carrier !== undefined) {
+      updates.push("carrier = ?");
+      values.push(trackingData.carrier);
+    }
+    if (trackingData.carrier_url !== undefined) {
+      updates.push("carrier_url = ?");
+      values.push(trackingData.carrier_url);
+    }
+    if (trackingData.delivered_at !== undefined) {
+      updates.push("delivered_at = ?");
+      values.push(trackingData.delivered_at ? new Date(trackingData.delivered_at) : null);
+    }
+
+    if (updates.length > 0) {
+      values.push(trackingId);
+      await connection.query(
+        `UPDATE shipping_tracking SET ${updates.join(", ")} WHERE id = ?`,
+        values
+      );
+
+      // If status is delivered, update order status
+      if (trackingData.status === "delivered") {
+        const [tracking] = await connection.query(
+          "SELECT order_id FROM shipping_tracking WHERE id = ?",
+          [trackingId]
+        );
+        if (tracking.length > 0) {
+          await connection.query(
+            `UPDATE orders SET status = 'delivered' WHERE id = ?`,
+            [tracking[0].order_id]
+          );
+        }
+      }
+    }
+
+    await connection.commit();
+    return { id: trackingId };
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
 }
 
 async function cancelOrder(orderId, userId) {
@@ -345,6 +424,7 @@ module.exports = {
   getOrderById,
   updateOrderStatus,
   addShippingTracking,
+  updateShippingTracking,
   cancelOrder,
   getOrdersByUser,
   updateOrderPaymentStatus,

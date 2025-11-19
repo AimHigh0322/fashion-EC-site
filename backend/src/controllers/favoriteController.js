@@ -215,10 +215,37 @@ async function getFavoriteStatus(req, res) {
   }
 }
 
+// Get favorite count for a product (public endpoint, no auth required)
+async function getProductFavoriteCount(req, res) {
+  try {
+    const { product_id } = req.params;
+    if (!product_id) {
+      return res.status(400).json({
+        success: false,
+        message: "商品IDが必要です",
+      });
+    }
+
+    const count = await favoriteModel.getProductFavoriteCount(product_id);
+    res.json({
+      success: true,
+      data: { count },
+    });
+  } catch (error) {
+    console.error("Get product favorite count error:", error);
+    res.status(500).json({
+      success: false,
+      message: "お気に入り数の取得に失敗しました",
+      error: error.message,
+    });
+  }
+}
+
 module.exports = {
   addFavorite,
   removeFavorite,
   getUserFavorites,
   checkFavorite,
   getFavoriteStatus,
+  getProductFavoriteCount,
 };

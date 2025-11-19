@@ -91,11 +91,21 @@ async function getFavoriteStatus(userId, productIds) {
   return results.map((row) => row.product_id);
 }
 
+// Get favorite count for a product (how many users have favorited it)
+async function getProductFavoriteCount(productId) {
+  const [results] = await pool.query(
+    `SELECT COUNT(*) as count FROM favorites WHERE product_id = ?`,
+    [productId]
+  );
+  return results[0]?.count || 0;
+}
+
 module.exports = {
   addFavorite,
   removeFavorite,
   getUserFavorites,
   isFavorited,
   getFavoriteStatus,
+  getProductFavoriteCount,
 };
 

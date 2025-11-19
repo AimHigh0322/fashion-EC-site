@@ -652,7 +652,7 @@ export const AddProductModal = ({
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] flex flex-col">
+      <div className="bg-white  max-w-2xl w-full max-h-[90vh] flex flex-col">
         {/* Fixed Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200 flex-shrink-0">
           <h2 className="text-xl font-bold">
@@ -692,7 +692,7 @@ export const AddProductModal = ({
                 onChange={(e) =>
                   setFormData({ ...formData, name: e.target.value })
                 }
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
+                className="w-full px-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors"
               />
             </div>
 
@@ -713,7 +713,7 @@ export const AddProductModal = ({
                         <img
                           src={preview}
                           alt={`プレビュー ${index + 1}`}
-                          className="w-full h-32 object-cover rounded-lg border border-gray-300"
+                          className="w-full h-32 object-cover  border border-gray-300"
                         />
                         <button
                           type="button"
@@ -745,7 +745,7 @@ export const AddProductModal = ({
                     disabled={uploadingImages}
                     className="hidden"
                   />
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                  <div className="border-2 border-dashed border-gray-300  p-6 text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                     <Upload className="w-12 h-12 text-gray-400 mx-auto mb-2" />
                     <p className="text-sm text-gray-600 mb-2">
                       画像を選択（複数選択可）
@@ -783,7 +783,7 @@ export const AddProductModal = ({
                   onChange={(e) =>
                     setFormData({ ...formData, price: e.target.value })
                   }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
+                  className="w-full px-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors"
                 />
               </div>
               <div>
@@ -798,7 +798,7 @@ export const AddProductModal = ({
                   onChange={(e) =>
                     setFormData({ ...formData, stock_quantity: e.target.value })
                   }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
+                  className="w-full px-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors"
                 />
               </div>
             </div>
@@ -816,7 +816,7 @@ export const AddProductModal = ({
                   onChange={(e) =>
                     setFormData({ ...formData, compare_price: e.target.value })
                   }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
+                  className="w-full px-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors"
                 />
               </div>
               <div>
@@ -831,7 +831,7 @@ export const AddProductModal = ({
                   onChange={(e) =>
                     setFormData({ ...formData, cost_price: e.target.value })
                   }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
+                  className="w-full px-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors"
                 />
               </div>
             </div>
@@ -849,7 +849,7 @@ export const AddProductModal = ({
                       handleGenderChange(e.target.value as Gender)
                     }
                     required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
+                    className="w-full px-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors"
                   >
                     <option value="">選択してください</option>
                     {GENDER_OPTIONS.map((option) => (
@@ -870,7 +870,7 @@ export const AddProductModal = ({
                     onChange={(e) => handleBasicCategoryChange(e.target.value)}
                     required
                     disabled={!selectedGender}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    className="w-full px-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors disabled:bg-gray-100 disabled:cursor-not-allowed"
                   >
                     <option value="">
                       {selectedGender
@@ -895,7 +895,7 @@ export const AddProductModal = ({
                     onChange={(e) => handleCategoryChange(e.target.value)}
                     required
                     disabled={!selectedBasicCategoryId}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    className="w-full px-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors disabled:bg-gray-100 disabled:cursor-not-allowed"
                   >
                     <option value="">
                       {selectedBasicCategoryId
@@ -921,7 +921,7 @@ export const AddProductModal = ({
                   onChange={(e) =>
                     setFormData({ ...formData, status: e.target.value })
                   }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
+                  className="w-full px-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors"
                 >
                   <option value="draft">下書き</option>
                   <option value="active">有効（販売中）</option>
@@ -941,7 +941,7 @@ export const AddProductModal = ({
                   setFormData({ ...formData, description: e.target.value })
                 }
                 rows={4}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
+                className="w-full px-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors"
                 placeholder="商品の詳細説明を入力してください"
               />
             </div>
@@ -972,7 +972,7 @@ export const AddProductModal = ({
                           onChange={(e) =>
                             handleAttributeChange(attrDef.id, e.target.value)
                           }
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
+                          className="w-full px-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors"
                         />
                       )}
                       {attrDef.type === "number" && (
@@ -983,7 +983,7 @@ export const AddProductModal = ({
                           onChange={(e) =>
                             handleAttributeChange(attrDef.id, e.target.value)
                           }
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
+                          className="w-full px-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors"
                         />
                       )}
                       {attrDef.type === "select" && (
@@ -993,7 +993,7 @@ export const AddProductModal = ({
                           onChange={(e) =>
                             handleAttributeChange(attrDef.id, e.target.value)
                           }
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
+                          className="w-full px-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors"
                         >
                           <option value="">選択してください</option>
                           {/* Options would come from attribute definition */}
@@ -1012,7 +1012,7 @@ export const AddProductModal = ({
               <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">
                 キャンペーン
               </h3>
-              <div className="max-h-32 overflow-y-auto border border-gray-200 rounded-lg p-4">
+              <div className="max-h-32 overflow-y-auto border border-gray-200  p-4">
                 <div className="space-y-2">
                   {campaigns.map((campaign) => (
                     <label
@@ -1067,7 +1067,7 @@ export const AddProductModal = ({
                   onChange={(e) =>
                     setFormData({ ...formData, weight: e.target.value })
                   }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
+                  className="w-full px-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors"
                 />
               </div>
               <div>
@@ -1080,7 +1080,7 @@ export const AddProductModal = ({
                   onChange={(e) =>
                     setFormData({ ...formData, dimensions: e.target.value })
                   }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
+                  className="w-full px-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors"
                   placeholder="30x20x10"
                 />
               </div>
@@ -1096,7 +1096,7 @@ export const AddProductModal = ({
                 onChange={(e) =>
                   setFormData({ ...formData, seo_title: e.target.value })
                 }
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
+                className="w-full px-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors"
                 placeholder="検索エンジン用のタイトル"
               />
             </div>
@@ -1111,7 +1111,7 @@ export const AddProductModal = ({
                   setFormData({ ...formData, seo_description: e.target.value })
                 }
                 rows={2}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
+                className="w-full px-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors"
                 placeholder="検索エンジン用の説明文"
               />
             </div>
@@ -1122,7 +1122,7 @@ export const AddProductModal = ({
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+            className="px-4 py-2 border border-gray-300  hover:bg-gray-50"
           >
             キャンセル
           </button>
@@ -1137,7 +1137,7 @@ export const AddProductModal = ({
                 e.stopPropagation();
               }
             }}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 bg-blue-600 text-white  hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading || uploadingImages ? "保存中..." : "保存"}
           </button>

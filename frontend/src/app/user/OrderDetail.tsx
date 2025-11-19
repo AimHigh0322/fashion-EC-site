@@ -8,6 +8,9 @@ import {
   CheckCircle,
   Clock,
   ExternalLink,
+  Star,
+  MessageSquare,
+  RotateCcw,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
@@ -69,6 +72,17 @@ export const OrderDetail = () => {
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [cancelling, setCancelling] = useState(false);
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [selectedProductForReview, setSelectedProductForReview] =
+    useState<OrderItem | null>(null);
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewTitle, setReviewTitle] = useState("");
+  const [reviewComment, setReviewComment] = useState("");
+  const [submittingReview, setSubmittingReview] = useState(false);
+  const [showReturnModal, setShowReturnModal] = useState(false);
+  const [returnReason, setReturnReason] = useState("");
+  const [returnComment, setReturnComment] = useState("");
+  const [submittingReturn, setSubmittingReturn] = useState(false);
 
   const loadOrder = useCallback(
     async (orderId: string) => {
@@ -125,6 +139,81 @@ export const OrderDetail = () => {
     }
   };
 
+  const handleWriteReview = (item: OrderItem) => {
+    setSelectedProductForReview(item);
+    setReviewRating(5);
+    setReviewTitle("");
+    setReviewComment("");
+    setShowReviewModal(true);
+  };
+
+  const handleSubmitReview = async () => {
+    if (!selectedProductForReview || !order) return;
+
+    if (!reviewTitle.trim()) {
+      error("レビュータイトルを入力してください");
+      return;
+    }
+
+    setSubmittingReview(true);
+    try {
+      const response = await apiService.createReview({
+        productId: selectedProductForReview.product_id,
+        orderId: order.id,
+        rating: reviewRating,
+        title: reviewTitle,
+        comment: reviewComment,
+      });
+
+      if (response.error) {
+        error(response.error);
+      } else {
+        success("レビューを投稿しました");
+        setShowReviewModal(false);
+        setSelectedProductForReview(null);
+      }
+    } catch {
+      error("レビューの投稿に失敗しました");
+    } finally {
+      setSubmittingReview(false);
+    }
+  };
+
+  const handleRequestReturn = () => {
+    if (!order) return;
+    setReturnReason("");
+    setReturnComment("");
+    setShowReturnModal(true);
+  };
+
+  const handleSubmitReturn = async () => {
+    if (!order || !returnReason.trim()) {
+      error("返品理由を選択してください");
+      return;
+    }
+
+    setSubmittingReturn(true);
+    try {
+      const response = await apiService.processRefund(
+        order.id,
+        undefined,
+        `${returnReason}: ${returnComment}`
+      );
+
+      if (response.error) {
+        error(response.error);
+      } else {
+        success("返品リクエストを送信しました");
+        setShowReturnModal(false);
+        await loadOrder(order.id);
+      }
+    } catch {
+      error("返品リクエストの送信に失敗しました");
+    } finally {
+      setSubmittingReturn(false);
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     const statusConfig: Record<
       string,
@@ -166,7 +255,7 @@ export const OrderDetail = () => {
 
     return (
       <div
-        className={`inline-flex items-center px-3 py-2 rounded-lg text-sm font-semibold ${config.className}`}
+        className={`inline-flex items-center px-3 py-2  text-sm font-semibold ${config.className}`}
       >
         <Icon className="w-4 h-4 mr-2" />
         {config.label}
@@ -211,7 +300,7 @@ export const OrderDetail = () => {
             </h2>
             <button
               onClick={() => navigate("/orders")}
-              className="mt-4 px-6 py-2 bg-[#e2603f] hover:bg-[#c95a42] text-white font-medium rounded-lg transition-colors"
+              className="mt-4 px-6 py-2 bg-[#e2603f] hover:bg-[#c95a42] text-white font-medium  transition-colors"
             >
               注文履歴へ戻る
             </button>
@@ -251,7 +340,7 @@ export const OrderDetail = () => {
             {/* Main Content */}
             <div className="lg:col-span-2 space-y-6">
               {/* Order Info */}
-              <div className="bg-white rounded-lg shadow-sm p-6">
+              <div className="bg-white  shadow-sm p-6">
                 <h2 className="text-xl font-bold text-gray-900 mb-4">
                   注文情報
                 </h2>
@@ -295,12 +384,59 @@ export const OrderDetail = () => {
 
               {/* Shipping Tracking */}
               {order.tracking && (
-                <div className="bg-white rounded-lg shadow-sm p-6">
+                <div className="bg-white  shadow-sm p-6">
                   <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
                     <Truck className="w-5 h-5 mr-2 text-[#e2603f]" />
                     配送追跡
                   </h2>
-                  <div className="space-y-3">
+                  <div className="space-y-4">
+                    {/* Tracking Status */}
+                    <div>
+                      <p className="text-sm text-gray-600 mb-2">配送状況</p>
+                      {(() => {
+                        const trackingStatus = order.tracking.status;
+                        const statusConfig: Record<
+                          string,
+                          { label: string; icon: LucideIcon; className: string }
+                        > = {
+                          shipped: {
+                            label: "発送済み",
+                            icon: Truck,
+                            className: "bg-blue-100 text-blue-800",
+                          },
+                          in_transit: {
+                            label: "配送中",
+                            icon: Truck,
+                            className: "bg-purple-100 text-purple-800",
+                          },
+                          out_for_delivery: {
+                            label: "配達中",
+                            icon: Truck,
+                            className: "bg-indigo-100 text-indigo-800",
+                          },
+                          delivered: {
+                            label: "配達完了",
+                            icon: CheckCircle,
+                            className: "bg-green-100 text-green-800",
+                          },
+                        };
+                        const config = statusConfig[trackingStatus] || {
+                          label: trackingStatus,
+                          icon: Truck,
+                          className: "bg-gray-100 text-gray-800",
+                        };
+                        const Icon = config.icon;
+                        return (
+                          <div
+                            className={`inline-flex items-center px-3 py-2  text-sm font-semibold ${config.className}`}
+                          >
+                            <Icon className="w-4 h-4 mr-2" />
+                            {config.label}
+                          </div>
+                        );
+                      })()}
+                    </div>
+
                     <div>
                       <p className="text-sm text-gray-600">追跡番号</p>
                       <div className="flex items-center gap-2">
@@ -330,7 +466,14 @@ export const OrderDetail = () => {
                       <p className="text-sm text-gray-600">発送日</p>
                       <p className="font-semibold text-gray-900">
                         {new Date(order.tracking.shipped_at).toLocaleDateString(
-                          "ja-JP"
+                          "ja-JP",
+                          {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          }
                         )}
                       </p>
                     </div>
@@ -340,7 +483,13 @@ export const OrderDetail = () => {
                         <p className="font-semibold text-gray-900">
                           {new Date(
                             order.tracking.delivered_at
-                          ).toLocaleDateString("ja-JP")}
+                          ).toLocaleDateString("ja-JP", {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
                         </p>
                       </div>
                     )}
@@ -350,7 +499,7 @@ export const OrderDetail = () => {
 
               {/* Shipping Address */}
               {shippingAddress && (
-                <div className="bg-white rounded-lg shadow-sm p-6">
+                <div className="bg-white  shadow-sm p-6">
                   <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
                     <MapPin className="w-5 h-5 mr-2 text-[#e2603f]" />
                     配送先
@@ -381,7 +530,7 @@ export const OrderDetail = () => {
               )}
 
               {/* Order Items */}
-              <div className="bg-white rounded-lg shadow-sm p-6">
+              <div className="bg-white  shadow-sm p-6">
                 <h2 className="text-xl font-bold text-gray-900 mb-4">
                   注文商品 ({order.items.length}点)
                 </h2>
@@ -392,9 +541,21 @@ export const OrderDetail = () => {
                       className="flex justify-between items-start border-b border-gray-200 pb-4 last:border-0"
                     >
                       <div className="flex-1">
-                        <h3 className="font-semibold text-gray-900">
-                          {item.product_name}
-                        </h3>
+                        <div className="flex items-center gap-2 mb-1">
+                          <h3 className="font-semibold text-gray-900">
+                            {item.product_name}
+                          </h3>
+                          {(order.status === "delivered" ||
+                            order.status === "shipped") && (
+                            <button
+                              onClick={() => handleWriteReview(item)}
+                              className="flex items-center gap-1 text-sm text-[#e2603f] hover:text-[#c95a42] transition-colors"
+                            >
+                              <MessageSquare className="w-4 h-4" />
+                              レビューを書く
+                            </button>
+                          )}
+                        </div>
                         <p className="text-sm text-gray-500">SKU: {item.sku}</p>
                         <p className="text-sm text-gray-600 mt-1">
                           ¥{item.price.toLocaleString()} × {item.quantity}
@@ -414,7 +575,7 @@ export const OrderDetail = () => {
             {/* Sidebar */}
             <div className="lg:col-span-1 space-y-6">
               {/* Order Summary */}
-              <div className="bg-white rounded-lg shadow-sm p-6 sticky top-4">
+              <div className="bg-white  shadow-sm p-6 sticky top-4">
                 <h2 className="text-xl font-bold text-gray-900 mb-4">
                   注文内容
                 </h2>
@@ -460,7 +621,7 @@ export const OrderDetail = () => {
                   <button
                     onClick={handleCancelOrder}
                     disabled={cancelling}
-                    className="w-full flex items-center justify-center px-4 py-2 bg-red-600 hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors mb-3"
+                    className="w-full flex items-center justify-center px-4 py-2 bg-red-600 hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-medium  transition-colors mb-3"
                   >
                     {cancelling ? (
                       <>
@@ -476,9 +637,20 @@ export const OrderDetail = () => {
                   </button>
                 )}
 
+                {(order.status === "delivered" ||
+                  order.status === "shipped") && (
+                  <button
+                    onClick={handleRequestReturn}
+                    className="w-full flex items-center justify-center px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white font-medium  transition-colors mb-3"
+                  >
+                    <RotateCcw className="w-4 h-4 mr-2" />
+                    返品・返金を申請
+                  </button>
+                )}
+
                 <button
                   onClick={() => navigate("/orders")}
-                  className="w-full px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-900 font-medium rounded-lg transition-colors"
+                  className="w-full px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-900 font-medium  transition-colors"
                 >
                   注文履歴へ戻る
                 </button>
@@ -487,6 +659,186 @@ export const OrderDetail = () => {
           </div>
         </div>
       </div>
+
+      {/* Review Modal */}
+      {showReviewModal && selectedProductForReview && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white  shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                レビューを書く
+              </h2>
+              <p className="text-sm text-gray-600 mb-6">
+                {selectedProductForReview.product_name}
+              </p>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    評価
+                  </label>
+                  <div className="flex items-center gap-2">
+                    {[1, 2, 3, 4, 5].map((rating) => (
+                      <button
+                        key={rating}
+                        onClick={() => setReviewRating(rating)}
+                        className="focus:outline-none"
+                      >
+                        <Star
+                          className={`w-8 h-8 ${
+                            rating <= reviewRating
+                              ? "fill-yellow-400 text-yellow-400"
+                              : "fill-gray-200 text-gray-200"
+                          }`}
+                        />
+                      </button>
+                    ))}
+                    <span className="ml-2 text-sm text-gray-600">
+                      {reviewRating}/5
+                    </span>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    タイトル <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={reviewTitle}
+                    onChange={(e) => setReviewTitle(e.target.value)}
+                    placeholder="レビューのタイトルを入力"
+                    className="w-full px-4 py-2 border border-gray-300  focus:ring-2 focus:ring-[#e2603f] focus:border-transparent"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    コメント
+                  </label>
+                  <textarea
+                    value={reviewComment}
+                    onChange={(e) => setReviewComment(e.target.value)}
+                    placeholder="商品のレビューを入力（任意）"
+                    rows={5}
+                    className="w-full px-4 py-2 border border-gray-300  focus:ring-2 focus:ring-[#e2603f] focus:border-transparent"
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={() => {
+                    setShowReviewModal(false);
+                    setSelectedProductForReview(null);
+                  }}
+                  className="flex-1 px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-900 font-medium  transition-colors"
+                >
+                  キャンセル
+                </button>
+                <button
+                  onClick={handleSubmitReview}
+                  disabled={submittingReview || !reviewTitle.trim()}
+                  className="flex-1 px-4 py-2 bg-[#e2603f] hover:bg-[#c95a42] disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold  transition-colors flex items-center justify-center"
+                >
+                  {submittingReview ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                      投稿中...
+                    </>
+                  ) : (
+                    "レビューを投稿"
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Return/Refund Modal */}
+      {showReturnModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white  shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                返品・返金申請
+              </h2>
+              <p className="text-sm text-gray-600 mb-6">
+                注文番号: {order?.order_number}
+              </p>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    返品理由 <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    value={returnReason}
+                    onChange={(e) => setReturnReason(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300  focus:ring-2 focus:ring-[#e2603f] focus:border-transparent"
+                  >
+                    <option value="">選択してください</option>
+                    <option value="サイズが合わない">サイズが合わない</option>
+                    <option value="色が違う">色が違う</option>
+                    <option value="品質に問題がある">品質に問題がある</option>
+                    <option value="商品が届かない">商品が届かない</option>
+                    <option value="注文を間違えた">注文を間違えた</option>
+                    <option value="その他">その他</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    詳細（任意）
+                  </label>
+                  <textarea
+                    value={returnComment}
+                    onChange={(e) => setReturnComment(e.target.value)}
+                    placeholder="返品理由の詳細を入力してください"
+                    rows={5}
+                    className="w-full px-4 py-2 border border-gray-300  focus:ring-2 focus:ring-[#e2603f] focus:border-transparent"
+                  />
+                </div>
+
+                <div className="bg-blue-50 border border-blue-200  p-4">
+                  <p className="text-sm text-blue-900">
+                    <strong>注意事項:</strong>
+                  </p>
+                  <ul className="text-sm text-blue-800 mt-2 list-disc list-inside space-y-1">
+                    <li>返品は商品到着後6ヶ月以内に申請してください</li>
+                    <li>返送料はお客様負担となります（一律¥660）</li>
+                    <li>返品が承認され次第、返金処理を行います</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={() => setShowReturnModal(false)}
+                  className="flex-1 px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-900 font-medium  transition-colors"
+                >
+                  キャンセル
+                </button>
+                <button
+                  onClick={handleSubmitReturn}
+                  disabled={submittingReturn || !returnReason.trim()}
+                  className="flex-1 px-4 py-2 bg-[#e2603f] hover:bg-[#c95a42] disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold  transition-colors flex items-center justify-center"
+                >
+                  {submittingReturn ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                      送信中...
+                    </>
+                  ) : (
+                    "返品申請を送信"
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </UserLayout>
   );
 };

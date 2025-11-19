@@ -296,7 +296,7 @@ export const Categories = () => {
           </div>
           <button
             onClick={handleCreate}
-            className="flex items-center justify-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="flex items-center justify-center space-x-2 px-4 py-2 bg-blue-600 text-white  hover:bg-blue-700 transition-colors"
           >
             <Plus className="w-5 h-5" />
             <span>カテゴリ追加</span>
@@ -304,14 +304,14 @@ export const Categories = () => {
         </div>
 
         {/* View Mode Tabs */}
-        <div className="bg-white rounded-lg shadow p-1">
+        <div className="bg-white  shadow p-1">
           <div className="flex gap-1">
             <button
               onClick={() => {
                 setViewMode("major");
                 setCategoryTypeFilter("all");
               }}
-              className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+              className={`flex-1 px-4 py-2 text-sm font-medium  transition-colors ${
                 viewMode === "major"
                   ? "bg-blue-600 text-white"
                   : "text-gray-700 hover:bg-gray-100"
@@ -324,7 +324,7 @@ export const Categories = () => {
                 setViewMode("sub");
                 setCategoryTypeFilter("all");
               }}
-              className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+              className={`flex-1 px-4 py-2 text-sm font-medium  transition-colors ${
                 viewMode === "sub"
                   ? "bg-blue-600 text-white"
                   : "text-gray-700 hover:bg-gray-100"
@@ -336,7 +336,7 @@ export const Categories = () => {
         </div>
 
         {/* Filters and Search */}
-        <div className="bg-white rounded-lg shadow p-4">
+        <div className="bg-white  shadow p-4">
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -345,14 +345,14 @@ export const Categories = () => {
                 placeholder="カテゴリを検索..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors"
               />
             </div>
             <div className="flex-1">
               <select
                 value={genderFilter || "all"}
                 onChange={(e) => setGenderFilter(e.target.value as Gender)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors bg-white"
+                className="w-full px-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors bg-white"
               >
                 <option value="all">すべての性別</option>
                 {GENDER_OPTIONS.map((option) => (
@@ -369,7 +369,7 @@ export const Categories = () => {
                   onChange={(e) =>
                     setCategoryTypeFilter(e.target.value as CategoryType)
                   }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors bg-white"
+                  className="w-full px-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors bg-white"
                 >
                   <option value="all">すべてのタイプ</option>
                   {CATEGORY_TYPE_OPTIONS.map((option) => (
@@ -384,7 +384,7 @@ export const Categories = () => {
         </div>
 
         {/* Categories Table */}
-        <div className="bg-white rounded-lg shadow overflow-hidden">
+        <div className="bg-white  shadow overflow-hidden">
           {loading && filteredCategories.length === 0 ? (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
@@ -398,7 +398,7 @@ export const Categories = () => {
             <>
               <div className="overflow-x-auto -mx-4 sm:mx-0">
                 <div className="inline-block min-w-full align-middle sm:px-0">
-                  <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
+                  <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:">
                     <table className="min-w-full divide-y divide-gray-200">
                       <thead className="bg-gray-50">
                         <tr>
@@ -435,7 +435,7 @@ export const Categories = () => {
                                 </div>
                               </td>
                               <td className="px-2 sm:px-4 py-4 whitespace-nowrap">
-                                <span className="inline-flex items-center px-1.5 sm:px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs font-medium rounded-md bg-blue-100 text-blue-800">
+                                <span className="inline-flex items-center px-1.5 sm:px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs font-medium  bg-blue-100 text-blue-800">
                                   {info.gender === "male"
                                     ? "メンズ"
                                     : info.gender === "female"
@@ -445,7 +445,7 @@ export const Categories = () => {
                               </td>
                               {viewMode === "sub" && (
                                 <td className="px-2 sm:px-4 py-4 whitespace-nowrap">
-                                  <span className="inline-flex items-center px-1.5 sm:px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs font-medium rounded-md bg-indigo-100 text-indigo-800">
+                                  <span className="inline-flex items-center px-1.5 sm:px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs font-medium  bg-indigo-100 text-indigo-800">
                                     {CATEGORY_TYPE_OPTIONS.find(
                                       (opt) => opt.value === info.type
                                     )?.label || "-"}

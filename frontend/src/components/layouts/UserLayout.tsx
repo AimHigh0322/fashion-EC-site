@@ -141,13 +141,13 @@ export const UserLayout = ({ children }: UserLayoutProps) => {
                 <div className="flex items-center space-x-2">
                   <Link
                     to="/register"
-                    className="text-xs font-medium text-white hover:text-[#faf5f3] transition-all duration-300 uppercase tracking-wide cursor-pointer px-2 py-1.5 rounded-lg hover:bg-white/20"
+                    className="text-xs font-medium text-white hover:text-[#faf5f3] transition-all duration-300 uppercase tracking-wide cursor-pointer px-2 py-1.5  hover:bg-white/20"
                   >
                     新規登録
                   </Link>
                   <Link
                     to="/login"
-                    className="text-xs font-medium text-white hover:text-[#faf5f3] transition-all duration-300 uppercase tracking-wide cursor-pointer px-2 py-1.5 rounded-lg hover:bg-white/20"
+                    className="text-xs font-medium text-white hover:text-[#faf5f3] transition-all duration-300 uppercase tracking-wide cursor-pointer px-2 py-1.5  hover:bg-white/20"
                   >
                     ログイン
                   </Link>
@@ -155,21 +155,21 @@ export const UserLayout = ({ children }: UserLayoutProps) => {
               ) : (
                 <div className="flex items-center space-x-2">
                   <button
-                    className="p-1.5 rounded-lg transition-all duration-300 hover:opacity-90 cursor-pointer"
+                    className="p-1.5  transition-all duration-300 hover:opacity-90 cursor-pointer"
                     title="通知"
                   >
                     <Bell className="w-5 h-5 text-white" />
                   </button>
                   <Link
                     to="/profile"
-                    className="p-1.5 rounded-lg transition-all duration-300 hover:opacity-90 cursor-pointer"
+                    className="p-1.5  transition-all duration-300 hover:opacity-90 cursor-pointer"
                     title="マイページ"
                   >
                     <User className="w-5 h-5 text-white" />
                   </Link>
                   <button
                     onClick={logout}
-                    className="p-1.5 rounded-lg transition-all duration-300 hover:opacity-90 cursor-pointer"
+                    className="p-1.5  transition-all duration-300 hover:opacity-90 cursor-pointer"
                     title="ログアウト"
                   >
                     <LogOut className="w-5 h-5 text-white" />
@@ -226,13 +226,13 @@ export const UserLayout = ({ children }: UserLayoutProps) => {
                 <>
                   <Link
                     to="/register"
-                    className="text-sm font-medium text-white hover:text-[#faf5f3] transition-all duration-300 uppercase tracking-wide cursor-pointer px-3 py-1.5 rounded-lg hover:bg-white/20 hover:scale-105"
+                    className="text-sm font-medium text-white hover:text-[#faf5f3] transition-all duration-300 uppercase tracking-wide cursor-pointer px-3 py-1.5  hover:bg-white/20 hover:scale-105"
                   >
                     新規登録
                   </Link>
                   <Link
                     to="/login"
-                    className="text-sm font-medium text-white hover:text-[#faf5f3] transition-all duration-300 uppercase tracking-wide cursor-pointer px-3 py-1.5 rounded-lg hover:bg-white/20 hover:scale-105"
+                    className="text-sm font-medium text-white hover:text-[#faf5f3] transition-all duration-300 uppercase tracking-wide cursor-pointer px-3 py-1.5  hover:bg-white/20 hover:scale-105"
                   >
                     ログイン
                   </Link>
@@ -240,21 +240,21 @@ export const UserLayout = ({ children }: UserLayoutProps) => {
               ) : (
                 <>
                   <button
-                    className="flex items-center text-white transition-all duration-300 p-2 rounded-lg hover:scale-110 hover:opacity-90 cursor-pointer group"
+                    className="flex items-center text-white transition-all duration-300 p-2  hover:scale-110 hover:opacity-90 cursor-pointer group"
                     title="通知"
                   >
                     <Bell className="w-5 h-5 transition-all duration-300" />
                   </button>
                   <Link
                     to="/profile"
-                    className="flex items-center text-white transition-all duration-300 p-2 rounded-lg hover:scale-110 hover:opacity-90 cursor-pointer group"
+                    className="flex items-center text-white transition-all duration-300 p-2  hover:scale-110 hover:opacity-90 cursor-pointer group"
                     title="マイページ"
                   >
                     <User className="w-5 h-5 transition-all duration-300" />
                   </Link>
                   <button
                     onClick={logout}
-                    className="flex items-center space-x-2 text-sm font-medium text-white transition-all duration-300 uppercase tracking-wide cursor-pointer p-2 rounded-lg hover:scale-110 hover:opacity-90 group"
+                    className="flex items-center space-x-2 text-sm font-medium text-white transition-all duration-300 uppercase tracking-wide cursor-pointer p-2  hover:scale-110 hover:opacity-90 group"
                   >
                     <LogOut className="w-4 h-4 transition-all duration-300" />
                     <span>ログアウト</span>
@@ -280,7 +280,7 @@ export const UserLayout = ({ children }: UserLayoutProps) => {
                     setSelectedGender(null);
                   }
                 }}
-                className="flex items-center space-x-1 sm:space-x-2 hover:text-[#faf5f3] transition-all duration-300 font-medium uppercase tracking-wide text-xs sm:text-sm cursor-pointer px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg hover:bg-white/10 w-full sm:w-auto"
+                className="flex items-center space-x-1 sm:space-x-2 hover:text-[#faf5f3] transition-all duration-300 font-medium uppercase tracking-wide text-xs sm:text-sm cursor-pointer px-2 sm:px-3 py-1.5 sm:py-2  hover:bg-white/10 w-full sm:w-auto"
               >
                 <Menu className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
                 <span className="truncate">カテゴリから選ぶ</span>
@@ -410,7 +410,7 @@ export const UserLayout = ({ children }: UserLayoutProps) => {
               <div className="flex items-center space-x-1 sm:space-x-2 md:space-x-3 flex-shrink-0">
                 <Link
                   to="/favorites"
-                  className="relative flex items-center text-white transition-all duration-300 p-1.5 sm:p-2 rounded-lg hover:bg-white/10 hover:opacity-90 cursor-pointer"
+                  className="relative flex items-center text-white transition-all duration-300 p-1.5 sm:p-2  hover:bg-white/10 hover:opacity-90 cursor-pointer"
                 >
                   <Heart className="w-4 h-4 sm:w-5 sm:h-5 transition-all duration-300" />
                   {favoritesCount > 0 && (
@@ -421,7 +421,7 @@ export const UserLayout = ({ children }: UserLayoutProps) => {
                 </Link>
                 <Link
                   to="/cart"
-                  className="relative flex items-center text-white transition-all duration-300 p-1.5 sm:p-2 rounded-lg hover:bg-white/10 hover:opacity-90 cursor-pointer"
+                  className="relative flex items-center text-white transition-all duration-300 p-1.5 sm:p-2  hover:bg-white/10 hover:opacity-90 cursor-pointer"
                 >
                   <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5 transition-all duration-300" />
                   {cartCount > 0 && (

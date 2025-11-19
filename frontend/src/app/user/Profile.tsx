@@ -1,6 +1,17 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { User, Mail, Phone, MapPin, Edit2, Save, X, Lock, Eye, EyeOff } from "lucide-react";
+import {
+  User,
+  Mail,
+  Phone,
+  MapPin,
+  Edit2,
+  Save,
+  X,
+  Lock,
+  Eye,
+  EyeOff,
+} from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import { useToast } from "../../contexts/ToastContext";
 import { apiService } from "../../services/api";
@@ -107,6 +118,7 @@ export const Profile = () => {
       return;
     }
     loadProfile();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, navigate]);
 
   const loadProfile = async () => {
@@ -116,20 +128,21 @@ export const Profile = () => {
       if (response.error) {
         error(response.error);
       } else if (response.data) {
-        setProfile(response.data);
+        const profileData = response.data as ProfileData;
+        setProfile(profileData);
         setFormData({
-          first_name: response.data.first_name || "",
-          last_name: response.data.last_name || "",
-          email: response.data.email || "",
-          phone: response.data.phone || "",
-          postal_code: response.data.postal_code || "",
-          prefecture: response.data.prefecture || "",
-          city: response.data.city || "",
-          street_address: response.data.street_address || "",
-          apartment: response.data.apartment || "",
+          first_name: profileData.first_name || "",
+          last_name: profileData.last_name || "",
+          email: profileData.email || "",
+          phone: profileData.phone || "",
+          postal_code: profileData.postal_code || "",
+          prefecture: profileData.prefecture || "",
+          city: profileData.city || "",
+          street_address: profileData.street_address || "",
+          apartment: profileData.apartment || "",
         });
       }
-    } catch (err) {
+    } catch {
       error("プロフィールの読み込みに失敗しました");
     } finally {
       setLoading(false);
@@ -169,7 +182,7 @@ export const Profile = () => {
         await loadProfile();
         setIsEditing(false);
       }
-    } catch (err) {
+    } catch {
       error("プロフィールの更新に失敗しました");
     } finally {
       setSubmitting(false);
@@ -178,7 +191,7 @@ export const Profile = () => {
 
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (passwordData.newPassword !== passwordData.confirmPassword) {
       error("新しいパスワードが一致しません");
       return;
@@ -206,7 +219,7 @@ export const Profile = () => {
         });
         setIsChangingPassword(false);
       }
-    } catch (err) {
+    } catch {
       error("パスワードの変更に失敗しました");
     } finally {
       setChangingPassword(false);
@@ -234,7 +247,7 @@ export const Profile = () => {
             ]}
           />
 
-          <div className="bg-white rounded-lg shadow-md overflow-hidden">
+          <div className="bg-white  shadow-md overflow-hidden">
             {/* Header */}
             <div className="bg-[#e2603f] px-6 py-6">
               <div className="flex items-center justify-between">
@@ -245,16 +258,20 @@ export const Profile = () => {
                   <div>
                     <h1 className="text-2xl font-bold text-white">
                       {profile?.first_name || profile?.last_name
-                        ? `${profile.last_name || ""} ${profile.first_name || ""}`.trim()
+                        ? `${profile.last_name || ""} ${
+                            profile.first_name || ""
+                          }`.trim()
                         : profile?.username || "ユーザー"}
                     </h1>
-                    <p className="text-white/80 text-sm mt-1">{profile?.email}</p>
+                    <p className="text-white/80 text-sm mt-1">
+                      {profile?.email}
+                    </p>
                   </div>
                 </div>
                 {!isEditing && (
                   <button
                     onClick={handleEdit}
-                    className="flex items-center space-x-2 bg-white text-[#e2603f] px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors"
+                    className="flex items-center space-x-2 bg-white text-[#e2603f] px-4 py-2  hover:bg-gray-100 transition-colors"
                   >
                     <Edit2 className="w-4 h-4" />
                     <span>編集</span>
@@ -276,9 +293,12 @@ export const Profile = () => {
                         type="text"
                         value={formData.last_name}
                         onChange={(e) =>
-                          setFormData({ ...formData, last_name: e.target.value })
+                          setFormData({
+                            ...formData,
+                            last_name: e.target.value,
+                          })
                         }
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#e2603f] focus:border-transparent"
+                        className="w-full px-4 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#e2603f] focus:border-transparent"
                         placeholder="姓"
                       />
                     </div>
@@ -290,9 +310,12 @@ export const Profile = () => {
                         type="text"
                         value={formData.first_name}
                         onChange={(e) =>
-                          setFormData({ ...formData, first_name: e.target.value })
+                          setFormData({
+                            ...formData,
+                            first_name: e.target.value,
+                          })
                         }
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#e2603f] focus:border-transparent"
+                        className="w-full px-4 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#e2603f] focus:border-transparent"
                         placeholder="名"
                       />
                     </div>
@@ -309,7 +332,7 @@ export const Profile = () => {
                       onChange={(e) =>
                         setFormData({ ...formData, email: e.target.value })
                       }
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#e2603f] focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300  focus:ring-2 focus:ring-[#e2603f] focus:border-transparent"
                       required
                     />
                   </div>
@@ -325,7 +348,7 @@ export const Profile = () => {
                       onChange={(e) =>
                         setFormData({ ...formData, phone: e.target.value })
                       }
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#e2603f] focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300  focus:ring-2 focus:ring-[#e2603f] focus:border-transparent"
                       placeholder="090-1234-5678"
                     />
                   </div>
@@ -340,9 +363,12 @@ export const Profile = () => {
                         type="text"
                         value={formData.postal_code}
                         onChange={(e) =>
-                          setFormData({ ...formData, postal_code: e.target.value })
+                          setFormData({
+                            ...formData,
+                            postal_code: e.target.value,
+                          })
                         }
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#e2603f] focus:border-transparent"
+                        className="w-full px-4 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#e2603f] focus:border-transparent"
                         placeholder="123-4567"
                         maxLength={10}
                       />
@@ -355,9 +381,12 @@ export const Profile = () => {
                       <select
                         value={formData.prefecture}
                         onChange={(e) =>
-                          setFormData({ ...formData, prefecture: e.target.value })
+                          setFormData({
+                            ...formData,
+                            prefecture: e.target.value,
+                          })
                         }
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#e2603f] focus:border-transparent"
+                        className="w-full px-4 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#e2603f] focus:border-transparent"
                       >
                         <option value="">選択してください</option>
                         {PREFECTURES.map((pref) => (
@@ -378,7 +407,7 @@ export const Profile = () => {
                         onChange={(e) =>
                           setFormData({ ...formData, city: e.target.value })
                         }
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#e2603f] focus:border-transparent"
+                        className="w-full px-4 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#e2603f] focus:border-transparent"
                         placeholder="市区町村を入力してください"
                       />
                     </div>
@@ -391,9 +420,12 @@ export const Profile = () => {
                         type="text"
                         value={formData.street_address}
                         onChange={(e) =>
-                          setFormData({ ...formData, street_address: e.target.value })
+                          setFormData({
+                            ...formData,
+                            street_address: e.target.value,
+                          })
                         }
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#e2603f] focus:border-transparent"
+                        className="w-full px-4 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#e2603f] focus:border-transparent"
                         placeholder="番地・建物名を入力してください"
                       />
                     </div>
@@ -406,9 +438,12 @@ export const Profile = () => {
                         type="text"
                         value={formData.apartment}
                         onChange={(e) =>
-                          setFormData({ ...formData, apartment: e.target.value })
+                          setFormData({
+                            ...formData,
+                            apartment: e.target.value,
+                          })
                         }
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#e2603f] focus:border-transparent"
+                        className="w-full px-4 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#e2603f] focus:border-transparent"
                         placeholder="マンション名・部屋番号（任意）"
                       />
                     </div>
@@ -418,7 +453,7 @@ export const Profile = () => {
                     <button
                       type="submit"
                       disabled={submitting}
-                      className="flex items-center space-x-2 bg-[#e2603f] text-white px-6 py-2 rounded-lg hover:bg-[#c95a42] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="flex items-center space-x-2 bg-[#e2603f] text-white px-6 py-2  hover:bg-[#c95a42] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <Save className="w-4 h-4" />
                       <span>{submitting ? "保存中..." : "保存"}</span>
@@ -426,7 +461,7 @@ export const Profile = () => {
                     <button
                       type="button"
                       onClick={handleCancel}
-                      className="flex items-center space-x-2 bg-gray-200 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-300 transition-colors"
+                      className="flex items-center space-x-2 bg-gray-200 text-gray-700 px-6 py-2  hover:bg-gray-300 transition-colors"
                     >
                       <X className="w-4 h-4" />
                       <span>キャンセル</span>
@@ -459,7 +494,9 @@ export const Profile = () => {
                       <Mail className="w-4 h-4 inline mr-2" />
                       メールアドレス
                     </label>
-                    <p className="text-gray-900">{profile?.email || "未設定"}</p>
+                    <p className="text-gray-900">
+                      {profile?.email || "未設定"}
+                    </p>
                   </div>
 
                   <div>
@@ -467,7 +504,9 @@ export const Profile = () => {
                       <Phone className="w-4 h-4 inline mr-2" />
                       電話番号
                     </label>
-                    <p className="text-gray-900">{profile?.phone || "未設定"}</p>
+                    <p className="text-gray-900">
+                      {profile?.phone || "未設定"}
+                    </p>
                   </div>
 
                   <div className="space-y-4">
@@ -517,9 +556,12 @@ export const Profile = () => {
                       </div>
                     )}
 
-                    {!profile?.postal_code && !profile?.prefecture && !profile?.city && !profile?.street_address && (
-                      <p className="text-gray-500">住所が未設定です</p>
-                    )}
+                    {!profile?.postal_code &&
+                      !profile?.prefecture &&
+                      !profile?.city &&
+                      !profile?.street_address && (
+                        <p className="text-gray-500">住所が未設定です</p>
+                      )}
                   </div>
                 </div>
               )}
@@ -532,8 +574,10 @@ export const Profile = () => {
                   <Lock className="w-5 h-5 mr-2 text-[#e2603f]" />
                   パスワード変更
                 </h2>
-                <button
-                  onClick={() => {
+                <a
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
                     setIsChangingPassword(!isChangingPassword);
                     setPasswordData({
                       currentPassword: "",
@@ -541,10 +585,10 @@ export const Profile = () => {
                       confirmPassword: "",
                     });
                   }}
-                  className="text-sm text-[#e2603f] hover:text-[#c95a42] transition-colors"
+                  className="text-sm hover:underline text-[#e2603f] hover:text-[#c95a42] transition-colors cursor-pointer"
                 >
                   {isChangingPassword ? "キャンセル" : "変更する"}
-                </button>
+                </a>
               </div>
 
               {isChangingPassword && (
@@ -563,12 +607,14 @@ export const Profile = () => {
                             currentPassword: e.target.value,
                           })
                         }
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#e2603f] focus:border-transparent pr-10"
+                        className="w-full px-4 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#e2603f] focus:border-transparent pr-10"
                         required
                       />
                       <button
                         type="button"
-                        onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                        onClick={() =>
+                          setShowCurrentPassword(!showCurrentPassword)
+                        }
                         className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
                       >
                         {showCurrentPassword ? (
@@ -594,7 +640,7 @@ export const Profile = () => {
                             newPassword: e.target.value,
                           })
                         }
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#e2603f] focus:border-transparent pr-10"
+                        className="w-full px-4 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#e2603f] focus:border-transparent pr-10"
                         required
                         minLength={8}
                       />
@@ -629,13 +675,15 @@ export const Profile = () => {
                             confirmPassword: e.target.value,
                           })
                         }
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#e2603f] focus:border-transparent pr-10"
+                        className="w-full px-4 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#e2603f] focus:border-transparent pr-10"
                         required
                         minLength={8}
                       />
                       <button
                         type="button"
-                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        onClick={() =>
+                          setShowConfirmPassword(!showConfirmPassword)
+                        }
                         className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
                       >
                         {showConfirmPassword ? (
@@ -650,7 +698,7 @@ export const Profile = () => {
                   <button
                     type="submit"
                     disabled={changingPassword}
-                    className="bg-[#e2603f] text-white px-6 py-2 rounded-lg hover:bg-[#c95a42] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="bg-[#e2603f] text-white px-6 py-2  hover:bg-[#c95a42] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {changingPassword ? "変更中..." : "パスワードを変更"}
                   </button>
@@ -663,4 +711,3 @@ export const Profile = () => {
     </UserLayout>
   );
 };
-

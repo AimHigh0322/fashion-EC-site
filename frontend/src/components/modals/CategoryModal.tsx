@@ -493,7 +493,7 @@ export const CategoryModal = ({
       className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
       onClick={handleBackdropClick}
     >
-      <div className="bg-white rounded-lg max-w-2xl w-full shadow-lg">
+      <div className="bg-white  max-w-2xl w-full shadow-lg">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <h2 className="text-xl font-bold text-gray-900">
@@ -513,7 +513,7 @@ export const CategoryModal = ({
         {/* Content */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3  text-sm">
               {error}
             </div>
           )}
@@ -529,7 +529,7 @@ export const CategoryModal = ({
                 setGender(e.target.value as Gender);
                 setCategoryType(null);
               }}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors bg-white"
+              className="w-full px-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors bg-white"
               disabled={loading}
             >
               <option value="">選択してください</option>
@@ -574,7 +574,7 @@ export const CategoryModal = ({
                     onChange={(e) =>
                       setCategoryType(e.target.value as CategoryType)
                     }
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors bg-white"
+                    className="w-full px-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors bg-white"
                     disabled={loading || addingType}
                   >
                     <option value="">選択してください</option>
@@ -592,7 +592,7 @@ export const CategoryModal = ({
                         value={newTypeName}
                         onChange={(e) => setNewTypeName(e.target.value)}
                         placeholder="新しいカテゴリタイプ名を入力"
-                        className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
+                        className="flex-1 px-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors"
                         disabled={addingType}
                         autoFocus
                       />
@@ -600,7 +600,7 @@ export const CategoryModal = ({
                         type="button"
                         onClick={handleAddType}
                         disabled={addingType || !newTypeName.trim()}
-                        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+                        className="px-4 py-2 bg-green-600 text-white  hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
                       >
                         {addingType ? (
                           <>
@@ -622,7 +622,7 @@ export const CategoryModal = ({
                           setError(null);
                         }}
                         disabled={addingType}
-                        className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        className="px-4 py-2 border border-gray-300  text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                       >
                         キャンセル
                       </button>
@@ -646,7 +646,7 @@ export const CategoryModal = ({
                   value={categoryName}
                   onChange={(e) => setCategoryName(e.target.value)}
                   placeholder="カテゴリ名を入力"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
+                  className="w-full px-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors"
                   disabled={loading}
                   autoFocus
                 />
@@ -659,7 +659,7 @@ export const CategoryModal = ({
               type="button"
               onClick={onClose}
               disabled={loading}
-              className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="px-4 py-2 border border-gray-300  text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               キャンセル
             </button>
@@ -674,7 +674,7 @@ export const CategoryModal = ({
                   defaultLevel !== 2 &&
                   !categoryType)
               }
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+              className="px-4 py-2 bg-blue-600 text-white  hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
             >
               {loading ? (
                 <>

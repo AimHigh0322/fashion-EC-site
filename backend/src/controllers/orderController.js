@@ -64,6 +64,18 @@ async function addShippingTracking(req, res) {
     await logAudit(req, "add_tracking", "order", req.params.id, null, req.body);
     res.json({ success: true, data: result });
   } catch (error) {
+    console.error("Error adding shipping tracking:", error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+}
+
+async function updateShippingTracking(req, res) {
+  try {
+    const result = await orderModel.updateShippingTracking(req.params.trackingId, req.body);
+    await logAudit(req, "update_tracking", "shipping_tracking", req.params.trackingId, null, req.body);
+    res.json({ success: true, data: result });
+  } catch (error) {
+    console.error("Error updating shipping tracking:", error);
     res.status(500).json({ success: false, message: error.message });
   }
 }
@@ -107,6 +119,7 @@ module.exports = {
   getOrderById,
   updateOrderStatus,
   addShippingTracking,
+  updateShippingTracking,
   exportOrders,
   cancelOrder,
 };

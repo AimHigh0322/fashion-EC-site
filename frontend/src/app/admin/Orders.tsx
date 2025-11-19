@@ -1,9 +1,19 @@
 import { useState, useEffect, useCallback } from "react";
-import { Search, Eye, Package, Download } from "lucide-react";
+import { Search, Eye, Package, Download, Truck } from "lucide-react";
 import { AdminLayout } from "../../components/layouts/AdminLayout";
 import { apiService } from "../../services/api";
 import { useToast } from "../../contexts/ToastContext";
 import { Breadcrumbs } from "../../components/molecules/Breadcrumbs";
+
+interface ShippingTracking {
+  id: string;
+  tracking_number: string;
+  carrier: string;
+  carrier_url?: string;
+  status: string;
+  shipped_at: string;
+  delivered_at?: string;
+}
 
 interface Order {
   id: string;
@@ -13,6 +23,7 @@ interface Order {
   total_amount: number;
   status: string;
   createdAt: string;
+  tracking?: ShippingTracking;
 }
 
 export const Orders = () => {
@@ -123,7 +134,7 @@ export const Orders = () => {
           </div>
           <button
             onClick={handleExport}
-            className="flex items-center justify-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+            className="flex items-center justify-center space-x-2 px-4 py-2 border border-gray-300  hover:bg-gray-50"
           >
             <Download className="w-5 h-5" />
             <span>エクスポート</span>
@@ -132,7 +143,7 @@ export const Orders = () => {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white rounded-lg shadow p-4">
+          <div className="bg-white  shadow p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">総注文数</p>
@@ -143,7 +154,7 @@ export const Orders = () => {
               <Package className="w-8 h-8 text-blue-600" />
             </div>
           </div>
-          <div className="bg-white rounded-lg shadow p-4">
+          <div className="bg-white  shadow p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">保留中</p>
@@ -154,7 +165,7 @@ export const Orders = () => {
               <Package className="w-8 h-8 text-yellow-600" />
             </div>
           </div>
-          <div className="bg-white rounded-lg shadow p-4">
+          <div className="bg-white  shadow p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">処理中</p>
@@ -165,7 +176,7 @@ export const Orders = () => {
               <Package className="w-8 h-8 text-blue-600" />
             </div>
           </div>
-          <div className="bg-white rounded-lg shadow p-4">
+          <div className="bg-white  shadow p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">配送済み</p>
@@ -179,7 +190,7 @@ export const Orders = () => {
         </div>
 
         {/* Filters */}
-        <div className="bg-white rounded-lg shadow p-4">
+        <div className="bg-white  shadow p-4">
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -188,13 +199,13 @@ export const Orders = () => {
                 placeholder="注文番号・メールアドレスで検索..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors"
               />
             </div>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
+              className="px-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors"
             >
               <option value="">すべてのステータス</option>
               <option value="pending">保留中</option>
@@ -206,7 +217,7 @@ export const Orders = () => {
             <select
               value={paymentFilter}
               onChange={(e) => setPaymentFilter(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
+              className="px-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors"
             >
               <option value="">すべての支払い</option>
               <option value="pending">未払い</option>
@@ -217,7 +228,7 @@ export const Orders = () => {
         </div>
 
         {/* Orders Table */}
-        <div className="bg-white rounded-lg shadow overflow-hidden">
+        <div className="bg-white  shadow overflow-hidden">
           {loading ? (
             <div className="p-8 text-center text-gray-500">読み込み中...</div>
           ) : (
@@ -274,7 +285,7 @@ export const Orders = () => {
                           onChange={(e) =>
                             handleStatusUpdate(order.id, e.target.value)
                           }
-                          className={`px-2 py-1 text-xs font-medium rounded-md border-0 ${getStatusColor(
+                          className={`px-2 py-1 text-xs font-medium  border-0 ${getStatusColor(
                             order.status
                           )}`}
                         >
@@ -325,81 +336,366 @@ interface OrderDetailModalProps {
   onClose: () => void;
 }
 
-const OrderDetailModal = ({ order, onClose }: OrderDetailModalProps) => {
+// Carrier options with common Japanese carriers
+const carrierOptions = [
+  { value: "", label: "配送業者を選択" },
+  {
+    value: "ヤマト運輸",
+    label: "ヤマト運輸",
+    url: "https://toi.kuronekoyamato.co.jp/cgi-bin/tneko",
+  },
+  {
+    value: "佐川急便",
+    label: "佐川急便",
+    url: "https://k2k.sagawa-exp.co.jp/p/web/okurijosearch.do",
+  },
+  {
+    value: "日本郵便",
+    label: "日本郵便",
+    url: "https://trackings.post.japanpost.jp/services/srv/search/",
+  },
+  {
+    value: "西濃運輸",
+    label: "西濃運輸",
+    url: "https://track.seino.co.jp/cgi-bin/gnpquery.pgm",
+  },
+  {
+    value: "福山通運",
+    label: "福山通運",
+    url: "https://corp.fukutsu.co.jp/situation/tracking_no_hunt/",
+  },
+  { value: "その他", label: "その他" },
+];
+
+const trackingStatusOptions = [
+  { value: "shipped", label: "発送済み" },
+  { value: "in_transit", label: "配送中" },
+  { value: "out_for_delivery", label: "配達中" },
+  { value: "delivered", label: "配達完了" },
+];
+
+const OrderDetailModal = ({
+  order: initialOrder,
+  onClose,
+}: OrderDetailModalProps) => {
+  const [order, setOrder] = useState<Order>(initialOrder);
   const [trackingNumber, setTrackingNumber] = useState("");
   const [carrier, setCarrier] = useState("");
+  const [customCarrier, setCustomCarrier] = useState("");
+  const [carrierUrl, setCarrierUrl] = useState("");
+  const [trackingStatus, setTrackingStatus] = useState("shipped");
+  const [loading, setLoading] = useState(false);
   const { showToast } = useToast();
 
+  useEffect(() => {
+    if (order.tracking) {
+      setTrackingNumber(order.tracking.tracking_number);
+      // Check if carrier is one of the predefined options
+      const isPredefinedCarrier = carrierOptions.some(
+        (opt) => opt.value === order.tracking!.carrier && opt.value !== "その他"
+      );
+      if (isPredefinedCarrier) {
+        setCarrier(order.tracking.carrier);
+        setCustomCarrier("");
+      } else {
+        setCarrier("その他");
+        setCustomCarrier(order.tracking.carrier);
+      }
+      setCarrierUrl(order.tracking.carrier_url || "");
+      setTrackingStatus(order.tracking.status);
+    }
+  }, [order]);
+
+  const handleCarrierChange = (selectedCarrier: string) => {
+    setCarrier(selectedCarrier);
+    if (selectedCarrier !== "その他") {
+      setCustomCarrier("");
+      const option = carrierOptions.find(
+        (opt) => opt.value === selectedCarrier
+      );
+      if (option && option.url) {
+        setCarrierUrl(option.url);
+      }
+    } else {
+      setCarrierUrl("");
+    }
+  };
+
+  const loadOrderDetails = async () => {
+    try {
+      const response = await apiService.getOrder(order.id);
+      if (response.data) {
+        setOrder(response.data as unknown as Order);
+      }
+    } catch (error) {
+      console.error("Failed to load order details:", error);
+    }
+  };
+
   const handleAddTracking = async () => {
-    if (!trackingNumber || !carrier) {
-      showToast("追跡番号と運送会社を入力してください", "error");
+    const finalCarrier = carrier === "その他" ? customCarrier : carrier;
+    if (!trackingNumber || !finalCarrier) {
+      showToast("追跡番号と配送業者を入力してください", "error");
       return;
     }
 
+    setLoading(true);
     try {
       const response = await apiService.addShippingTracking(order.id, {
         tracking_number: trackingNumber,
-        carrier: carrier,
-        carrier_url: `https://tracking.${carrier.toLowerCase()}.com/${trackingNumber}`,
+        carrier: finalCarrier,
+        carrier_url: carrierUrl || undefined,
+        status: trackingStatus,
       });
 
       if (!response.error) {
         showToast("追跡情報を追加しました", "success");
-        onClose();
+        await loadOrderDetails();
       } else {
         showToast(response.error, "error");
       }
     } catch {
       showToast("追加に失敗しました", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUpdateTracking = async () => {
+    if (!order.tracking) return;
+
+    const finalCarrier = carrier === "その他" ? customCarrier : carrier;
+    if (!trackingNumber || !finalCarrier) {
+      showToast("追跡番号と配送業者を入力してください", "error");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await apiService.updateShippingTracking(
+        order.tracking.id,
+        {
+          tracking_number: trackingNumber,
+          carrier: finalCarrier,
+          carrier_url: carrierUrl || undefined,
+          status: trackingStatus,
+          delivered_at:
+            trackingStatus === "delivered"
+              ? new Date().toISOString()
+              : undefined,
+        }
+      );
+
+      if (!response.error) {
+        showToast("追跡情報を更新しました", "success");
+        await loadOrderDetails();
+      } else {
+        showToast(response.error, "error");
+      }
+    } catch {
+      showToast("更新に失敗しました", "error");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-white  max-w-3xl w-full max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b">
-          <h2 className="text-xl font-bold">注文詳細</h2>
+          <h2 className="text-xl font-bold flex items-center">
+            <Package className="w-5 h-5 mr-2 text-blue-600" />
+            注文詳細
+          </h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600"
+            className="text-gray-400 hover:text-gray-600 text-2xl leading-none"
           >
             ×
           </button>
         </div>
-        <div className="p-6 space-y-4">
-          <div>
-            <h3 className="font-semibold mb-2">注文情報</h3>
-            <p>注文番号: {order.order_number}</p>
-            <p>ステータス: {order.status}</p>
-            <p>
-              合計金額: ¥
-              {typeof order.total_amount === "number"
-                ? order.total_amount.toLocaleString()
-                : parseFloat(String(order.total_amount || 0)).toLocaleString()}
-            </p>
+        <div className="p-6 space-y-6">
+          {/* Order Information */}
+          <div className="bg-gray-50  p-4">
+            <h3 className="font-semibold mb-3 flex items-center">
+              <Package className="w-4 h-4 mr-2" />
+              注文情報
+            </h3>
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <div>
+                <p className="text-gray-600">注文番号</p>
+                <p className="font-medium">{order.order_number}</p>
+              </div>
+              <div>
+                <p className="text-gray-600">ステータス</p>
+                <p className="font-medium">{order.status}</p>
+              </div>
+              <div>
+                <p className="text-gray-600">合計金額</p>
+                <p className="font-medium">
+                  ¥
+                  {typeof order.total_amount === "number"
+                    ? order.total_amount.toLocaleString()
+                    : parseFloat(
+                        String(order.total_amount || 0)
+                      ).toLocaleString()}
+                </p>
+              </div>
+              <div>
+                <p className="text-gray-600">注文日</p>
+                <p className="font-medium">
+                  {new Date(order.createdAt).toLocaleDateString("ja-JP")}
+                </p>
+              </div>
+            </div>
           </div>
-          <div>
-            <h3 className="font-semibold mb-2">配送追跡情報追加</h3>
-            <div className="space-y-2">
-              <input
-                type="text"
-                placeholder="追跡番号"
-                value={trackingNumber}
-                onChange={(e) => setTrackingNumber(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg"
-              />
-              <input
-                type="text"
-                placeholder="運送会社"
-                value={carrier}
-                onChange={(e) => setCarrier(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg"
-              />
+
+          {/* Current Tracking Information */}
+          {order.tracking && (
+            <div className="bg-blue-50  p-4">
+              <h3 className="font-semibold mb-3 flex items-center">
+                <Truck className="w-4 h-4 mr-2 text-blue-600" />
+                現在の配送追跡情報
+              </h3>
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div>
+                  <p className="text-gray-600">追跡番号</p>
+                  <p className="font-medium">
+                    {order.tracking.tracking_number}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-gray-600">配送業者</p>
+                  <p className="font-medium">{order.tracking.carrier}</p>
+                </div>
+                <div>
+                  <p className="text-gray-600">配送状況</p>
+                  <p className="font-medium">
+                    {trackingStatusOptions.find(
+                      (opt) => opt.value === order.tracking!.status
+                    )?.label || order.tracking.status}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-gray-600">発送日</p>
+                  <p className="font-medium">
+                    {new Date(order.tracking.shipped_at).toLocaleDateString(
+                      "ja-JP"
+                    )}
+                  </p>
+                </div>
+                {order.tracking.delivered_at && (
+                  <div>
+                    <p className="text-gray-600">配達日</p>
+                    <p className="font-medium">
+                      {new Date(order.tracking.delivered_at).toLocaleDateString(
+                        "ja-JP"
+                      )}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Tracking Form */}
+          <div className="border border-gray-200  p-4">
+            <h3 className="font-semibold mb-3 flex items-center">
+              <Truck className="w-4 h-4 mr-2" />
+              {order.tracking ? "配送追跡情報を更新" : "配送追跡情報を追加"}
+            </h3>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  追跡番号 <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="1234567890"
+                  value={trackingNumber}
+                  onChange={(e) => setTrackingNumber(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  配送業者 <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={carrier}
+                  onChange={(e) => handleCarrierChange(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500"
+                >
+                  {carrierOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              {carrier === "その他" && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    配送業者名 <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="配送業者名を入力"
+                    value={customCarrier}
+                    onChange={(e) => setCustomCarrier(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+              )}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  追跡URL（任意）
+                </label>
+                <input
+                  type="url"
+                  placeholder="https://tracking.example.com/..."
+                  value={carrierUrl}
+                  onChange={(e) => setCarrierUrl(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  配送状況 <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={trackingStatus}
+                  onChange={(e) => setTrackingStatus(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500"
+                >
+                  {trackingStatusOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
               <button
-                onClick={handleAddTracking}
-                className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                onClick={
+                  order.tracking ? handleUpdateTracking : handleAddTracking
+                }
+                disabled={
+                  loading ||
+                  !trackingNumber ||
+                  !(carrier === "その他" ? customCarrier : carrier)
+                }
+                className="w-full px-4 py-2 bg-blue-600 text-white  hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center"
               >
-                追跡情報を追加
+                {loading ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                    処理中...
+                  </>
+                ) : order.tracking ? (
+                  "更新"
+                ) : (
+                  "追加"
+                )}
               </button>
             </div>
           </div>

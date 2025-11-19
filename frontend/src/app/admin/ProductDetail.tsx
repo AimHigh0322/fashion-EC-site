@@ -217,7 +217,7 @@ export const ProductDetail = () => {
           <div className="sticky top-6">
             {/* Main Image Display */}
             <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 mb-4">
-              <div className="relative bg-gray-100 rounded-lg overflow-hidden aspect-square flex items-center justify-center group cursor-zoom-in">
+              <div className="relative bg-gray-100  overflow-hidden aspect-square flex items-center justify-center group cursor-zoom-in">
                 {selectedImageUrl ? (
                   <>
                     <img
@@ -260,7 +260,7 @@ export const ProductDetail = () => {
                       <button
                         key={index}
                         onClick={() => setSelectedImageIndex(index)}
-                        className={`relative flex-shrink-0 w-24 h-24 rounded-lg overflow-hidden border-2 transition-all duration-200 cursor-pointer ${
+                        className={`relative flex-shrink-0 w-24 h-24  overflow-hidden border-2 transition-all duration-200 cursor-pointer ${
                           selectedImageIndex === index
                             ? "border-blue-500 ring-4 ring-blue-100 scale-105 shadow-md"
                             : "border-gray-200 hover:border-gray-400 hover:shadow-sm"
@@ -365,7 +365,7 @@ export const ProductDetail = () => {
                         {product.categories.map((cat) => (
                           <span
                             key={cat.id}
-                            className={`px-3 py-1 rounded-md text-xs font-medium ${
+                            className={`px-3 py-1  text-xs font-medium ${
                               cat.is_primary
                                 ? "bg-blue-500 text-white"
                                 : "bg-gray-100 text-gray-700"
@@ -555,7 +555,7 @@ export const ProductDetail = () => {
                     {product.campaigns.map((campaign) => (
                       <span
                         key={campaign.id}
-                        className="px-3 py-1.5 bg-purple-500 text-white rounded-md text-sm font-medium"
+                        className="px-3 py-1.5 bg-purple-500 text-white  text-sm font-medium"
                       >
                         {campaign.name}
                       </span>
@@ -602,14 +602,14 @@ export const ProductDetail = () => {
             <div className="flex gap-3">
               <button
                 onClick={() => setShowEditModal(true)}
-                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 font-medium cursor-pointer"
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 border border-gray-300  hover:bg-gray-50 font-medium cursor-pointer"
               >
                 <Edit className="w-5 h-5" />
                 商品を編集
               </button>
               <button
                 onClick={() => setShowDeleteConfirm(true)}
-                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium cursor-pointer"
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-red-600 text-white  hover:bg-red-700 font-medium cursor-pointer"
               >
                 <Trash2 className="w-5 h-5" />
                 商品を削除
@@ -658,7 +658,7 @@ export const ProductDetail = () => {
                 </div>
                 <button
                   onClick={() => setShowImagePreview(false)}
-                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
+                  className="p-2 hover:bg-gray-100  transition-colors cursor-pointer"
                   aria-label="Close preview"
                 >
                   <X className="w-5 h-5 text-gray-600" />
@@ -670,7 +670,7 @@ export const ProductDetail = () => {
                 <img
                   src={selectedImageUrl}
                   alt={product.name}
-                  className="max-w-full max-h-[calc(95vh-200px)] object-contain rounded-lg shadow-lg"
+                  className="max-w-full max-h-[calc(95vh-200px)] object-contain  shadow-lg"
                 />
 
                 {/* Navigation Arrows */}
@@ -716,7 +716,7 @@ export const ProductDetail = () => {
                         <button
                           key={index}
                           onClick={() => setSelectedImageIndex(index)}
-                          className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all cursor-pointer ${
+                          className={`flex-shrink-0 w-20 h-20  overflow-hidden border-2 transition-all cursor-pointer ${
                             selectedImageIndex === index
                               ? "border-blue-500 ring-2 ring-blue-200 scale-105"
                               : "border-gray-200 hover:border-gray-400"
@@ -754,7 +754,7 @@ export const ProductDetail = () => {
                 <div className="flex gap-2">
                   <button
                     onClick={() => setShowImagePreview(false)}
-                    className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-medium transition-colors cursor-pointer"
+                    className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700  font-medium transition-colors cursor-pointer"
                   >
                     閉じる
                   </button>

@@ -58,12 +58,7 @@ export const Dashboard = () => {
     <AdminLayout>
       <div className="space-y-6">
         {/* Breadcrumb */}
-        <Breadcrumbs
-          homePath="/admin"
-          items={[
-            { label: "ダッシュボード" },
-          ]}
-        />
+        <Breadcrumbs homePath="/admin" items={[{ label: "ダッシュボード" }]} />
         {/* Header */}
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
@@ -79,9 +74,9 @@ export const Dashboard = () => {
           {stats.map((stat) => {
             const Icon = stat.icon;
             return (
-              <div key={stat.name} className="bg-white rounded-lg shadow p-6">
+              <div key={stat.name} className="bg-white  shadow p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <div className={`p-2 bg-gray-100 rounded-lg`}>
+                  <div className={`p-2 bg-gray-100 `}>
                     <Icon className={`w-6 h-6 ${stat.color}`} />
                   </div>
                   <span className="text-sm font-medium text-green-600 flex items-center">
@@ -107,7 +102,7 @@ export const Dashboard = () => {
         {/* Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* User Information */}
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-white  shadow p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">
               ユーザー情報
             </h2>
@@ -148,7 +143,7 @@ export const Dashboard = () => {
           </div>
 
           {/* Recent Orders */}
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-white  shadow p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">
               最近の注文
             </h2>
@@ -156,7 +151,7 @@ export const Dashboard = () => {
               {recentOrders.map((order) => (
                 <div
                   key={order.id}
-                  className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                  className="flex items-center justify-between p-3 bg-gray-50 "
                 >
                   <div>
                     <p className="text-sm font-medium text-gray-900">
@@ -169,7 +164,7 @@ export const Dashboard = () => {
                       ¥{order.amount.toLocaleString()}
                     </p>
                     <span
-                      className={`text-xs px-2 py-1 rounded-md ${
+                      className={`text-xs px-2 py-1  ${
                         order.status === "pending"
                           ? "bg-yellow-100 text-yellow-800"
                           : order.status === "processing"

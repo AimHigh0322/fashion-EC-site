@@ -35,10 +35,18 @@ export function StockAlerts() {
   const loadLowStockProducts = async () => {
     try {
       setLoading(true);
-      const products = await apiService.getLowStockProducts();
-      setLowStockProducts(products || []);
+      const response = await apiService.getLowStockProducts();
+      if (response.data && Array.isArray(response.data)) {
+        setLowStockProducts(response.data);
+      } else {
+        setLowStockProducts([]);
+      }
     } catch (error: any) {
-      showToast(error.message || "在庫アラートの読み込みに失敗しました", "error");
+      showToast(
+        error.message || "在庫アラートの読み込みに失敗しました",
+        "error"
+      );
+      setLowStockProducts([]);
     } finally {
       setLoading(false);
     }
@@ -100,7 +108,7 @@ export function StockAlerts() {
     }
     return {
       label: "在庫あり",
-      color: "bg-green-100 text-green-800",
+      color: "bg-[#e2603f] text-white",
       icon: Package,
     };
   };
@@ -123,13 +131,11 @@ export function StockAlerts() {
             <AlertTriangle className="w-7 h-7 mr-2 text-[#e2603f]" />
             在庫アラート
           </h1>
-          <p className="text-gray-600 mt-1">
-            低在庫および在庫切れの商品を管理
-          </p>
+          <p className="text-gray-600 mt-1">低在庫および在庫切れの商品を管理</p>
         </div>
         <button
           onClick={loadLowStockProducts}
-          className="flex items-center px-4 py-2 bg-[#e2603f] hover:bg-[#c95a42] text-white font-medium rounded-lg transition-colors"
+          className="flex items-center px-4 py-2 bg-[#e2603f] hover:bg-[#c95a42] text-white font-medium  transition-colors"
         >
           <RefreshCw className="w-4 h-4 mr-2" />
           更新
@@ -138,7 +144,7 @@ export function StockAlerts() {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+        <div className="bg-red-50 border border-red-200  p-4">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-red-600 font-medium">在庫切れ</p>
@@ -150,7 +156,7 @@ export function StockAlerts() {
           </div>
         </div>
 
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+        <div className="bg-yellow-50 border border-yellow-200  p-4">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-yellow-600 font-medium">低在庫</p>
@@ -166,7 +172,7 @@ export function StockAlerts() {
           </div>
         </div>
 
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="bg-blue-50 border border-blue-200  p-4">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-blue-600 font-medium">入荷予定あり</p>
@@ -181,17 +187,15 @@ export function StockAlerts() {
 
       {/* Products Table */}
       {lowStockProducts.length === 0 ? (
-        <div className="bg-white rounded-lg shadow-sm p-12 text-center">
+        <div className="bg-white  shadow-sm p-12 text-center">
           <Package className="w-16 h-16 mx-auto text-gray-300 mb-4" />
           <h3 className="text-lg font-medium text-gray-700 mb-2">
             在庫アラートはありません
           </h3>
-          <p className="text-gray-500">
-            すべての商品の在庫が十分にあります
-          </p>
+          <p className="text-gray-500">すべての商品の在庫が十分にあります</p>
         </div>
       ) : (
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+        <div className="bg-white  shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
@@ -324,7 +328,7 @@ export function StockAlerts() {
       {/* Stock Update Modal */}
       {showModal && selectedProduct && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+          <div className="bg-white  shadow-xl max-w-md w-full p-6">
             <h3 className="text-lg font-semibold text-gray-800 mb-4">
               在庫更新: {selectedProduct.name}
             </h3>
@@ -348,7 +352,7 @@ export function StockAlerts() {
                   onChange={(e) =>
                     setStockForm({ ...stockForm, changeType: e.target.value })
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#e2603f] focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300  focus:ring-2 focus:ring-[#e2603f] focus:border-transparent"
                 >
                   <option value="restock">入荷</option>
                   <option value="adjustment">調整</option>
@@ -371,7 +375,7 @@ export function StockAlerts() {
                         ),
                       })
                     }
-                    className="px-3 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition-colors"
+                    className="px-3 py-2 bg-gray-200 hover:bg-gray-300  transition-colors"
                   >
                     <Minus className="w-4 h-4" />
                   </button>
@@ -384,7 +388,7 @@ export function StockAlerts() {
                         quantityChange: parseInt(e.target.value) || 0,
                       })
                     }
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-center focus:ring-2 focus:ring-[#e2603f] focus:border-transparent"
+                    className="flex-1 px-3 py-2 border border-gray-300  text-center focus:ring-2 focus:ring-[#e2603f] focus:border-transparent"
                   />
                   <button
                     type="button"
@@ -394,7 +398,7 @@ export function StockAlerts() {
                         quantityChange: stockForm.quantityChange + 10,
                       })
                     }
-                    className="px-3 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition-colors"
+                    className="px-3 py-2 bg-gray-200 hover:bg-gray-300  transition-colors"
                   >
                     <Plus className="w-4 h-4" />
                   </button>
@@ -420,7 +424,7 @@ export function StockAlerts() {
                     setStockForm({ ...stockForm, notes: e.target.value })
                   }
                   rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#e2603f] focus:border-transparent resize-none"
+                  className="w-full px-3 py-2 border border-gray-300  focus:ring-2 focus:ring-[#e2603f] focus:border-transparent resize-none"
                   placeholder="変更理由や備考を入力..."
                 />
               </div>
@@ -430,14 +434,14 @@ export function StockAlerts() {
               <button
                 onClick={() => setShowModal(false)}
                 disabled={submitting}
-                className="flex-1 px-4 py-2 bg-gray-200 hover:bg-gray-300 disabled:bg-gray-100 text-gray-700 font-medium rounded-lg transition-colors"
+                className="flex-1 px-4 py-2 bg-gray-200 hover:bg-gray-300 disabled:bg-gray-100 text-gray-700 font-medium  transition-colors"
               >
                 キャンセル
               </button>
               <button
                 onClick={handleSubmitStockUpdate}
                 disabled={submitting || stockForm.quantityChange === 0}
-                className="flex-1 px-4 py-2 bg-[#e2603f] hover:bg-[#c95a42] disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors"
+                className="flex-1 px-4 py-2 bg-[#e2603f] hover:bg-[#c95a42] disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-medium  transition-colors"
               >
                 {submitting ? "更新中..." : "更新"}
               </button>
@@ -448,4 +452,3 @@ export function StockAlerts() {
     </div>
   );
 }
-

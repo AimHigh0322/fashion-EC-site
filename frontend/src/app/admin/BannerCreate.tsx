@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { X, Upload, Trash2, Plus } from "lucide-react";
 import { AdminLayout } from "../../components/layouts/AdminLayout";
 import { useToast } from "../../contexts/ToastContext";
@@ -286,7 +286,7 @@ export const BannerCreate = () => {
                     </label>
                     <div className="mt-1">
                       {banner.preview ? (
-                        <div className="relative group w-full overflow-hidden rounded-lg">
+                        <div className="relative group w-full overflow-hidden ">
                           <div
                             className="relative w-full max-h-[300px] sm:max-h-[350px] md:max-h-[400px] lg:max-h-[450px] xl:max-h-[500px]"
                             style={{
@@ -297,7 +297,7 @@ export const BannerCreate = () => {
                             <img
                               src={banner.preview}
                               alt="Preview"
-                              className="w-full h-full object-cover rounded-lg border-2 border-gray-200"
+                              className="w-full h-full object-cover  border-2 border-gray-200"
                             />
                             {/* Preview Overlay - Title and Description */}
                             <div
@@ -383,7 +383,7 @@ export const BannerCreate = () => {
                         </div>
                       ) : (
                         <label
-                          className="flex flex-col items-center justify-center w-full border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-purple-400 hover:bg-purple-50/50 transition-all duration-200 bg-gray-50/30"
+                          className="flex flex-col items-center justify-center w-full border-2 border-dashed border-gray-300  cursor-pointer hover:border-purple-400 hover:bg-purple-50/50 transition-all duration-200 bg-gray-50/30"
                           style={{
                             aspectRatio: "2.56/1",
                             minHeight: "120px",
@@ -429,7 +429,7 @@ export const BannerCreate = () => {
                       onChange={(e) =>
                         handleBannerChange(index, "title", e.target.value)
                       }
-                      className="w-full px-2 sm:px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                      className="w-full px-2 sm:px-3 py-2 text-sm sm:text-base border border-gray-300  focus:outline-none focus:border-blue-500"
                       required
                     />
                   </div>
@@ -464,7 +464,7 @@ export const BannerCreate = () => {
                               e.target.value
                             )
                           }
-                          className="flex-1 min-w-0 px-2 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-xs"
+                          className="flex-1 min-w-0 px-2 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 text-xs"
                           pattern="^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
                         />
                       </div>
@@ -484,7 +484,7 @@ export const BannerCreate = () => {
                             e.target.value
                           )
                         }
-                        className="w-full px-2 sm:px-3 py-2 text-xs sm:text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                        className="w-full px-2 sm:px-3 py-2 text-xs sm:text-sm border border-gray-300  focus:outline-none focus:border-blue-500"
                       >
                         <option value="text-2xl">小 (text-2xl)</option>
                         <option value="text-3xl">中 (text-3xl)</option>
@@ -508,7 +508,7 @@ export const BannerCreate = () => {
                             e.target.value
                           )
                         }
-                        className="w-full px-2 sm:px-3 py-2 text-xs sm:text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                        className="w-full px-2 sm:px-3 py-2 text-xs sm:text-sm border border-gray-300  focus:outline-none focus:border-blue-500"
                       >
                         <option value="left">左</option>
                         <option value="center">中央</option>
@@ -528,7 +528,7 @@ export const BannerCreate = () => {
                         handleBannerChange(index, "description", e.target.value)
                       }
                       rows={3}
-                      className="w-full px-2 sm:px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 resize-none"
+                      className="w-full px-2 sm:px-3 py-2 text-sm sm:text-base border border-gray-300  focus:outline-none focus:border-blue-500 resize-none"
                     />
                   </div>
 
@@ -562,7 +562,7 @@ export const BannerCreate = () => {
                               e.target.value
                             )
                           }
-                          className="flex-1 min-w-0 px-2 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-xs"
+                          className="flex-1 min-w-0 px-2 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 text-xs"
                           pattern="^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
                         />
                       </div>
@@ -582,7 +582,7 @@ export const BannerCreate = () => {
                             e.target.value
                           )
                         }
-                        className="w-full px-2 sm:px-3 py-2 text-xs sm:text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                        className="w-full px-2 sm:px-3 py-2 text-xs sm:text-sm border border-gray-300  focus:outline-none focus:border-blue-500"
                       >
                         <option value="text-sm">小 (text-sm)</option>
                         <option value="text-base">中 (text-base)</option>
@@ -606,7 +606,7 @@ export const BannerCreate = () => {
                             e.target.value
                           )
                         }
-                        className="w-full px-2 sm:px-3 py-2 text-xs sm:text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                        className="w-full px-2 sm:px-3 py-2 text-xs sm:text-sm border border-gray-300  focus:outline-none focus:border-blue-500"
                       >
                         <option value="left">左</option>
                         <option value="center">中央</option>
@@ -617,7 +617,7 @@ export const BannerCreate = () => {
 
                   {/* Vertical Position */}
                   <div className="md:col-span-12">
-                    <div className="bg-gray-50 rounded-lg p-3 sm:p-4 md:p-5 border border-gray-200">
+                    <div className="bg-gray-50  p-3 sm:p-4 md:p-5 border border-gray-200">
                       <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
                         縦位置（タイトル・説明共通）
                       </label>
@@ -637,7 +637,7 @@ export const BannerCreate = () => {
                             value
                           );
                         }}
-                        className="w-full sm:max-w-xs md:max-w-sm px-2 sm:px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full sm:max-w-xs md:max-w-sm px-2 sm:px-3 py-2 text-sm border border-gray-300  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       >
                         <option value="top">上</option>
                         <option value="middle">中央</option>
@@ -661,7 +661,7 @@ export const BannerCreate = () => {
                         handleBannerChange(index, "page_url", e.target.value)
                       }
                       placeholder="https://example.com"
-                      className="w-full px-2 sm:px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                      className="w-full px-2 sm:px-3 py-2 text-sm sm:text-base border border-gray-300  focus:outline-none focus:border-blue-500"
                     />
                   </div>
 
@@ -681,7 +681,7 @@ export const BannerCreate = () => {
                         )
                       }
                       placeholder="クリック可能なテキストを入力"
-                      className="w-full px-2 sm:px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                      className="w-full px-2 sm:px-3 py-2 text-sm sm:text-base border border-gray-300  focus:outline-none focus:border-blue-500"
                     />
                     <p className="text-[10px] sm:text-xs text-gray-500 mt-1">
                       このテキストがURLの代わりに表示され、クリックするとページURLに移動します
@@ -702,7 +702,7 @@ export const BannerCreate = () => {
                           e.target.value as "active" | "inactive"
                         )
                       }
-                      className="w-full px-2 sm:px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                      className="w-full px-2 sm:px-3 py-2 text-sm sm:text-base border border-gray-300  focus:outline-none focus:border-blue-500"
                     >
                       <option value="active">有効</option>
                       <option value="inactive">無効</option>
@@ -714,7 +714,7 @@ export const BannerCreate = () => {
 
             {/* Add Banner Button - Show in grid when banners exist */}
             {banners.length > 0 && (
-              <div className="bg-white rounded-lg shadow p-4 sm:p-6 border-2 border-dashed border-gray-300 flex flex-col items-center justify-center min-h-[300px] sm:min-h-[400px] hover:border-blue-400 hover:bg-gray-50 transition-all cursor-pointer">
+              <div className="bg-white  shadow p-4 sm:p-6 border-2 border-dashed border-gray-300 flex flex-col items-center justify-center min-h-[300px] sm:min-h-[400px] hover:border-blue-400 hover:bg-gray-50 transition-all cursor-pointer">
                 <button
                   type="button"
                   onClick={() => {
@@ -749,14 +749,14 @@ export const BannerCreate = () => {
               <button
                 type="button"
                 onClick={() => navigate("/admin/banners")}
-                className="w-full sm:w-auto px-6 sm:px-8 py-2.5 sm:py-3 text-sm sm:text-base text-gray-700 bg-white border-2 border-gray-300 rounded-lg font-medium shadow-sm hover:bg-gray-50 hover:border-gray-400 hover:shadow-md transition-all duration-200 transform hover:-translate-y-0.5 active:translate-y-0"
+                className="w-full sm:w-auto px-6 sm:px-8 py-2.5 sm:py-3 text-sm sm:text-base text-gray-700 bg-white border-2 border-gray-300  font-medium shadow-sm hover:bg-gray-50 hover:border-gray-400 hover:shadow-md transition-all duration-200 transform hover:-translate-y-0.5 active:translate-y-0"
               >
                 キャンセル
               </button>
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full sm:w-auto px-6 sm:px-8 py-2.5 sm:py-3 text-sm sm:text-base text-white font-medium rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-sm"
+                className="w-full sm:w-auto px-6 sm:px-8 py-2.5 sm:py-3 text-sm sm:text-base text-white font-medium  bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-sm"
               >
                 {submitting ? (
                   <span className="flex items-center justify-center">

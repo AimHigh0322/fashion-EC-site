@@ -30,14 +30,83 @@ interface Category {
   [key: string]: unknown;
 }
 
+interface OrderItem {
+  id: string;
+  product_id: string;
+  sku: string;
+  product_name: string;
+  quantity: number;
+  price: number;
+  total: number;
+}
+
 interface Order {
   id: string;
   order_number: string;
   customer_email?: string;
   total_amount: number;
   status: string;
+  payment_status?: string;
+  payment_method?: string;
+  shipping_cost?: number;
+  tax_amount?: number;
+  createdAt: string;
+  items?: OrderItem[];
+  [key: string]: unknown;
+}
+
+interface UserProfile {
+  id: string;
+  username: string;
+  email: string;
+  first_name?: string;
+  last_name?: string;
+  phone?: string;
+  [key: string]: unknown;
+}
+
+interface NotificationSettings {
+  email_notifications?: boolean;
+  order_updates?: boolean;
+  promotions?: boolean;
+  [key: string]: unknown;
+}
+
+interface Review {
+  id: string;
+  product_id: string;
+  order_id: string;
+  user_id: string;
+  rating: number;
+  title?: string;
+  comment?: string;
+  status: string;
   createdAt: string;
   [key: string]: unknown;
+}
+
+interface StockHistory {
+  id: string;
+  product_id: string;
+  quantity_change: number;
+  change_type: string;
+  notes?: string;
+  created_by?: string;
+  createdAt: string;
+  [key: string]: unknown;
+}
+
+interface StockUpdate {
+  product_id?: string;
+  quantityChange: number;
+  changeType: string;
+  notes?: string;
+}
+
+interface BulkStockUpdateResult {
+  product_id: string;
+  success: boolean;
+  error?: string;
 }
 
 interface Campaign {
@@ -49,13 +118,6 @@ interface Campaign {
   end_date: string;
   is_active: boolean;
   [key: string]: unknown;
-}
-
-interface ShippingTracking {
-  tracking_number: string;
-  carrier: string;
-  carrier_url?: string;
-  status?: string;
 }
 
 interface AttributeDefinition {
@@ -141,7 +203,7 @@ class ApiService {
             error: data.message || data.error || "リクエストに失敗しました。",
           };
         }
-        
+
         // If success is true and has data, return the data
         if ("data" in data) {
           const response: ApiResponse<T> = { data: data.data };
@@ -444,9 +506,15 @@ class ApiService {
   }
 
   // Order endpoints
-  async getOrders(params?: { status?: string; limit?: number }) {
+  async getOrders(params?: {
+    status?: string;
+    payment_status?: string;
+    limit?: number;
+  }) {
     const query = new URLSearchParams();
     if (params?.status) query.append("status", params.status);
+    if (params?.payment_status)
+      query.append("payment_status", params.payment_status);
     if (params?.limit) query.append("limit", params.limit.toString());
     return this.request<Order[]>(`/orders?${query.toString()}`);
   }
@@ -459,13 +527,6 @@ class ApiService {
     return this.request<Order>(`/orders/${id}/status`, {
       method: "PUT",
       body: JSON.stringify({ status }),
-    });
-  }
-
-  async addShippingTracking(id: string, tracking: ShippingTracking) {
-    return this.request<{ id: string }>(`/orders/${id}/tracking`, {
-      method: "POST",
-      body: JSON.stringify(tracking),
     });
   }
 
@@ -554,20 +615,35 @@ class ApiService {
     if (imageFile) {
       formData.append("image", imageFile);
     }
-    if (banner.title || banner.name) formData.append("title", banner.title || banner.name || "");
+    if (banner.title || banner.name)
+      formData.append("title", banner.title || banner.name || "");
     if (banner.description) formData.append("description", banner.description);
     if (banner.title_color) formData.append("title_color", banner.title_color);
-    if (banner.title_font_size) formData.append("title_font_size", banner.title_font_size);
-    if (banner.title_position) formData.append("title_position", banner.title_position);
-    if (banner.title_vertical_position) formData.append("title_vertical_position", banner.title_vertical_position);
+    if (banner.title_font_size)
+      formData.append("title_font_size", banner.title_font_size);
+    if (banner.title_position)
+      formData.append("title_position", banner.title_position);
+    if (banner.title_vertical_position)
+      formData.append(
+        "title_vertical_position",
+        banner.title_vertical_position
+      );
     if (banner.description_color)
       formData.append("description_color", banner.description_color);
-    if (banner.description_font_size) formData.append("description_font_size", banner.description_font_size);
-    if (banner.description_position) formData.append("description_position", banner.description_position);
-    if (banner.description_vertical_position) formData.append("description_vertical_position", banner.description_vertical_position);
+    if (banner.description_font_size)
+      formData.append("description_font_size", banner.description_font_size);
+    if (banner.description_position)
+      formData.append("description_position", banner.description_position);
+    if (banner.description_vertical_position)
+      formData.append(
+        "description_vertical_position",
+        banner.description_vertical_position
+      );
     if (banner.image_url) formData.append("image_url", banner.image_url);
-    if (banner.page_url || banner.link_url) formData.append("page_url", banner.page_url || banner.link_url || "");
-    if (banner.display_text !== undefined) formData.append("display_text", banner.display_text || "");
+    if (banner.page_url || banner.link_url)
+      formData.append("page_url", banner.page_url || banner.link_url || "");
+    if (banner.display_text !== undefined)
+      formData.append("display_text", banner.display_text || "");
     if (banner.status) formData.append("status", banner.status);
     // Legacy fields for backward compatibility
     if (banner.is_active !== undefined)
@@ -592,21 +668,36 @@ class ApiService {
     if (imageFile) {
       formData.append("image", imageFile);
     }
-    if (banner.title || banner.name) formData.append("title", banner.title || banner.name || "");
+    if (banner.title || banner.name)
+      formData.append("title", banner.title || banner.name || "");
     if (banner.description !== undefined)
       formData.append("description", banner.description || "");
     if (banner.title_color) formData.append("title_color", banner.title_color);
-    if (banner.title_font_size) formData.append("title_font_size", banner.title_font_size);
-    if (banner.title_position) formData.append("title_position", banner.title_position);
-    if (banner.title_vertical_position) formData.append("title_vertical_position", banner.title_vertical_position);
+    if (banner.title_font_size)
+      formData.append("title_font_size", banner.title_font_size);
+    if (banner.title_position)
+      formData.append("title_position", banner.title_position);
+    if (banner.title_vertical_position)
+      formData.append(
+        "title_vertical_position",
+        banner.title_vertical_position
+      );
     if (banner.description_color)
       formData.append("description_color", banner.description_color);
-    if (banner.description_font_size) formData.append("description_font_size", banner.description_font_size);
-    if (banner.description_position) formData.append("description_position", banner.description_position);
-    if (banner.description_vertical_position) formData.append("description_vertical_position", banner.description_vertical_position);
+    if (banner.description_font_size)
+      formData.append("description_font_size", banner.description_font_size);
+    if (banner.description_position)
+      formData.append("description_position", banner.description_position);
+    if (banner.description_vertical_position)
+      formData.append(
+        "description_vertical_position",
+        banner.description_vertical_position
+      );
     if (banner.image_url) formData.append("image_url", banner.image_url);
-    if (banner.page_url || banner.link_url) formData.append("page_url", banner.page_url || banner.link_url || "");
-    if (banner.display_text !== undefined) formData.append("display_text", banner.display_text || "");
+    if (banner.page_url || banner.link_url)
+      formData.append("page_url", banner.page_url || banner.link_url || "");
+    if (banner.display_text !== undefined)
+      formData.append("display_text", banner.display_text || "");
     if (banner.status) formData.append("status", banner.status);
     // Legacy fields for backward compatibility
     if (banner.is_active !== undefined)
@@ -688,6 +779,12 @@ class ApiService {
     });
   }
 
+  async getProductFavoriteCount(productId: string) {
+    return this.request<{ count: number }>(`/favorites/count/${productId}`, {
+      method: "GET",
+    });
+  }
+
   // User management endpoints
   async getUsers(params?: {
     search?: string;
@@ -734,11 +831,14 @@ class ApiService {
     }>(`/users/${id}`);
   }
 
-  async updateUser(id: string, userData: {
-    username?: string;
-    email?: string;
-    role?: string;
-  }) {
+  async updateUser(
+    id: string,
+    userData: {
+      username?: string;
+      email?: string;
+      role?: string;
+    }
+  ) {
     return this.request<{
       message: string;
       user: {
@@ -920,24 +1020,33 @@ class ApiService {
   }
 
   async setDefaultShippingAddress(id: string) {
-    return this.request<{ id: string }>(`/shipping-addresses/${id}/set-default`, {
-      method: "POST",
-    });
+    return this.request<{ id: string }>(
+      `/shipping-addresses/${id}/set-default`,
+      {
+        method: "POST",
+      }
+    );
   }
 
   async calculateShipping(prefecture: string, cartTotal: number) {
-    return this.request<{ shipping_cost: number }>("/shipping-addresses/calculate-shipping", {
-      method: "POST",
-      body: JSON.stringify({ prefecture, cart_total: cartTotal }),
-    });
+    return this.request<{ shipping_cost: number }>(
+      "/shipping-addresses/calculate-shipping",
+      {
+        method: "POST",
+        body: JSON.stringify({ prefecture, cart_total: cartTotal }),
+      }
+    );
   }
 
   // Checkout endpoints
   async createCheckoutSession(shippingAddressId: string) {
-    return this.request<{ session_id: string; url: string }>("/checkout/create-session", {
-      method: "POST",
-      body: JSON.stringify({ shipping_address_id: shippingAddressId }),
-    });
+    return this.request<{ session_id: string; url: string }>(
+      "/checkout/create-session",
+      {
+        method: "POST",
+        body: JSON.stringify({ shipping_address_id: shippingAddressId }),
+      }
+    );
   }
 
   async verifyPaymentAndCreateOrder(sessionId: string) {
@@ -958,45 +1067,54 @@ class ApiService {
 
   // Enhanced order endpoints
   async cancelOrder(orderId: string) {
-    return this.request<{ id: string; status: string }>(`/orders/${orderId}/cancel`, {
-      method: "POST",
-    });
+    return this.request<{ id: string; status: string }>(
+      `/orders/${orderId}/cancel`,
+      {
+        method: "POST",
+      }
+    );
   }
 
   // Profile endpoints
   async getUserProfile() {
-    return this.request<any>("/profile");
+    return this.request<UserProfile>("/profile");
   }
 
-  async updateUserProfile(data: any) {
-    return this.request<any>("/profile", {
+  async updateUserProfile(data: Partial<UserProfile>) {
+    return this.request<UserProfile>("/profile", {
       method: "PUT",
       body: JSON.stringify(data),
     });
   }
 
   async changePassword(data: { currentPassword: string; newPassword: string }) {
-    return this.request<{ success: boolean; message: string }>("/profile/change-password", {
-      method: "POST",
-      body: JSON.stringify(data),
-    });
+    return this.request<{ success: boolean; message: string }>(
+      "/profile/change-password",
+      {
+        method: "POST",
+        body: JSON.stringify(data),
+      }
+    );
   }
 
   async getNotificationSettings() {
-    return this.request<any>("/profile/notifications");
+    return this.request<NotificationSettings>("/profile/notifications");
   }
 
-  async updateNotificationSettings(data: any) {
-    return this.request<any>("/profile/notifications", {
+  async updateNotificationSettings(data: Partial<NotificationSettings>) {
+    return this.request<NotificationSettings>("/profile/notifications", {
       method: "PUT",
       body: JSON.stringify(data),
     });
   }
 
   async getPurchaseHistory(limit = 50, offset = 0) {
-    return this.request<{ orders: any[]; total: number; limit: number; offset: number }>(
-      `/profile/purchase-history?limit=${limit}&offset=${offset}`
-    );
+    return this.request<{
+      orders: Order[];
+      total: number;
+      limit: number;
+      offset: number;
+    }>(`/profile/purchase-history?limit=${limit}&offset=${offset}`);
   }
 
   // Review endpoints
@@ -1007,62 +1125,74 @@ class ApiService {
     title?: string;
     comment?: string;
   }) {
-    return this.request<any>("/reviews", {
+    return this.request<Review>("/reviews", {
       method: "POST",
       body: JSON.stringify(data),
     });
   }
 
-  async getProductReviews(productId: string, status = "approved", limit = 50, offset = 0) {
-    return this.request<{ reviews: any[]; total: number }>(
+  async getProductReviews(
+    productId: string,
+    status = "approved",
+    limit = 50,
+    offset = 0
+  ) {
+    return this.request<{ reviews: Review[]; total: number }>(
       `/reviews/product/${productId}?status=${status}&limit=${limit}&offset=${offset}`
     );
   }
 
   async getUserReviews(limit = 50, offset = 0) {
-    return this.request<{ reviews: any[]; total: number }>(
+    return this.request<{ reviews: Review[]; total: number }>(
       `/reviews/user?limit=${limit}&offset=${offset}`
     );
   }
 
   async getReviewableProducts() {
-    return this.request<any[]>("/reviews/reviewable");
+    return this.request<Product[]>("/reviews/reviewable");
   }
 
-  async updateReview(reviewId: string, data: any) {
-    return this.request<any>(`/reviews/${reviewId}`, {
+  async updateReview(reviewId: string, data: Partial<Review>) {
+    return this.request<Review>(`/reviews/${reviewId}`, {
       method: "PUT",
       body: JSON.stringify(data),
     });
   }
 
   async deleteReview(reviewId: string) {
-    return this.request<{ success: boolean; message: string }>(`/reviews/${reviewId}`, {
-      method: "DELETE",
-    });
+    return this.request<{ success: boolean; message: string }>(
+      `/reviews/${reviewId}`,
+      {
+        method: "DELETE",
+      }
+    );
   }
 
   // Admin review endpoints
-  async getAllReviews(filters: any = {}, limit = 50, offset = 0) {
+  async getAllReviews(
+    filters: { status?: string; product_id?: string } = {},
+    limit = 50,
+    offset = 0
+  ) {
     const queryParams = new URLSearchParams({
       ...filters,
       limit: limit.toString(),
       offset: offset.toString(),
     });
-    return this.request<{ reviews: any[]; total: number }>(
+    return this.request<{ reviews: Review[]; total: number }>(
       `/reviews/admin/all?${queryParams.toString()}`
     );
   }
 
   async moderateReview(reviewId: string, status: string) {
-    return this.request<any>(`/reviews/${reviewId}/moderate`, {
+    return this.request<Review>(`/reviews/${reviewId}/moderate`, {
       method: "POST",
       body: JSON.stringify({ status }),
     });
   }
 
   async addAdminReplyToReview(reviewId: string, reply: string) {
-    return this.request<any>(`/reviews/${reviewId}/reply`, {
+    return this.request<Review>(`/reviews/${reviewId}/reply`, {
       method: "POST",
       body: JSON.stringify({ reply }),
     });
@@ -1070,47 +1200,81 @@ class ApiService {
 
   // Stock management endpoints
   async getStockHistory(productId: string, limit = 50, offset = 0) {
-    return this.request<{ history: any[]; total: number }>(
+    return this.request<{ history: StockHistory[]; total: number }>(
       `/stock/history/${productId}?limit=${limit}&offset=${offset}`
     );
   }
 
-  async getAllStockHistory(filters: any = {}, limit = 100, offset = 0) {
+  async getAllStockHistory(
+    filters: { product_id?: string; change_type?: string } = {},
+    limit = 100,
+    offset = 0
+  ) {
     const queryParams = new URLSearchParams({
       ...filters,
       limit: limit.toString(),
       offset: offset.toString(),
     });
-    return this.request<{ history: any[]; total: number }>(
+    return this.request<{ history: StockHistory[]; total: number }>(
       `/stock/history?${queryParams.toString()}`
     );
   }
 
   async getLowStockProducts() {
-    return this.request<any[]>("/stock/low-stock");
+    return this.request<Product[]>("/stock/low-stock");
   }
 
-  async updateProductStock(productId: string, data: {
-    quantityChange: number;
-    changeType: string;
-    notes?: string;
-  }) {
-    return this.request<any>(`/stock/${productId}/update`, {
+  async updateProductStock(productId: string, data: StockUpdate) {
+    return this.request<StockHistory>(`/stock/${productId}/update`, {
       method: "POST",
       body: JSON.stringify(data),
     });
   }
 
-  async bulkUpdateStock(updates: any[]) {
-    return this.request<{ success: number; failed: number; results: any[]; errors: any[] }>(
-      "/stock/bulk-update",
-      {
-        method: "POST",
-        body: JSON.stringify({ updates }),
-      }
-    );
+  async bulkUpdateStock(updates: StockUpdate[]) {
+    return this.request<{
+      success: number;
+      failed: number;
+      results: BulkStockUpdateResult[];
+      errors: BulkStockUpdateResult[];
+    }>("/stock/bulk-update", {
+      method: "POST",
+      body: JSON.stringify({ updates }),
+    });
   }
 
+  // Shipping tracking endpoints
+  async addShippingTracking(
+    orderId: string,
+    trackingData: {
+      tracking_number: string;
+      carrier: string;
+      carrier_url?: string;
+      status?: string;
+      shipped_at?: string;
+    }
+  ) {
+    return this.request<{ id: string }>(`/orders/${orderId}/tracking`, {
+      method: "POST",
+      body: JSON.stringify(trackingData),
+    });
+  }
+
+  async updateShippingTracking(
+    trackingId: string,
+    trackingData: {
+      tracking_number?: string;
+      carrier?: string;
+      carrier_url?: string;
+      status?: string;
+      delivered_at?: string;
+    }
+  ) {
+    return this.request<{ id: string }>(`/orders/tracking/${trackingId}`, {
+      method: "PUT",
+      body: JSON.stringify(trackingData),
+    });
+  }
 }
 
 export const apiService = new ApiService();

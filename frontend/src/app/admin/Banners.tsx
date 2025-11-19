@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Search, Trash2, Plus, Edit } from "lucide-react";
 import { AdminLayout } from "../../components/layouts/AdminLayout";
 import { apiService } from "../../services/api";
@@ -170,7 +170,7 @@ export const Banners = () => {
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => navigate("/admin/banners/create")}
-              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white  hover:bg-blue-700 transition-colors"
             >
               <Plus className="w-5 h-5" />
               <span>バナー作成</span>
@@ -179,7 +179,7 @@ export const Banners = () => {
         </div>
 
         {/* Filters and Search */}
-        <div className="bg-white rounded-lg shadow p-4">
+        <div className="bg-white  shadow p-4">
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -188,20 +188,20 @@ export const Banners = () => {
                 placeholder="バナー名・説明で検索..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors"
               />
             </div>
           </div>
         </div>
 
         {/* Banners Table */}
-        <div className="bg-white rounded-lg shadow overflow-hidden">
+        <div className="bg-white  shadow overflow-hidden">
           {loading ? (
             <div className="p-8 text-center text-gray-500">読み込み中...</div>
           ) : (
             <div className="overflow-x-auto -mx-4 sm:mx-0">
               <div className="inline-block min-w-full align-middle sm:px-0">
-                <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
+                <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:">
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                       <tr>
@@ -334,7 +334,7 @@ export const Banners = () => {
 
                               <td className="px-2 sm:px-4 py-4 whitespace-nowrap">
                                 <span
-                                  className={`px-1.5 sm:px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs font-medium rounded-md ${
+                                  className={`px-1.5 sm:px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs font-medium  ${
                                     banner.status === "active" ||
                                     banner.is_active
                                       ? "bg-green-100 text-green-800"
