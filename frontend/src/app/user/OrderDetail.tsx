@@ -10,7 +10,6 @@ import {
   ExternalLink,
   Star,
   MessageSquare,
-  RotateCcw,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
@@ -79,10 +78,6 @@ export const OrderDetail = () => {
   const [reviewTitle, setReviewTitle] = useState("");
   const [reviewComment, setReviewComment] = useState("");
   const [submittingReview, setSubmittingReview] = useState(false);
-  const [showReturnModal, setShowReturnModal] = useState(false);
-  const [returnReason, setReturnReason] = useState("");
-  const [returnComment, setReturnComment] = useState("");
-  const [submittingReturn, setSubmittingReturn] = useState(false);
 
   const loadOrder = useCallback(
     async (orderId: string) => {
@@ -179,40 +174,6 @@ export const OrderDetail = () => {
     }
   };
 
-  const handleRequestReturn = () => {
-    if (!order) return;
-    setReturnReason("");
-    setReturnComment("");
-    setShowReturnModal(true);
-  };
-
-  const handleSubmitReturn = async () => {
-    if (!order || !returnReason.trim()) {
-      error("返品理由を選択してください");
-      return;
-    }
-
-    setSubmittingReturn(true);
-    try {
-      const response = await apiService.processRefund(
-        order.id,
-        undefined,
-        `${returnReason}: ${returnComment}`
-      );
-
-      if (response.error) {
-        error(response.error);
-      } else {
-        success("返品リクエストを送信しました");
-        setShowReturnModal(false);
-        await loadOrder(order.id);
-      }
-    } catch {
-      error("返品リクエストの送信に失敗しました");
-    } finally {
-      setSubmittingReturn(false);
-    }
-  };
 
   const getStatusBadge = (status: string) => {
     const statusConfig: Record<
@@ -637,17 +598,6 @@ export const OrderDetail = () => {
                   </button>
                 )}
 
-                {(order.status === "delivered" ||
-                  order.status === "shipped") && (
-                  <button
-                    onClick={handleRequestReturn}
-                    className="w-full flex items-center justify-center px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white font-medium  transition-colors mb-3"
-                  >
-                    <RotateCcw className="w-4 h-4 mr-2" />
-                    返品・返金を申請
-                  </button>
-                )}
-
                 <button
                   onClick={() => navigate("/orders")}
                   className="w-full px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-900 font-medium  transition-colors"
@@ -708,7 +658,7 @@ export const OrderDetail = () => {
                     value={reviewTitle}
                     onChange={(e) => setReviewTitle(e.target.value)}
                     placeholder="レビューのタイトルを入力"
-                    className="w-full px-4 py-2 border border-gray-300  focus:ring-2 focus:ring-[#e2603f] focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#e2603f] focus:border-transparent"
                   />
                 </div>
 
@@ -721,7 +671,7 @@ export const OrderDetail = () => {
                     onChange={(e) => setReviewComment(e.target.value)}
                     placeholder="商品のレビューを入力（任意）"
                     rows={5}
-                    className="w-full px-4 py-2 border border-gray-300  focus:ring-2 focus:ring-[#e2603f] focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#e2603f] focus:border-transparent"
                   />
                 </div>
               </div>
@@ -756,89 +706,6 @@ export const OrderDetail = () => {
         </div>
       )}
 
-      {/* Return/Refund Modal */}
-      {showReturnModal && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white  shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                返品・返金申請
-              </h2>
-              <p className="text-sm text-gray-600 mb-6">
-                注文番号: {order?.order_number}
-              </p>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    返品理由 <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    value={returnReason}
-                    onChange={(e) => setReturnReason(e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300  focus:ring-2 focus:ring-[#e2603f] focus:border-transparent"
-                  >
-                    <option value="">選択してください</option>
-                    <option value="サイズが合わない">サイズが合わない</option>
-                    <option value="色が違う">色が違う</option>
-                    <option value="品質に問題がある">品質に問題がある</option>
-                    <option value="商品が届かない">商品が届かない</option>
-                    <option value="注文を間違えた">注文を間違えた</option>
-                    <option value="その他">その他</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    詳細（任意）
-                  </label>
-                  <textarea
-                    value={returnComment}
-                    onChange={(e) => setReturnComment(e.target.value)}
-                    placeholder="返品理由の詳細を入力してください"
-                    rows={5}
-                    className="w-full px-4 py-2 border border-gray-300  focus:ring-2 focus:ring-[#e2603f] focus:border-transparent"
-                  />
-                </div>
-
-                <div className="bg-blue-50 border border-blue-200  p-4">
-                  <p className="text-sm text-blue-900">
-                    <strong>注意事項:</strong>
-                  </p>
-                  <ul className="text-sm text-blue-800 mt-2 list-disc list-inside space-y-1">
-                    <li>返品は商品到着後6ヶ月以内に申請してください</li>
-                    <li>返送料はお客様負担となります（一律¥660）</li>
-                    <li>返品が承認され次第、返金処理を行います</li>
-                  </ul>
-                </div>
-              </div>
-
-              <div className="flex gap-3 mt-6">
-                <button
-                  onClick={() => setShowReturnModal(false)}
-                  className="flex-1 px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-900 font-medium  transition-colors"
-                >
-                  キャンセル
-                </button>
-                <button
-                  onClick={handleSubmitReturn}
-                  disabled={submittingReturn || !returnReason.trim()}
-                  className="flex-1 px-4 py-2 bg-[#e2603f] hover:bg-[#c95a42] disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold  transition-colors flex items-center justify-center"
-                >
-                  {submittingReturn ? (
-                    <>
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                      送信中...
-                    </>
-                  ) : (
-                    "返品申請を送信"
-                  )}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </UserLayout>
   );
 };

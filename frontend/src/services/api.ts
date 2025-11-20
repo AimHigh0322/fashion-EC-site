@@ -1055,16 +1055,6 @@ class ApiService {
     );
   }
 
-  async processRefund(orderId: string, amount?: number, reason?: string) {
-    return this.request<{ refund_id: string; amount: number; status: string }>(
-      `/checkout/refund/${orderId}`,
-      {
-        method: "POST",
-        body: JSON.stringify({ amount, reason }),
-      }
-    );
-  }
-
   // Enhanced order endpoints
   async cancelOrder(orderId: string) {
     return this.request<{ id: string; status: string }>(

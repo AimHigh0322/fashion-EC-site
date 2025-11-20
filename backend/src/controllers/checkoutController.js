@@ -255,14 +255,22 @@ async function verifyPaymentAndCreateOrder(req, res) {
       const customerPhone = user.phone || shippingAddress.phone || "";
 
       // Create or get customer
-      const [existingCustomers] = await connection.query(
+      // First check if customer exists with this user_id
+      const [existingCustomersByUserId] = await connection.query(
         "SELECT id FROM customers WHERE user_id = ?",
         [userId]
       );
 
+      // Also check if customer exists with this email (might have user_id = NULL)
+      const [existingCustomersByEmail] = await connection.query(
+        "SELECT id, user_id FROM customers WHERE email = ?",
+        [req.user.email]
+      );
+
       let customerId;
-      if (existingCustomers.length > 0) {
-        customerId = existingCustomers[0].id;
+      if (existingCustomersByUserId.length > 0) {
+        // Customer already exists with this user_id
+        customerId = existingCustomersByUserId[0].id;
         // Update customer info with profile data
         await connection.query(
           `UPDATE customers SET email = ?, first_name = ?, last_name = ?, phone = ? WHERE id = ?`,
@@ -274,7 +282,23 @@ async function verifyPaymentAndCreateOrder(req, res) {
             customerId,
           ]
         );
+      } else if (existingCustomersByEmail.length > 0) {
+        // Customer exists with this email but user_id might be NULL
+        customerId = existingCustomersByEmail[0].id;
+        // Update customer info including user_id to link it to this user
+        await connection.query(
+          `UPDATE customers SET user_id = ?, email = ?, first_name = ?, last_name = ?, phone = ? WHERE id = ?`,
+          [
+            userId,
+            req.user.email,
+            customerFirstName,
+            customerLastName,
+            customerPhone,
+            customerId,
+          ]
+        );
       } else {
+        // Create new customer with user_id
         customerId = uuidv4();
         await connection.query(
           `INSERT INTO customers (id, user_id, email, first_name, last_name, phone)
@@ -299,12 +323,13 @@ async function verifyPaymentAndCreateOrder(req, res) {
         Math.random().toString(36).substring(2, 6).toUpperCase();
 
       await connection.query(
-        `INSERT INTO orders (id, order_number, customer_id, status, total_amount, shipping_cost, tax_amount, payment_status, payment_method, shipping_address, billing_address, notes)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO orders (id, order_number, customer_id, user_id, status, total_amount, shipping_cost, tax_amount, payment_status, payment_method, shipping_address, billing_address, notes)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           orderId,
           orderNumber,
           customerId,
+          userId,
           "processing",
           parseFloat(session.metadata.total_amount),
           parseFloat(session.metadata.shipping_cost),
@@ -420,81 +445,8 @@ async function handleStripeWebhook(req, res) {
   res.json({ received: true });
 }
 
-// Process refund
-async function processRefund(req, res) {
-  try {
-    const { order_id } = req.params;
-    const { amount, reason } = req.body;
-
-    // Get order details
-    const order = await orderModel.getOrderById(order_id);
-    if (!order) {
-      return res.status(404).json({
-        success: false,
-        message: "注文が見つかりません",
-      });
-    }
-
-    // Check if order is paid
-    if (order.payment_status !== "paid") {
-      return res.status(400).json({
-        success: false,
-        message: "この注文は支払い済みではありません",
-      });
-    }
-
-    // Extract payment intent ID from notes
-    const paymentIntentMatch = order.notes?.match(
-      /Payment Intent: (pi_[a-zA-Z0-9]+)/
-    );
-    if (!paymentIntentMatch) {
-      return res.status(400).json({
-        success: false,
-        message: "決済情報が見つかりません",
-      });
-    }
-
-    const paymentIntentId = paymentIntentMatch[1];
-
-    // Create refund in Stripe
-    const refund = await stripe.refunds.create({
-      payment_intent: paymentIntentId,
-      amount: amount ? Math.round(parseFloat(amount)) : undefined, // Partial or full refund
-      reason: reason || "requested_by_customer",
-    });
-
-    // Update order payment status
-    await orderModel.updateOrderPaymentStatus(order_id, "refunded");
-
-    // Restore stock
-    for (const item of order.items) {
-      await pool.query(
-        "UPDATE products SET stock_quantity = stock_quantity + ? WHERE id = ?",
-        [item.quantity, item.product_id]
-      );
-    }
-
-    res.json({
-      success: true,
-      data: {
-        refund_id: refund.id,
-        amount: refund.amount,
-        status: refund.status,
-      },
-    });
-  } catch (error) {
-    console.error("Refund processing error:", error);
-    res.status(500).json({
-      success: false,
-      message: "返金処理に失敗しました",
-      error: error.message,
-    });
-  }
-}
-
 module.exports = {
   createCheckoutSession,
   verifyPaymentAndCreateOrder,
   handleStripeWebhook,
-  processRefund,
 };

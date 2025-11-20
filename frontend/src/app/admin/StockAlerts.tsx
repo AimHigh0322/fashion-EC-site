@@ -352,7 +352,7 @@ export function StockAlerts() {
                   onChange={(e) =>
                     setStockForm({ ...stockForm, changeType: e.target.value })
                   }
-                  className="w-full px-3 py-2 border border-gray-300  focus:ring-2 focus:ring-[#e2603f] focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors"
                 >
                   <option value="restock">入荷</option>
                   <option value="adjustment">調整</option>
@@ -388,7 +388,7 @@ export function StockAlerts() {
                         quantityChange: parseInt(e.target.value) || 0,
                       })
                     }
-                    className="flex-1 px-3 py-2 border border-gray-300  text-center focus:ring-2 focus:ring-[#e2603f] focus:border-transparent"
+                    className="flex-1 px-4 py-2 border border-gray-300  text-center focus:outline-none focus:border-blue-500 transition-colors"
                   />
                   <button
                     type="button"
@@ -424,7 +424,7 @@ export function StockAlerts() {
                     setStockForm({ ...stockForm, notes: e.target.value })
                   }
                   rows={3}
-                  className="w-full px-3 py-2 border border-gray-300  focus:ring-2 focus:ring-[#e2603f] focus:border-transparent resize-none"
+                  className="w-full px-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors resize-none"
                   placeholder="変更理由や備考を入力..."
                 />
               </div>

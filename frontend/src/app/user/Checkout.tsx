@@ -126,7 +126,7 @@ export const Checkout = () => {
     }
   };
 
-  const handleCheckout = async () => {
+    const handleCheckout = async () => {
     if (!selectedAddressId) {
       error("配送先を選択してください");
       return;
@@ -222,7 +222,7 @@ export const Checkout = () => {
                   </h2>
                   <button
                     onClick={() => navigate("/shipping-addresses/new")}
-                    className="flex items-center text-[#e2603f] hover:text-[#c95a42] text-sm font-medium"
+                    className="flex items-center text-[#e2603f] hover:text-[#c95a42] text-sm font-medium cursor-pointer "
                   >
                     <Plus className="w-4 h-4 mr-1" />
                     新しい住所を追加
@@ -299,27 +299,6 @@ export const Checkout = () => {
                 )}
               </div>
 
-              {/* Payment Method Selection */}
-              <div className="bg-white border border-gray-200 p-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
-                  <CreditCard className="w-5 h-5 mr-2 text-[#e2603f]" />
-                  お支払い方法
-                </h2>
-                <div className="bg-gray-50 border border-gray-200 p-4">
-                  <div className="flex items-center gap-3">
-                    <span className="text-2xl">💳</span>
-                    <div>
-                      <p className="font-medium text-gray-900">
-                        クレジットカード (Stripe)
-                      </p>
-                      <p className="text-xs text-gray-500 mt-1">
-                        安全なオンライン決済
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
               {/* Shipping Method Selection */}
               <div className="bg-white  shadow-sm p-6">
                 <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
@@ -378,7 +357,7 @@ export const Checkout = () => {
               </div>
 
               {/* Order Items */}
-              <div className="bg-white  shadow-sm p-6">
+              <div className="p-6">
                 <h2 className="text-xl font-bold text-gray-900 mb-4">
                   注文内容 ({cartItems.length}点)
                 </h2>
@@ -424,6 +403,15 @@ export const Checkout = () => {
                   注文内容
                 </h2>
 
+                {/* Payment Method */}
+                <div className="mb-6 pb-6 border-b border-gray-200">
+                  <h3 className="text-lg font-bold text-gray-900 mb-2 flex items-center">
+                    <CreditCard className="w-5 h-5 mr-2 text-[#e2603f]" />
+                    お支払い方法
+                  </h3>
+                  <p className="text-gray-700">クレジットカード (Stripe)</p>
+                </div>
+
                 <div className="space-y-3 mb-6">
                   <div className="flex justify-between text-gray-600">
                     <span>小計</span>
@@ -464,7 +452,7 @@ export const Checkout = () => {
                   disabled={
                     processing || !selectedAddressId || cartItems.length === 0
                   }
-                  className="w-full bg-[#e2603f] hover:bg-[#c95a42] disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold py-3 px-4  transition-colors shadow-md flex items-center justify-center"
+                  className="w-full cursor-pointer bg-[#e2603f] hover:bg-[#c95a42] disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold py-3 px-4  transition-colors shadow-md flex items-center justify-center"
                 >
                   {processing ? (
                     <>

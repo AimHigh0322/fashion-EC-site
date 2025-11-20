@@ -6,6 +6,8 @@ exports.createReview = async (req, res) => {
     const userId = req.user.id;
     const { productId, orderId, rating, title, comment } = req.body;
 
+    console.log("Creating review - userId:", userId, "productId:", productId, "orderId:", orderId);
+
     if (!productId || !orderId || !rating) {
       return res.status(400).json({
         message: "商品ID、注文ID、評価が必要です",
@@ -24,10 +26,11 @@ exports.createReview = async (req, res) => {
       comment,
     });
 
-    res.status(201).json(review);
+    res.status(201).json({ success: true, data: review });
   } catch (error) {
-    console.error("Error creating review:", error);
-    res.status(500).json({ message: error.message });
+    console.error("Error creating review:", error.message);
+    console.error("Stack:", error.stack);
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 

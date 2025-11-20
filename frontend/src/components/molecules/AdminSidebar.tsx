@@ -12,6 +12,7 @@ import {
   LogOut,
   User,
   Image as ImageIcon,
+  MessageSquare,
 } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 
@@ -26,6 +27,7 @@ const navigation: NavItem[] = [
   { name: "ユーザー管理", href: "/admin/users", icon: Users },
   { name: "商品管理", href: "/admin/products", icon: Package },
   { name: "注文管理", href: "/admin/orders", icon: ShoppingCart },
+  { name: "レビュー管理", href: "/admin/reviews", icon: MessageSquare },
   { name: "カテゴリ管理", href: "/admin/categories", icon: FolderTree },
   { name: "バナー管理", href: "/admin/banners", icon: ImageIcon },
   { name: "設定", href: "/admin/settings", icon: Settings },

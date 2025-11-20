@@ -249,8 +249,8 @@ export const HomePage = () => {
                 stock_quantity: product.stock_quantity || 0,
                 status: product.status || "draft",
                 brand_name: product.brand_name || "",
-                rating: 4.5, // Default rating (can be added to products table later)
-                reviews: 0, // Default reviews (can be added to products table later)
+                rating: Number(product.average_rating) || 0, // Use real rating from database (ensure it's a number)
+                reviews: Number(product.review_count) || 0, // Use real review count from database (ensure it's a number)
                 image: imageUrl || "/img/model/model (1).png",
                 badges: badges.length > 0 ? badges : ["送料無料"], // Default badge if none
                 delivery: product.description || "",
@@ -1288,8 +1288,8 @@ export const HomePage = () => {
                             <Star
                               key={index}
                               className={`w-3 h-3 sm:w-4 sm:h-4 ${
-                                product.rating > 0 &&
-                                index < Math.floor(product.rating)
+                                (Number(product.rating) || 0) > 0 &&
+                                index < Math.floor(Number(product.rating) || 0)
                                   ? "fill-yellow-400 text-yellow-400"
                                   : "fill-none stroke-gray-300 text-gray-300"
                               }`}
@@ -1445,7 +1445,7 @@ export const HomePage = () => {
                     <div className="flex items-center gap-1">
                       <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
                       <span className="text-xs text-gray-600">
-                        {product.rating.toFixed(1)} ({product.reviews})
+                        {(Number(product.rating) || 0).toFixed(1)} ({product.reviews || 0})
                       </span>
                     </div>
                   </div>

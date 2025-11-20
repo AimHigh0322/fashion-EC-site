@@ -329,7 +329,7 @@ export const Cart = () => {
 
                   <button
                     onClick={() => navigate("/checkout")}
-                    className="w-full bg-[#e2603f] hover:bg-[#c95a42] text-white font-bold py-3 px-4  transition-colors shadow-md"
+                    className="w-full bg-[#e2603f] hover:bg-[#c95a42] text-white font-bold py-3 px-4 cursor-pointer transition-colors shadow-md"
                   >
                     レジに進む
                   </button>

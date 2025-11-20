@@ -573,7 +573,7 @@ export const ShippingAddresses = () => {
                     onChange={(e) =>
                       setFormData({ ...formData, name: e.target.value })
                     }
-                    className="w-full px-3 py-2 border border-gray-300  focus:ring-2 focus:ring-[#e2603f] focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#e2603f] focus:border-transparent"
                     placeholder="自宅"
                   />
                 </div>
@@ -654,7 +654,7 @@ export const ShippingAddresses = () => {
                         })
                       }
                       disabled={useProfileAddress && !editingAddress}
-                      className="w-full px-3 py-2 border border-gray-300  focus:ring-2 focus:ring-[#e2603f] focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+                      className="w-full px-4 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#e2603f] focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
                       placeholder="123-4567"
                     />
                   </div>
@@ -670,7 +670,7 @@ export const ShippingAddresses = () => {
                         setFormData({ ...formData, prefecture: e.target.value })
                       }
                       disabled={useProfileAddress && !editingAddress}
-                      className="w-full px-3 py-2 border border-gray-300  focus:ring-2 focus:ring-[#e2603f] focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+                      className="w-full px-4 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#e2603f] focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
                     >
                       <option value="">選択してください</option>
                       {PREFECTURES.map((pref) => (
@@ -694,7 +694,7 @@ export const ShippingAddresses = () => {
                       setFormData({ ...formData, city: e.target.value })
                     }
                     disabled={useProfileAddress && !editingAddress}
-                    className="w-full px-3 py-2 border border-gray-300  focus:ring-2 focus:ring-[#e2603f] focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+                      className="w-full px-4 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#e2603f] focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
                     placeholder="渋谷区"
                   />
                 </div>
@@ -714,7 +714,7 @@ export const ShippingAddresses = () => {
                       })
                     }
                     disabled={useProfileAddress && !editingAddress}
-                    className="w-full px-3 py-2 border border-gray-300  focus:ring-2 focus:ring-[#e2603f] focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+                      className="w-full px-4 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#e2603f] focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
                     placeholder="渋谷1-2-3"
                   />
                 </div>
@@ -733,7 +733,7 @@ export const ShippingAddresses = () => {
                       })
                     }
                     disabled={useProfileAddress && !editingAddress}
-                    className="w-full px-3 py-2 border border-gray-300  focus:ring-2 focus:ring-[#e2603f] focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+                      className="w-full px-4 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#e2603f] focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
                     placeholder="渋谷マンション101号室"
                   />
                 </div>

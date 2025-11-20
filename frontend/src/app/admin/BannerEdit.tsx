@@ -462,7 +462,7 @@ export const BannerEdit = () => {
                   value={banner.title}
                   onChange={(e) => handleBannerChange("title", e.target.value)}
                   placeholder="タイトルを入力"
-                  className="w-full px-4 py-3 border border-gray-300  focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all text-base"
+                  className="w-full px-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors"
                   required
                 />
               </div>
@@ -489,7 +489,7 @@ export const BannerEdit = () => {
                       onChange={(e) =>
                         handleBannerChange("title_color", e.target.value)
                       }
-                      className="flex-1 px-3 py-2 border border-gray-300  focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm font-mono"
+                      className="flex-1 px-3 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors text-sm font-mono"
                       pattern="^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
                     />
                   </div>
@@ -505,7 +505,7 @@ export const BannerEdit = () => {
                     onChange={(e) =>
                       handleBannerChange("title_font_size", e.target.value)
                     }
-                    className="w-full px-3 py-2.5 border border-gray-300  focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white"
+                    className="w-full px-3 py-2.5 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors bg-white"
                   >
                     <option value="text-2xl">小 (text-2xl)</option>
                     <option value="text-3xl">中 (text-3xl)</option>
@@ -525,7 +525,7 @@ export const BannerEdit = () => {
                     onChange={(e) =>
                       handleBannerChange("title_position", e.target.value)
                     }
-                    className="w-full px-3 py-2.5 border border-gray-300  focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white"
+                    className="w-full px-3 py-2.5 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors bg-white"
                   >
                     <option value="left">左</option>
                     <option value="center">中央</option>
@@ -550,7 +550,7 @@ export const BannerEdit = () => {
                   }
                   placeholder="説明を入力（任意）"
                   rows={4}
-                  className="w-full px-4 py-3 border border-gray-300  focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all resize-none text-base"
+                  className="w-full px-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors resize-none"
                 />
               </div>
 
@@ -576,7 +576,7 @@ export const BannerEdit = () => {
                       onChange={(e) =>
                         handleBannerChange("description_color", e.target.value)
                       }
-                      className="flex-1 px-3 py-2 border border-gray-300  focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm font-mono"
+                      className="flex-1 px-3 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors text-sm font-mono"
                       pattern="^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
                     />
                   </div>
@@ -595,7 +595,7 @@ export const BannerEdit = () => {
                         e.target.value
                       )
                     }
-                    className="w-full px-3 py-2.5 border border-gray-300  focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white"
+                    className="w-full px-3 py-2.5 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors bg-white"
                   >
                     <option value="text-sm">小 (text-sm)</option>
                     <option value="text-base">中 (text-base)</option>
@@ -615,7 +615,7 @@ export const BannerEdit = () => {
                     onChange={(e) =>
                       handleBannerChange("description_position", e.target.value)
                     }
-                    className="w-full px-3 py-2.5 border border-gray-300  focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white"
+                    className="w-full px-3 py-2.5 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors bg-white"
                   >
                     <option value="left">左</option>
                     <option value="center">中央</option>
@@ -639,7 +639,7 @@ export const BannerEdit = () => {
                   handleBannerChange("title_vertical_position", value);
                   handleBannerChange("description_vertical_position", value);
                 }}
-                className="w-full px-4 py-3 border border-gray-300  focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white"
+                className="w-full px-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors bg-white"
               >
                 <option value="top">上</option>
                 <option value="middle">中央</option>
@@ -669,7 +669,7 @@ export const BannerEdit = () => {
                     handleBannerChange("page_url", e.target.value)
                   }
                   placeholder="https://example.com"
-                  className="w-full px-4 py-3 border border-gray-300  focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                  className="w-full px-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors"
                 />
               </div>
 
@@ -685,7 +685,7 @@ export const BannerEdit = () => {
                     handleBannerChange("display_text", e.target.value)
                   }
                   placeholder="クリック可能なテキストを入力"
-                  className="w-full px-4 py-3 border border-gray-300  focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                  className="w-full px-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors"
                 />
                 <p className="text-xs text-gray-500 mt-2">
                   このテキストがURLの代わりに表示され、クリックするとページURLに移動します
@@ -705,7 +705,7 @@ export const BannerEdit = () => {
                       e.target.value as "active" | "inactive"
                     )
                   }
-                  className="w-full px-4 py-3 border border-gray-300  focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white"
+                  className="w-full px-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors bg-white"
                 >
                   <option value="active">有効</option>
                   <option value="inactive">無効</option>

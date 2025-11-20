@@ -614,7 +614,7 @@ const OrderDetailModal = ({
                   placeholder="1234567890"
                   value={trackingNumber}
                   onChange={(e) => setTrackingNumber(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500"
+                  className="w-full px-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors"
                 />
               </div>
               <div>
@@ -624,7 +624,7 @@ const OrderDetailModal = ({
                 <select
                   value={carrier}
                   onChange={(e) => handleCarrierChange(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500"
+                  className="w-full px-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors"
                 >
                   {carrierOptions.map((option) => (
                     <option key={option.value} value={option.value}>
@@ -643,7 +643,7 @@ const OrderDetailModal = ({
                     placeholder="配送業者名を入力"
                     value={customCarrier}
                     onChange={(e) => setCustomCarrier(e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500"
+                    className="w-full px-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors"
                   />
                 </div>
               )}
@@ -656,7 +656,7 @@ const OrderDetailModal = ({
                   placeholder="https://tracking.example.com/..."
                   value={carrierUrl}
                   onChange={(e) => setCarrierUrl(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500"
+                  className="w-full px-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors"
                 />
               </div>
               <div>
@@ -666,7 +666,7 @@ const OrderDetailModal = ({
                 <select
                   value={trackingStatus}
                   onChange={(e) => setTrackingStatus(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500"
+                  className="w-full px-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors"
                 >
                   {trackingStatusOptions.map((option) => (
                     <option key={option.value} value={option.value}>

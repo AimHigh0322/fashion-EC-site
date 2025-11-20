@@ -14,11 +14,6 @@ router.get(
   authenticateRequest,
   checkoutController.verifyPaymentAndCreateOrder
 );
-router.post(
-  "/refund/:order_id",
-  authenticateRequest,
-  checkoutController.processRefund
-);
 
 // Webhook endpoint (no auth required, verified by Stripe signature)
 router.post(

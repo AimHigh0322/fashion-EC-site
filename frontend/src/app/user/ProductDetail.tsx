@@ -656,8 +656,8 @@ export const ProductDetail = () => {
   const stockStatus = isInStock ? "在庫あり" : "在庫切れ";
 
   // Average rating and review count
-  const averageRating = product.average_rating || 0;
-  const reviewCount = product.review_count || 0;
+  const averageRating = Number(product.average_rating) || 0; // Ensure it's a number
+  const reviewCount = Number(product.review_count) || 0; // Ensure it's a number
 
   // Active campaigns
   const activeCampaigns =
@@ -839,7 +839,7 @@ export const ProductDetail = () => {
                     <Star
                       key={i}
                       className={`w-5 h-5 ${
-                        i < Math.round(averageRating)
+                        i < Math.round(Number(averageRating) || 0)
                           ? "fill-yellow-400 text-yellow-400"
                           : "fill-none stroke-gray-300 text-gray-300"
                       }`}
@@ -847,7 +847,7 @@ export const ProductDetail = () => {
                   ))}
                 </div>
                 <span className="text-sm font-medium text-gray-700">
-                  {averageRating.toFixed(1)}
+                  {(Number(averageRating) || 0).toFixed(1)}
                 </span>
               </div>
               <div className="text-sm text-gray-600">
@@ -1058,7 +1058,7 @@ export const ProductDetail = () => {
                     <Star
                       key={i}
                       className={`w-5 h-5 ${
-                        i < Math.round(averageRating)
+                        i < Math.round(Number(averageRating) || 0)
                           ? "fill-yellow-400 text-yellow-400"
                           : "fill-none stroke-gray-300 text-gray-300"
                       }`}
@@ -1066,7 +1066,7 @@ export const ProductDetail = () => {
                   ))}
                 </div>
                 <span className="text-lg font-bold text-gray-900">
-                  {averageRating.toFixed(1)}
+                  {(Number(averageRating) || 0).toFixed(1)}
                 </span>
               </div>
               <span className="text-sm text-gray-600">全{reviewCount}件</span>

@@ -154,7 +154,7 @@ export const Login = ({ onSwitchToRegister }: LoginProps) => {
                   type="email"
                   autoComplete="email"
                   required
-                  className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded focus:outline-none focus:border-blue-500 transition-colors"
+                  className="w-full pl-12 pr-4 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#e2603f] focus:border-transparent"
                   placeholder="メールアドレスを入力"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -178,7 +178,7 @@ export const Login = ({ onSwitchToRegister }: LoginProps) => {
                   type="password"
                   autoComplete="current-password"
                   required
-                  className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded focus:outline-none focus:border-blue-500 transition-colors"
+                  className="w-full pl-12 pr-4 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#e2603f] focus:border-transparent"
                   placeholder="パスワードを入力"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}

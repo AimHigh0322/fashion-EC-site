@@ -9,6 +9,9 @@ import {
   LogOut,
   ChevronDown,
   Bell,
+  Mail,
+  Phone,
+  Clock,
 } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import { useFavorites } from "../../contexts/FavoritesContext";
@@ -439,193 +442,216 @@ export const UserLayout = ({ children }: UserLayoutProps) => {
       {/* Main Content */}
       <main>{children}</main>
 
-      {/* Footer - Full Width - Warm Orange/Terracotta Theme */}
+      {/* Footer - Warm Orange/Terracotta Theme */}
       <footer className="w-full bg-[#e2603f] text-white mt-16 sm:mt-20">
-        <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 py-10 sm:py-12 lg:py-16">
-          {/* Top Section with Logo and Description */}
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 sm:gap-10 mb-10 sm:mb-12">
-            {/* Brand Section */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+          {/* Main Footer Content */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12 mb-10">
+            {/* Company Info */}
             <div className="lg:col-span-1">
-              <div className="mb-4">
+              <div className="mb-6">
                 <img
                   src="/img/logo/logo.png"
                   alt="Fashion EC Store"
                   className="h-16 sm:h-20 md:h-24 lg:h-28 w-auto object-contain"
                 />
               </div>
-              <p className="text-[#f5e8e4] text-sm sm:text-base leading-relaxed mb-4 max-w-md">
-                最新のファッショントレンドをお届け。あなたのスタイルを彩る、質の高いアイテムを豊富に取り揃えています。
+              <p className="text-[#f5e8e4] text-sm leading-relaxed mb-6">
+                最新のファッショントレンドをお届けします。質の高いアイテムで、あなたのスタイルを彩ります。
               </p>
-              <div className="flex flex-col space-y-2 text-[#f5e8e4]">
-                <span className="text-xs sm:text-sm">info@fashionstore.jp</span>
-                <span className="text-xs sm:text-sm">0120-XXX-XXX</span>
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-[#f5e8e4] text-sm">
+                  <Mail className="w-4 h-4" />
+                  <span>support@fashionstore.jp</span>
+                </div>
+                <div className="flex items-center gap-2 text-[#f5e8e4] text-sm">
+                  <Phone className="w-4 h-4" />
+                  <span>0120-123-456</span>
+                </div>
+                <div className="flex items-center gap-2 text-[#f5e8e4] text-sm">
+                  <Clock className="w-4 h-4" />
+                  <span>平日 10:00-18:00</span>
+                </div>
               </div>
             </div>
 
-            {/* Links Grid */}
-            <div className="lg:col-span-3 grid grid-cols-2 sm:grid-cols-3 gap-8 sm:gap-10">
-              <div>
-                <h3 className="font-bold mb-4 sm:mb-5 text-sm sm:text-base text-white uppercase tracking-wide">
-                  お客様サポート
-                </h3>
-                <ul className="space-y-2.5 sm:space-y-3 text-sm">
-                  <li>
-                    <a
-                      href="#"
-                      className="text-[#f5e8e4] hover:text-white transition-colors cursor-pointer"
-                    >
-                      よくある質問
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                      className="text-[#f5e8e4] hover:text-white transition-colors cursor-pointer"
-                    >
-                      配送・送料について
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                      className="text-[#f5e8e4] hover:text-white transition-colors cursor-pointer"
-                    >
-                      お支払い方法
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                      className="text-[#f5e8e4] hover:text-white transition-colors cursor-pointer"
-                    >
-                      返品・交換
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                      className="text-[#f5e8e4] hover:text-white transition-colors cursor-pointer"
-                    >
-                      サイズガイド
-                    </a>
-                  </li>
-                </ul>
-              </div>
-              <div>
-                <h3 className="font-bold mb-4 sm:mb-5 text-sm sm:text-base text-white uppercase tracking-wide">
-                  会員サービス
-                </h3>
-                <ul className="space-y-2.5 sm:space-y-3 text-sm">
-                  <li>
-                    <a
-                      href="#"
-                      className="text-[#f5e8e4] hover:text-white transition-colors cursor-pointer"
-                    >
-                      ポイントサービス
-                    </a>
-                  </li>
-                  <li>
-                    <Link
-                      to="/favorites"
-                      className="text-[#f5e8e4] hover:text-white transition-colors cursor-pointer"
-                    >
-                      お気に入り
-                    </Link>
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                      className="text-[#f5e8e4] hover:text-white transition-colors cursor-pointer"
-                    >
-                      購入履歴
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                      className="text-[#f5e8e4] hover:text-white transition-colors cursor-pointer"
-                    >
-                      会員登録
-                    </a>
-                  </li>
-                </ul>
-              </div>
-              <div>
-                <h3 className="font-bold mb-4 sm:mb-5 text-sm sm:text-base text-white uppercase tracking-wide">
-                  企業情報
-                </h3>
-                <ul className="space-y-2.5 sm:space-y-3 text-sm">
-                  <li>
-                    <a
-                      href="#"
-                      className="text-[#f5e8e4] hover:text-white transition-colors cursor-pointer"
-                    >
-                      会社概要
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                      className="text-[#f5e8e4] hover:text-white transition-colors cursor-pointer"
-                    >
-                      採用情報
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                      className="text-[#f5e8e4] hover:text-white transition-colors cursor-pointer"
-                    >
-                      お問い合わせ
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                      className="text-[#f5e8e4] hover:text-white transition-colors cursor-pointer"
-                    >
-                      プレスリリース
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                      className="text-[#f5e8e4] hover:text-white transition-colors cursor-pointer"
-                    >
-                      店舗情報
-                    </a>
-                  </li>
-                </ul>
-              </div>
+            {/* Customer Support */}
+            <div>
+              <h3 className="font-semibold text-white mb-4 text-base">
+                カスタマーサポート
+              </h3>
+              <ul className="space-y-3 text-sm">
+                <li>
+                  <Link
+                    to="/orders"
+                    className="text-[#f5e8e4] hover:text-white transition-colors"
+                  >
+                    注文履歴
+                  </Link>
+                </li>
+                <li>
+                  <a
+                    href="#"
+                    className="text-[#f5e8e4] hover:text-white transition-colors"
+                  >
+                    配送について
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#"
+                    className="text-[#f5e8e4] hover:text-white transition-colors"
+                  >
+                    お支払い方法
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#"
+                    className="text-[#f5e8e4] hover:text-white transition-colors"
+                  >
+                    返品・交換について
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#"
+                    className="text-[#f5e8e4] hover:text-white transition-colors"
+                  >
+                    よくある質問
+                  </a>
+                </li>
+              </ul>
+            </div>
+
+            {/* My Account */}
+            <div>
+              <h3 className="font-semibold text-white mb-4 text-base">
+                マイアカウント
+              </h3>
+              <ul className="space-y-3 text-sm">
+                {isAuthenticated ? (
+                  <>
+                    <li>
+                      <Link
+                        to="/profile"
+                        className="text-[#f5e8e4] hover:text-white transition-colors"
+                      >
+                        マイページ
+                      </Link>
+                    </li>
+                    <li>
+                      <Link
+                        to="/favorites"
+                        className="text-[#f5e8e4] hover:text-white transition-colors"
+                      >
+                        お気に入り
+                      </Link>
+                    </li>
+                    <li>
+                      <Link
+                        to="/orders"
+                        className="text-[#f5e8e4] hover:text-white transition-colors"
+                      >
+                        注文管理
+                      </Link>
+                    </li>
+                    <li>
+                      <a
+                        href="#"
+                        className="text-[#f5e8e4] hover:text-white transition-colors"
+                      >
+                        ポイント履歴
+                      </a>
+                    </li>
+                  </>
+                ) : (
+                  <>
+                    <li>
+                      <Link
+                        to="/register"
+                        className="text-[#f5e8e4] hover:text-white transition-colors"
+                      >
+                        新規会員登録
+                      </Link>
+                    </li>
+                    <li>
+                      <Link
+                        to="/login"
+                        className="text-[#f5e8e4] hover:text-white transition-colors"
+                      >
+                        ログイン
+                      </Link>
+                    </li>
+                  </>
+                )}
+              </ul>
+            </div>
+
+            {/* Company Info */}
+            <div>
+              <h3 className="font-semibold text-white mb-4 text-base">
+                企業情報
+              </h3>
+              <ul className="space-y-3 text-sm">
+                <li>
+                  <a
+                    href="#"
+                    className="text-[#f5e8e4] hover:text-white transition-colors"
+                  >
+                    会社概要
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#"
+                    className="text-[#f5e8e4] hover:text-white transition-colors"
+                  >
+                    お問い合わせ
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#"
+                    className="text-[#f5e8e4] hover:text-white transition-colors"
+                  >
+                    採用情報
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#"
+                    className="text-[#f5e8e4] hover:text-white transition-colors"
+                  >
+                    利用規約
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#"
+                    className="text-[#f5e8e4] hover:text-white transition-colors"
+                  >
+                    プライバシーポリシー
+                  </a>
+                </li>
+              </ul>
             </div>
           </div>
 
-          {/* Bottom Section */}
-          <div className="border-t border-[#e2603f] pt-6 sm:pt-8">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-6">
-              <div className="text-xs sm:text-sm text-[#f5e8e4]">
-                © 2024 Fashion EC Store. All rights reserved.
+          {/* Bottom Bar */}
+          <div className="border-t border-[#c95a42] pt-8">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+              <div className="text-xs text-[#f5e8e4] text-center md:text-left">
+                © {new Date().getFullYear()} Fashion EC Store. All rights
+                reserved.
               </div>
-              <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 text-xs sm:text-sm">
-                <a
-                  href="#"
-                  className="text-[#f5e8e4] hover:text-white transition-colors cursor-pointer"
-                >
-                  会員規約
+              <div className="flex flex-wrap items-center justify-center gap-4 text-xs text-[#f5e8e4]">
+                <a href="#" className="hover:text-white transition-colors">
+                  特定商取引法に基づく表記
                 </a>
                 <span className="text-[#e8c4b8]">|</span>
-                <a
-                  href="#"
-                  className="text-[#f5e8e4] hover:text-white transition-colors cursor-pointer"
-                >
-                  プライバシーポリシー
-                </a>
-                <span className="text-[#e8c4b8]">|</span>
-                <a
-                  href="#"
-                  className="text-[#f5e8e4] hover:text-white transition-colors cursor-pointer"
-                >
-                  特定商取引法
+                <a href="#" className="hover:text-white transition-colors">
+                  サイトマップ
                 </a>
               </div>
             </div>

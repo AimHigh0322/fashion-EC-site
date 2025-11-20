@@ -16,20 +16,55 @@ async function createOrder(orderData) {
 
     // Create or get customer
     let customerId = orderData.customer_id;
+    const userId = orderData.user_id || orderData.userId || null;
+    
     if (!customerId && orderData.customer) {
-      const [existing] = await connection.query(
-        "SELECT id FROM customers WHERE email = ?",
-        [orderData.customer.email]
-      );
+      // Check if customer exists with user_id (if provided)
+      let existing = [];
+      if (userId) {
+        [existing] = await connection.query(
+          "SELECT id, user_id FROM customers WHERE user_id = ?",
+          [userId]
+        );
+      }
+      
+      // If not found by user_id, check by email
+      if (existing.length === 0) {
+        [existing] = await connection.query(
+          "SELECT id, user_id FROM customers WHERE email = ?",
+          [orderData.customer.email]
+        );
+      }
+      
       if (existing.length > 0) {
         customerId = existing[0].id;
+        // Update customer record with user_id if it's null and we have user_id
+        if (userId && !existing[0].user_id) {
+          await connection.query(
+            `UPDATE customers SET user_id = ?, email = ?, first_name = ?, last_name = ?, phone = ?, address = ?, city = ?, postal_code = ?, country = ? WHERE id = ?`,
+            [
+              userId,
+              orderData.customer.email,
+              orderData.customer.first_name || null,
+              orderData.customer.last_name || null,
+              orderData.customer.phone || null,
+              orderData.customer.address || null,
+              orderData.customer.city || null,
+              orderData.customer.postal_code || null,
+              orderData.customer.country || null,
+              customerId,
+            ]
+          );
+        }
       } else {
+        // Create new customer with user_id if available
         customerId = uuidv4();
         await connection.query(
-          `INSERT INTO customers (id, email, first_name, last_name, phone, address, city, postal_code, country)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          `INSERT INTO customers (id, user_id, email, first_name, last_name, phone, address, city, postal_code, country)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           [
             customerId,
+            userId,
             orderData.customer.email,
             orderData.customer.first_name || null,
             orderData.customer.last_name || null,
@@ -41,16 +76,29 @@ async function createOrder(orderData) {
           ]
         );
       }
+    } else if (customerId && userId) {
+      // If customer_id is provided but we have user_id, update the customer record to ensure user_id is set
+      const [existing] = await connection.query(
+        "SELECT user_id FROM customers WHERE id = ?",
+        [customerId]
+      );
+      if (existing.length > 0 && !existing[0].user_id) {
+        await connection.query(
+          `UPDATE customers SET user_id = ? WHERE id = ?`,
+          [userId, customerId]
+        );
+      }
     }
 
     // Create order
     await connection.query(
-      `INSERT INTO orders (id, order_number, customer_id, status, total_amount, shipping_cost, tax_amount, payment_status, payment_method, shipping_address, billing_address, notes)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO orders (id, order_number, customer_id, user_id, status, total_amount, shipping_cost, tax_amount, payment_status, payment_method, shipping_address, billing_address, notes)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         orderId,
         orderNumber,
         customerId,
+        userId,
         orderData.status || "pending",
         orderData.total_amount,
         orderData.shipping_cost || 0,
@@ -136,7 +184,7 @@ async function createOrder(orderData) {
 
 async function getOrders(filters = {}) {
   let query = `
-    SELECT o.*, c.email as customer_email, c.first_name, c.last_name, c.user_id
+    SELECT o.*, c.email as customer_email, c.first_name, c.last_name
     FROM orders o
     LEFT JOIN customers c ON o.customer_id = c.id
     WHERE 1=1
@@ -144,7 +192,8 @@ async function getOrders(filters = {}) {
   const params = [];
 
   if (filters.user_id) {
-    query += " AND c.user_id = ?";
+    // Use user_id directly from orders table
+    query += " AND o.user_id = ?";
     params.push(filters.user_id);
   }
   if (filters.status) {
@@ -309,11 +358,21 @@ async function cancelOrder(orderId, userId) {
     await connection.beginTransaction();
 
     // Get order to verify ownership and check if it can be cancelled
+    // First check if order exists
+    const [orderCheck] = await connection.query(
+      `SELECT id, status, customer_id FROM orders WHERE id = ?`,
+      [orderId]
+    );
+
+    if (orderCheck.length === 0) {
+      throw new Error("注文が見つかりません");
+    }
+
+    const orderStatusCheck = orderCheck[0];
+
+    // Get order with user_id directly from orders table
     const [orders] = await connection.query(
-      `SELECT o.*, c.user_id 
-       FROM orders o
-       LEFT JOIN customers c ON o.customer_id = c.id
-       WHERE o.id = ?`,
+      `SELECT * FROM orders WHERE id = ?`,
       [orderId]
     );
 
@@ -323,8 +382,19 @@ async function cancelOrder(orderId, userId) {
 
     const order = orders[0];
 
+    // If order doesn't have user_id, try to update it if we have userId
+    if (userId && !order.user_id) {
+      // Update order with user_id
+      await connection.query(
+        `UPDATE orders SET user_id = ? WHERE id = ?`,
+        [userId, orderId]
+      );
+      order.user_id = userId;
+    }
+
     // Verify ownership (only for user role, admin can cancel any order)
-    if (userId && order.user_id !== userId) {
+    // If user_id is null (no user link), allow cancellation if userId is provided (user is logged in)
+    if (userId && order.user_id && order.user_id !== userId) {
       throw new Error("この注文をキャンセルする権限がありません");
     }
 

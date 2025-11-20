@@ -196,23 +196,6 @@ async function initializeDatabase() {
     `);
     console.log("✅ Brands table initialized");
 
-    // Attribute definitions (master data)
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS attribute_definitions (
-        id VARCHAR(255) PRIMARY KEY,
-        category_id VARCHAR(255),
-        name VARCHAR(255) NOT NULL,
-        type ENUM('text', 'number', 'select', 'boolean', 'date') DEFAULT 'text',
-        is_required BOOLEAN DEFAULT FALSE,
-        sort_order INT DEFAULT 0,
-        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        INDEX idx_category (category_id),
-        FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE
-      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-    `);
-    console.log("✅ Attribute definitions table initialized");
-
     // Products table
     await pool.query(`
       CREATE TABLE IF NOT EXISTS products (
@@ -274,6 +257,29 @@ async function initializeDatabase() {
       }
     }
 
+    // Add average_rating and review_count columns if they don't exist (for existing databases)
+    try {
+      const [ratingColumns] = await pool.query(`
+        SELECT COLUMN_NAME 
+        FROM INFORMATION_SCHEMA.COLUMNS 
+        WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = 'products' 
+        AND COLUMN_NAME = 'average_rating'
+      `);
+      if (ratingColumns.length === 0) {
+        await pool.query(`
+          ALTER TABLE products 
+          ADD COLUMN average_rating DECIMAL(3, 2) DEFAULT 0 AFTER is_featured,
+          ADD COLUMN review_count INT DEFAULT 0 AFTER average_rating
+        `);
+        console.log("✅ Added average_rating and review_count columns to products table");
+      }
+    } catch (error) {
+      if (!error.message.includes("Duplicate column name")) {
+        console.warn("Warning adding average_rating and review_count columns:", error.message);
+      }
+    }
+
     // Update status ENUM to include 'reservation' if it doesn't exist
     try {
       const [enumCheck] = await pool.query(`
@@ -316,7 +322,6 @@ async function initializeDatabase() {
         INDEX idx_product (product_id),
         INDEX idx_attribute_def (attribute_definition_id),
         FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
-        FOREIGN KEY (attribute_definition_id) REFERENCES attribute_definitions(id) ON DELETE CASCADE,
         UNIQUE KEY unique_product_attribute (product_id, attribute_definition_id)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     `);
@@ -406,6 +411,7 @@ async function initializeDatabase() {
         id VARCHAR(255) PRIMARY KEY,
         order_number VARCHAR(255) UNIQUE NOT NULL,
         customer_id VARCHAR(255) NOT NULL,
+        user_id VARCHAR(255) NULL,
         status ENUM('pending', 'processing', 'shipped', 'delivered', 'cancelled') DEFAULT 'pending',
         total_amount DECIMAL(10, 2) NOT NULL,
         shipping_cost DECIMAL(10, 2) DEFAULT 0,
@@ -418,6 +424,7 @@ async function initializeDatabase() {
         createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         INDEX idx_customer (customer_id),
+        INDEX idx_user_id (user_id),
         INDEX idx_status (status),
         INDEX idx_order_number (order_number),
         INDEX idx_created (createdAt),
@@ -835,7 +842,7 @@ async function initializeDatabase() {
       CREATE TABLE IF NOT EXISTS stock_history (
         id VARCHAR(255) PRIMARY KEY,
         product_id VARCHAR(255) NOT NULL,
-        change_type ENUM('order', 'restock', 'adjustment', 'cancel', 'return') NOT NULL,
+        change_type ENUM('order', 'restock', 'adjustment', 'cancel', 'return', 'refund') NOT NULL,
         quantity_change INT NOT NULL,
         quantity_before INT NOT NULL,
         quantity_after INT NOT NULL,
@@ -852,37 +859,6 @@ async function initializeDatabase() {
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     `);
     console.log("✅ Stock history table initialized");
-
-    // Webhook logs table (to track Stripe webhook events)
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS webhook_logs (
-        id VARCHAR(255) PRIMARY KEY,
-        event_id VARCHAR(255) NOT NULL,
-        event_type VARCHAR(100) NOT NULL,
-        stripe_session_id VARCHAR(255),
-        payment_intent_id VARCHAR(255),
-        user_id VARCHAR(255),
-        order_id VARCHAR(255),
-        status ENUM('received', 'processing', 'completed', 'failed') DEFAULT 'received',
-        request_body JSON,
-        response_status INT,
-        response_message TEXT,
-        error_message TEXT,
-        processing_time_ms INT,
-        inventory_decreased BOOLEAN DEFAULT FALSE,
-        order_created BOOLEAN DEFAULT FALSE,
-        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        processed_at TIMESTAMP NULL,
-        INDEX idx_event_id (event_id),
-        INDEX idx_event_type (event_type),
-        INDEX idx_session_id (stripe_session_id),
-        INDEX idx_status (status),
-        INDEX idx_created (createdAt),
-        INDEX idx_user (user_id),
-        INDEX idx_order (order_id)
-      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-    `);
-    console.log("✅ Webhook logs table initialized");
 
     // Add username column if it doesn't exist (for existing databases)
     try {

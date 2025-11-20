@@ -6,7 +6,13 @@ const xlsx = require("xlsx");
 
 async function createOrder(req, res) {
   try {
-    const result = await orderModel.createOrder(req.body);
+    // Include user_id if user is authenticated
+    const orderData = {
+      ...req.body,
+      user_id: req.user?.id || req.body.user_id || null,
+      userId: req.user?.id || req.body.userId || null,
+    };
+    const result = await orderModel.createOrder(orderData);
     await logAudit(req, "create", "order", result.id, null, req.body);
     res.status(201).json({ success: true, data: result });
   } catch (error) {
@@ -38,12 +44,69 @@ async function getOrders(req, res) {
 
 async function getOrderById(req, res) {
   try {
-    const order = await orderModel.getOrderById(req.params.id);
+    let orderId = req.params.id;
+    console.log(`Getting order by ID: ${orderId}, User: ${req.user?.id}, Role: ${req.user?.role}`);
+    
+    // Try to get order by ID first
+    let order = await orderModel.getOrderById(orderId);
+    
+    // If not found, try by order_number
     if (!order) {
-      return res.status(404).json({ success: false, message: "Order not found" });
+      const pool = require("../db/db");
+      const [ordersByNumber] = await pool.query(
+        "SELECT id FROM orders WHERE order_number = ?",
+        [orderId]
+      );
+      if (ordersByNumber.length > 0) {
+        orderId = ordersByNumber[0].id;
+        order = await orderModel.getOrderById(orderId);
+        console.log(`Order found by order_number, using order ID: ${orderId}`);
+      }
     }
+    
+    if (!order) {
+      console.log(`Order not found: ${req.params.id}`);
+      return res.status(404).json({ 
+        success: false, 
+        message: "注文が見つかりません" 
+      });
+    }
+
+    // Check if user has permission to view this order
+    // Admins can view any order, users can only view their own orders
+    if (req.user && req.user.role !== "admin") {
+      const userId = req.user.id;
+      
+      // Check if order belongs to user directly
+      if (order.user_id && order.user_id !== userId) {
+        // Check if order belongs to user via customer
+        if (order.customer_id) {
+          const pool = require("../db/db");
+          const [customerCheck] = await pool.query(
+            "SELECT user_id FROM customers WHERE id = ? AND user_id = ?",
+            [order.customer_id, userId]
+          );
+          
+          if (customerCheck.length === 0) {
+            console.log(`Access denied: User ${userId} tried to access order ${orderId}`);
+            return res.status(403).json({ 
+              success: false, 
+              message: "この注文を表示する権限がありません" 
+            });
+          }
+        } else {
+          console.log(`Access denied: User ${userId} tried to access order ${orderId} (no customer link)`);
+          return res.status(403).json({ 
+            success: false, 
+            message: "この注文を表示する権限がありません" 
+          });
+        }
+      }
+    }
+
     res.json({ success: true, data: order });
   } catch (error) {
+    console.error("Error getting order by ID:", error);
     res.status(500).json({ success: false, message: error.message });
   }
 }

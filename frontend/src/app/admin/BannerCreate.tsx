@@ -429,7 +429,7 @@ export const BannerCreate = () => {
                       onChange={(e) =>
                         handleBannerChange(index, "title", e.target.value)
                       }
-                      className="w-full px-2 sm:px-3 py-2 text-sm sm:text-base border border-gray-300  focus:outline-none focus:border-blue-500"
+                      className="w-full px-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors"
                       required
                     />
                   </div>
@@ -464,7 +464,7 @@ export const BannerCreate = () => {
                               e.target.value
                             )
                           }
-                          className="flex-1 min-w-0 px-2 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 text-xs"
+                          className="flex-1 min-w-0 px-3 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors text-xs"
                           pattern="^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
                         />
                       </div>
@@ -484,7 +484,7 @@ export const BannerCreate = () => {
                             e.target.value
                           )
                         }
-                        className="w-full px-2 sm:px-3 py-2 text-xs sm:text-sm border border-gray-300  focus:outline-none focus:border-blue-500"
+                        className="w-full px-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors"
                       >
                         <option value="text-2xl">小 (text-2xl)</option>
                         <option value="text-3xl">中 (text-3xl)</option>
@@ -508,7 +508,7 @@ export const BannerCreate = () => {
                             e.target.value
                           )
                         }
-                        className="w-full px-2 sm:px-3 py-2 text-xs sm:text-sm border border-gray-300  focus:outline-none focus:border-blue-500"
+                        className="w-full px-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors"
                       >
                         <option value="left">左</option>
                         <option value="center">中央</option>
@@ -528,7 +528,7 @@ export const BannerCreate = () => {
                         handleBannerChange(index, "description", e.target.value)
                       }
                       rows={3}
-                      className="w-full px-2 sm:px-3 py-2 text-sm sm:text-base border border-gray-300  focus:outline-none focus:border-blue-500 resize-none"
+                      className="w-full px-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors resize-none"
                     />
                   </div>
 
@@ -562,7 +562,7 @@ export const BannerCreate = () => {
                               e.target.value
                             )
                           }
-                          className="flex-1 min-w-0 px-2 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 text-xs"
+                          className="flex-1 min-w-0 px-3 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors text-xs"
                           pattern="^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
                         />
                       </div>
@@ -582,7 +582,7 @@ export const BannerCreate = () => {
                             e.target.value
                           )
                         }
-                        className="w-full px-2 sm:px-3 py-2 text-xs sm:text-sm border border-gray-300  focus:outline-none focus:border-blue-500"
+                        className="w-full px-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors"
                       >
                         <option value="text-sm">小 (text-sm)</option>
                         <option value="text-base">中 (text-base)</option>
@@ -606,7 +606,7 @@ export const BannerCreate = () => {
                             e.target.value
                           )
                         }
-                        className="w-full px-2 sm:px-3 py-2 text-xs sm:text-sm border border-gray-300  focus:outline-none focus:border-blue-500"
+                        className="w-full px-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors"
                       >
                         <option value="left">左</option>
                         <option value="center">中央</option>
@@ -661,7 +661,7 @@ export const BannerCreate = () => {
                         handleBannerChange(index, "page_url", e.target.value)
                       }
                       placeholder="https://example.com"
-                      className="w-full px-2 sm:px-3 py-2 text-sm sm:text-base border border-gray-300  focus:outline-none focus:border-blue-500"
+                      className="w-full px-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors"
                     />
                   </div>
 
@@ -681,7 +681,7 @@ export const BannerCreate = () => {
                         )
                       }
                       placeholder="クリック可能なテキストを入力"
-                      className="w-full px-2 sm:px-3 py-2 text-sm sm:text-base border border-gray-300  focus:outline-none focus:border-blue-500"
+                      className="w-full px-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors"
                     />
                     <p className="text-[10px] sm:text-xs text-gray-500 mt-1">
                       このテキストがURLの代わりに表示され、クリックするとページURLに移動します
@@ -702,7 +702,7 @@ export const BannerCreate = () => {
                           e.target.value as "active" | "inactive"
                         )
                       }
-                      className="w-full px-2 sm:px-3 py-2 text-sm sm:text-base border border-gray-300  focus:outline-none focus:border-blue-500"
+                      className="w-full px-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors"
                     >
                       <option value="active">有効</option>
                       <option value="inactive">無効</option>

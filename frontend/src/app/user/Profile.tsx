@@ -332,7 +332,7 @@ export const Profile = () => {
                       onChange={(e) =>
                         setFormData({ ...formData, email: e.target.value })
                       }
-                      className="w-full px-4 py-2 border border-gray-300  focus:ring-2 focus:ring-[#e2603f] focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#e2603f] focus:border-transparent"
                       required
                     />
                   </div>
@@ -348,7 +348,7 @@ export const Profile = () => {
                       onChange={(e) =>
                         setFormData({ ...formData, phone: e.target.value })
                       }
-                      className="w-full px-4 py-2 border border-gray-300  focus:ring-2 focus:ring-[#e2603f] focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#e2603f] focus:border-transparent"
                       placeholder="090-1234-5678"
                     />
                   </div>
