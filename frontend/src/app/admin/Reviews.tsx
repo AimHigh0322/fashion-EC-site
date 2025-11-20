@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { apiService } from "../../services/api";
 import { useToast } from "../../contexts/ToastContext";
 import { AdminLayout } from "../../components/layouts/AdminLayout";
+import { Pagination } from "../../components/atom/Pagination";
 import {
   Star,
   CheckCircle,
@@ -11,6 +12,8 @@ import {
   MessageSquare,
   Filter,
   Search,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 
 interface Review {
@@ -35,7 +38,6 @@ export function Reviews() {
   const { showToast } = useToast();
 
   const [loading, setLoading] = useState(true);
-  const [reviews, setReviews] = useState<Review[]>([]);
   const [total, setTotal] = useState(0);
   const [filter, setFilter] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState("");
@@ -43,6 +45,12 @@ export function Reviews() {
   const [showReplyModal, setShowReplyModal] = useState(false);
   const [reply, setReply] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+  const [expandedProducts, setExpandedProducts] = useState<Set<string>>(
+    new Set()
+  );
+  const [allReviews, setAllReviews] = useState<Review[]>([]);
 
   const loadReviews = useCallback(async () => {
     try {
@@ -51,12 +59,14 @@ export function Reviews() {
       if (filter !== "all") {
         filters.status = filter;
       }
-      const response = await apiService.getAllReviews(filters, 50, 0);
+      // Load a large number of reviews to group by product
+      const response = await apiService.getAllReviews(filters, 1000, 0);
       if (response.data) {
-        setReviews((response.data.reviews || []) as Review[]);
+        const reviewsData = (response.data.reviews || []) as Review[];
+        setAllReviews(reviewsData);
         setTotal(response.data.total || 0);
       } else {
-        setReviews([]);
+        setAllReviews([]);
         setTotal(0);
       }
     } catch (error) {
@@ -65,7 +75,7 @@ export function Reviews() {
           ? error.message
           : "レビューの読み込みに失敗しました";
       showToast(errorMessage, "error");
-      setReviews([]);
+      setAllReviews([]);
       setTotal(0);
     } finally {
       setLoading(false);
@@ -75,6 +85,10 @@ export function Reviews() {
   useEffect(() => {
     loadReviews();
   }, [loadReviews]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filter, searchTerm]);
 
   const handleModerateReview = async (reviewId: string, status: string) => {
     try {
@@ -143,13 +157,77 @@ export function Reviews() {
     return new Date(dateString).toLocaleDateString("ja-JP");
   };
 
-  const filteredReviews = reviews.filter((review) =>
-    searchTerm
-      ? review.product_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        review.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        review.comment?.toLowerCase().includes(searchTerm.toLowerCase())
-      : true
+  // Group reviews by product_id
+  const groupedReviews = allReviews.reduce((acc, review) => {
+    const productId = review.product_id;
+    if (!acc[productId]) {
+      acc[productId] = [];
+    }
+    acc[productId].push(review);
+    return acc;
+  }, {} as Record<string, Review[]>);
+
+  // Get unique products with their review counts
+  const productGroups = Object.entries(groupedReviews).map(
+    ([productId, reviews]) => {
+      // Sort reviews by createdAt (most recent first)
+      const sortedReviews = [...reviews].sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+      return {
+        productId,
+        productName: sortedReviews[0].product_name || "不明な商品",
+        productSku: sortedReviews[0].product_sku || "",
+        reviews: sortedReviews,
+        reviewCount: sortedReviews.length,
+        latestReview: sortedReviews[0], // Most recent review
+      };
+    }
   );
+
+  // Filter by search term
+  const filteredProductGroups = productGroups.filter((group) => {
+    if (!searchTerm) return true;
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      group.productName.toLowerCase().includes(searchLower) ||
+      group.productSku.toLowerCase().includes(searchLower) ||
+      group.reviews.some(
+        (r) =>
+          r.username?.toLowerCase().includes(searchLower) ||
+          r.comment?.toLowerCase().includes(searchLower)
+      )
+    );
+  });
+
+  // Sort by latest review date (most recent first)
+  filteredProductGroups.sort(
+    (a, b) =>
+      new Date(b.latestReview.createdAt).getTime() -
+      new Date(a.latestReview.createdAt).getTime()
+  );
+
+  // Paginate unique products
+  const totalProducts = filteredProductGroups.length;
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedProductGroups = filteredProductGroups.slice(
+    startIndex,
+    endIndex
+  );
+
+  const toggleProductExpansion = (productId: string) => {
+    setExpandedProducts((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(productId)) {
+        newSet.delete(productId);
+      } else {
+        newSet.add(productId);
+      }
+      return newSet;
+    });
+  };
 
   const statusTabs = [
     { value: "all", label: "すべて", icon: Filter },
@@ -229,7 +307,7 @@ export function Reviews() {
               <div>
                 <p className="text-sm text-yellow-600">審査待ち</p>
                 <p className="text-2xl font-bold text-yellow-800">
-                  {reviews.filter((r) => r.status === "pending").length}
+                  {allReviews.filter((r) => r.status === "pending").length}
                 </p>
               </div>
               <Clock className="w-8 h-8 text-yellow-400" />
@@ -240,7 +318,7 @@ export function Reviews() {
               <div>
                 <p className="text-sm text-green-600">承認済み</p>
                 <p className="text-2xl font-bold text-green-800">
-                  {reviews.filter((r) => r.status === "approved").length}
+                  {allReviews.filter((r) => r.status === "approved").length}
                 </p>
               </div>
               <CheckCircle className="w-8 h-8 text-green-400" />
@@ -251,7 +329,7 @@ export function Reviews() {
               <div>
                 <p className="text-sm text-red-600">却下</p>
                 <p className="text-2xl font-bold text-red-800">
-                  {reviews.filter((r) => r.status === "rejected").length}
+                  {allReviews.filter((r) => r.status === "rejected").length}
                 </p>
               </div>
               <XCircle className="w-8 h-8 text-red-400" />
@@ -260,7 +338,7 @@ export function Reviews() {
         </div>
 
         {/* Reviews List */}
-        {filteredReviews.length === 0 ? (
+        {paginatedProductGroups.length === 0 ? (
           <div className="bg-white  shadow-sm p-12 text-center">
             <MessageSquare className="w-16 h-16 mx-auto text-gray-300 mb-4" />
             <h3 className="text-lg font-medium text-gray-700 mb-2">
@@ -274,128 +352,214 @@ export function Reviews() {
           </div>
         ) : (
           <div className="space-y-4">
-            {filteredReviews.map((review) => (
-              <div
-                key={review.id}
-                className="bg-white border border-gray-200  p-6 hover:border-[#e2603f] transition-colors"
-              >
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h3 className="text-lg font-semibold text-gray-800">
-                        {review.product_name}
-                      </h3>
-                      <span
-                        className={`px-2.5 py-0.5 text-xs font-medium rounded-full ${
-                          review.status === "approved"
-                            ? "bg-green-100 text-green-800"
-                            : review.status === "rejected"
-                            ? "bg-red-100 text-red-800"
-                            : "bg-yellow-100 text-yellow-800"
+            {paginatedProductGroups.map((group) => {
+              const isExpanded = expandedProducts.has(group.productId);
+              const reviewsToShow = isExpanded
+                ? group.reviews
+                : [group.latestReview];
+
+              return (
+                <div
+                  key={group.productId}
+                  className="bg-white border border-gray-200  p-6 hover:border-[#e2603f] transition-colors"
+                >
+                  {/* Reviews for this product */}
+                  <div className="space-y-4">
+                    {reviewsToShow.map((review, index) => (
+                      <div
+                        key={review.id}
+                        className={`${
+                          index > 0 ? "border-t border-gray-200 pt-4 mt-4" : ""
                         }`}
                       >
-                        {review.status === "approved"
-                          ? "承認済み"
-                          : review.status === "rejected"
-                          ? "却下"
-                          : "審査待ち"}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-4 text-sm text-gray-600">
-                      <span>SKU: {review.product_sku}</span>
-                      <span>投稿者: {review.username || "匿名"}</span>
-                      <span>投稿日: {formatDate(review.createdAt)}</span>
-                    </div>
+                        <div className="flex items-start justify-between gap-4">
+                          {/* Left Side - Product and Review Content */}
+                          <div className="flex-1">
+                            {/* Product Header */}
+                            <div className="mb-4">
+                              <div className="flex items-center gap-3 mb-2">
+                                <h3 className="text-lg font-semibold text-gray-800">
+                                  {group.productName}
+                                </h3>
+                                <span className="px-2.5 py-0.5 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
+                                  {group.reviewCount}件のレビュー
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-4 text-sm text-gray-600 mb-2">
+                                <span>SKU: {group.productSku}</span>
+                              </div>
+                            </div>
+
+                            {/* Reviewer Info */}
+                            <div className="mb-3 flex items-center gap-3">
+                              <span className="text-sm text-gray-600">
+                                投稿者: {review.username || "匿名"}
+                              </span>
+                              <span
+                                className={`px-2.5 py-0.5 text-xs font-medium rounded-full ${
+                                  review.status === "approved"
+                                    ? "bg-green-100 text-green-800"
+                                    : review.status === "rejected"
+                                    ? "bg-red-100 text-red-800"
+                                    : "bg-yellow-100 text-yellow-800"
+                                }`}
+                              >
+                                {review.status === "approved"
+                                  ? "承認済み"
+                                  : review.status === "rejected"
+                                  ? "却下"
+                                  : "審査待ち"}
+                              </span>
+                            </div>
+
+                            {/* Rating and Comment */}
+                            <div className="mb-4">
+                              {renderStars(review.rating)}
+                              {review.title && (
+                                <h4 className="font-medium text-gray-800 mt-2 mb-1">
+                                  {review.title}
+                                </h4>
+                              )}
+                              {review.comment && (
+                                <p className="text-gray-700">
+                                  {review.comment}
+                                </p>
+                              )}
+                            </div>
+
+                            {/* Admin Reply */}
+                            {review.admin_reply && (
+                              <div className="mb-4 p-4 bg-orange-50 border-l-4 border-[#e2603f] rounded">
+                                <p className="text-sm font-medium text-gray-700 mb-1">
+                                  ショップからの返信:
+                                </p>
+                                <p className="text-sm text-gray-600">
+                                  {review.admin_reply}
+                                </p>
+                                <p className="text-xs text-gray-500 mt-2">
+                                  返信日:{" "}
+                                  {review.admin_reply_at
+                                    ? formatDate(review.admin_reply_at)
+                                    : ""}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Right Side - Date */}
+                          <div className="flex flex-col items-end gap-3">
+                            {/* Date */}
+                            <span className="text-sm text-gray-600">
+                              投稿日: {formatDate(review.createdAt)}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Action Buttons and See All Link - Bottom Row */}
+                        <div className="flex items-center justify-between mt-4">
+                          {/* Action Buttons - Left */}
+                          <div className="flex flex-row gap-2 flex-wrap">
+                            {review.status !== "approved" && (
+                              <button
+                                onClick={() =>
+                                  handleModerateReview(review.id, "approved")
+                                }
+                                className="flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium  transition-colors"
+                              >
+                                <CheckCircle className="w-4 h-4 mr-2" />
+                                承認
+                              </button>
+                            )}
+                            {review.status !== "rejected" && (
+                              <button
+                                onClick={() =>
+                                  handleModerateReview(
+                                    review.id || "",
+                                    "rejected"
+                                  )
+                                }
+                                className="flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium  transition-colors"
+                              >
+                                <XCircle className="w-4 h-4 mr-2" />
+                                却下
+                              </button>
+                            )}
+                            {review.status === "approved" && (
+                              <button
+                                onClick={() =>
+                                  handleModerateReview(
+                                    review.id || "",
+                                    "pending"
+                                  )
+                                }
+                                className="flex items-center px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white text-sm font-medium  transition-colors"
+                              >
+                                <Clock className="w-4 h-4 mr-2" />
+                                審査待ちに戻す
+                              </button>
+                            )}
+                            <button
+                              onClick={() => handleOpenReplyModal(review)}
+                              className="flex items-center px-4 py-2 bg-[#e2603f] hover:bg-[#c95a42] text-white text-sm font-medium  transition-colors"
+                            >
+                              <MessageSquare className="w-4 h-4 mr-2" />
+                              {review.admin_reply ? "返信を編集" : "返信する"}
+                            </button>
+                            <button
+                              onClick={() =>
+                                navigate(`/admin/products/${review.product_id}`)
+                              }
+                              className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm font-medium  transition-colors"
+                            >
+                              商品を見る
+                            </button>
+                          </div>
+
+                          {/* See All Link - Right */}
+                          {index === 0 && group.reviewCount > 1 && (
+                            <button
+                              onClick={() =>
+                                toggleProductExpansion(group.productId)
+                              }
+                              className="flex items-center gap-1 cursor-pointer hover:underline text-[#e2603f] hover:text-[#c95a42] font-medium text-sm"
+                            >
+                              {isExpanded ? (
+                                <>
+                                  <ChevronUp className="w-4 h-4" />
+                                  レビューを折りたたむ
+                                </>
+                              ) : (
+                                <>
+                                  <ChevronDown className="w-4 h-4" />
+                                  すべて表示 ({group.reviewCount}件)
+                                </>
+                              )}
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
-
-                <div className="mb-4">
-                  {renderStars(review.rating)}
-                  {review.title && (
-                    <h4 className="font-medium text-gray-800 mt-2 mb-1">
-                      {review.title}
-                    </h4>
-                  )}
-                  {review.comment && (
-                    <p className="text-gray-700">{review.comment}</p>
-                  )}
-                </div>
-
-                {review.admin_reply && (
-                  <div className="mb-4 p-4 bg-orange-50 border-l-4 border-[#e2603f] rounded">
-                    <p className="text-sm font-medium text-gray-700 mb-1">
-                      ショップからの返信:
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      {review.admin_reply}
-                    </p>
-                    <p className="text-xs text-gray-500 mt-2">
-                      返信日:{" "}
-                      {review.admin_reply_at
-                        ? formatDate(review.admin_reply_at)
-                        : ""}
-                    </p>
-                  </div>
-                )}
-
-                <div className="flex gap-2">
-                  {review.status !== "approved" && (
-                    <button
-                      onClick={() =>
-                        handleModerateReview(review.id, "approved")
-                      }
-                      className="flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium  transition-colors"
-                    >
-                      <CheckCircle className="w-4 h-4 mr-2" />
-                      承認
-                    </button>
-                  )}
-                  {review.status !== "rejected" && (
-                    <button
-                      onClick={() =>
-                        handleModerateReview(review.id || "", "rejected")
-                      }
-                      className="flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium  transition-colors"
-                    >
-                      <XCircle className="w-4 h-4 mr-2" />
-                      却下
-                    </button>
-                  )}
-                  {review.status === "approved" && (
-                    <button
-                      onClick={() =>
-                        handleModerateReview(review.id || "", "pending")
-                      }
-                      className="flex items-center px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white text-sm font-medium  transition-colors"
-                    >
-                      <Clock className="w-4 h-4 mr-2" />
-                      審査待ちに戻す
-                    </button>
-                  )}
-                  <button
-                    onClick={() => handleOpenReplyModal(review)}
-                    className="flex items-center px-4 py-2 bg-[#e2603f] hover:bg-[#c95a42] text-white text-sm font-medium  transition-colors"
-                  >
-                    <MessageSquare className="w-4 h-4 mr-2" />
-                    {review.admin_reply ? "返信を編集" : "返信する"}
-                  </button>
-                  <button
-                    onClick={() =>
-                      navigate(`/admin/products/${review.product_id}`)
-                    }
-                    className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm font-medium  transition-colors"
-                  >
-                    商品を見る
-                  </button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
+        )}
+
+        {/* Pagination */}
+        {!loading && totalProducts > itemsPerPage && (
+          <Pagination
+            currentPage={currentPage}
+            totalPages={Math.ceil(totalProducts / itemsPerPage)}
+            totalItems={totalProducts}
+            itemsPerPage={itemsPerPage}
+            onPageChange={setCurrentPage}
+          />
         )}
 
         {/* Reply Modal */}
         {showReplyModal && selectedReview && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
             <div className="bg-white  shadow-xl max-w-2xl w-full p-6">
               <h3 className="text-lg font-semibold text-gray-800 mb-4">
                 レビューへの返信
