@@ -34,20 +34,19 @@ const upload = multer({
   },
 });
 
-// All routes require authentication
-router.use(authenticateRequest);
-
-// Product CRUD routes
-router.post("/", productController.createProduct);
+// Public routes - viewing products (no authentication required)
 router.get("/", productController.getProducts);
 router.get("/:id", productController.getProductById);
-router.put("/:id", productController.updateProduct);
-router.delete("/:id", productController.deleteProduct);
 
-// Bulk operations
-router.post("/bulk-upload", upload.single("file"), productController.bulkUploadProducts);
-router.post("/bulk-update-status", upload.single("file"), productController.bulkUpdateStatus);
-router.get("/export/csv", productController.exportProducts);
+// Protected routes - modifying products (authentication required)
+router.post("/", authenticateRequest, productController.createProduct);
+router.put("/:id", authenticateRequest, productController.updateProduct);
+router.delete("/:id", authenticateRequest, productController.deleteProduct);
+
+// Bulk operations (require authentication)
+router.post("/bulk-upload", authenticateRequest, upload.single("file"), productController.bulkUploadProducts);
+router.post("/bulk-update-status", authenticateRequest, upload.single("file"), productController.bulkUpdateStatus);
+router.get("/export/csv", authenticateRequest, productController.exportProducts);
 
 module.exports = router;
 

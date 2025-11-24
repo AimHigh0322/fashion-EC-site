@@ -264,7 +264,7 @@ export function Reviews() {
               <button
                 key={tab.value}
                 onClick={() => setFilter(tab.value)}
-                className={`flex items-center px-4 py-2  font-medium transition-colors ${
+                className={`flex items-center px-4 py-2  font-medium transition-colors cursor-pointer ${
                   filter === tab.value
                     ? "bg-[#e2603f] text-white"
                     : "bg-gray-100 text-gray-700 hover:bg-gray-200"
@@ -464,7 +464,7 @@ export function Reviews() {
                                 onClick={() =>
                                   handleModerateReview(review.id, "approved")
                                 }
-                                className="flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium  transition-colors"
+                                className="flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium  transition-colors cursor-pointer"
                               >
                                 <CheckCircle className="w-4 h-4 mr-2" />
                                 承認
@@ -478,7 +478,7 @@ export function Reviews() {
                                     "rejected"
                                   )
                                 }
-                                className="flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium  transition-colors"
+                                className="flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium  transition-colors cursor-pointer"
                               >
                                 <XCircle className="w-4 h-4 mr-2" />
                                 却下
@@ -492,7 +492,7 @@ export function Reviews() {
                                     "pending"
                                   )
                                 }
-                                className="flex items-center px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white text-sm font-medium  transition-colors"
+                                className="flex items-center px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white text-sm font-medium  transition-colors cursor-pointer"
                               >
                                 <Clock className="w-4 h-4 mr-2" />
                                 審査待ちに戻す
@@ -500,7 +500,7 @@ export function Reviews() {
                             )}
                             <button
                               onClick={() => handleOpenReplyModal(review)}
-                              className="flex items-center px-4 py-2 bg-[#e2603f] hover:bg-[#c95a42] text-white text-sm font-medium  transition-colors"
+                              className="flex items-center px-4 py-2 bg-[#e2603f] hover:bg-[#c95a42] text-white text-sm font-medium  transition-colors cursor-pointer"
                             >
                               <MessageSquare className="w-4 h-4 mr-2" />
                               {review.admin_reply ? "返信を編集" : "返信する"}
@@ -509,7 +509,7 @@ export function Reviews() {
                               onClick={() =>
                                 navigate(`/admin/products/${review.product_id}`)
                               }
-                              className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm font-medium  transition-colors"
+                              className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm font-medium  transition-colors cursor-pointer"
                             >
                               商品を見る
                             </button>
@@ -599,14 +599,14 @@ export function Reviews() {
                 <button
                   onClick={() => setShowReplyModal(false)}
                   disabled={submitting}
-                  className="flex-1 px-4 py-2 bg-gray-200 hover:bg-gray-300 disabled:bg-gray-100 text-gray-700 font-medium  transition-colors"
+                  className="flex-1 px-4 py-2 bg-gray-200 hover:bg-gray-300 disabled:bg-gray-100 text-gray-700 font-medium  transition-colors cursor-pointer"
                 >
                   キャンセル
                 </button>
                 <button
                   onClick={handleSubmitReply}
                   disabled={submitting || !reply.trim()}
-                  className="flex-1 px-4 py-2 bg-[#e2603f] hover:bg-[#c95a42] disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-medium  transition-colors"
+                  className="flex-1 px-4 py-2 bg-[#e2603f] hover:bg-[#c95a42] disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-medium  transition-colors cursor-pointer"
                 >
                   {submitting ? "送信中..." : "返信を送信"}
                 </button>

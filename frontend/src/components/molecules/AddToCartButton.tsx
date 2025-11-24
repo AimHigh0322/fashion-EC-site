@@ -39,7 +39,13 @@ export const AddToCartButton = ({
   const handleClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!isAuthenticated || disabled || isAdding) {
+    if (disabled || isAdding) {
+      return;
+    }
+
+    // If not authenticated, the parent component should handle showing login modal
+    if (!isAuthenticated) {
+      await onAddToCart(productId);
       return;
     }
 
@@ -53,7 +59,7 @@ export const AddToCartButton = ({
   return (
     <button
       onClick={handleClick}
-      disabled={isAdding || !isAuthenticated || disabled}
+      disabled={isAdding || disabled}
       className={`w-full transition-all duration-200 shadow-sm flex items-center justify-center gap-2 text-xs sm:text-sm font-medium py-2 px-4 rounded-full cursor-pointer ${
         isInCart
           ? "bg-gray-500 hover:bg-gray-600 text-white"

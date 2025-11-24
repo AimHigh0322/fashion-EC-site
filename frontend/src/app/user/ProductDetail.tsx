@@ -88,6 +88,39 @@ export const ProductDetail = () => {
   const [canScrollLeftBrand, setCanScrollLeftBrand] = useState(false);
   const [canScrollRightBrand, setCanScrollRightBrand] = useState(false);
 
+  // Campaign states
+  const [productCampaigns, setProductCampaigns] = useState<
+    Array<{
+      id: string;
+      name: string;
+      label?: string;
+      description?: string;
+      discount_type?: string;
+      discount_value?: number;
+      start_date: string;
+      end_date: string;
+      is_active: boolean;
+    }>
+  >([]);
+  const [discountInfo, setDiscountInfo] = useState<{
+    originalPrice: number;
+    discountedPrice: number;
+    discount: number;
+    campaign: {
+      id: string;
+      name: string;
+      label?: string;
+      description?: string;
+      discountType: string;
+      discountValue: number;
+    } | null;
+    discountBreakdown: Array<{
+      type: string;
+      value: number;
+      amount: number;
+    }>;
+  } | null>(null);
+
   useEffect(() => {
     const loadProduct = async () => {
       if (!id) return;
@@ -410,6 +443,115 @@ export const ProductDetail = () => {
     }
   }, [product, id]);
 
+  // Load campaigns for product
+  useEffect(() => {
+    const loadCampaigns = async () => {
+      if (!product || !product.id) return;
+
+      try {
+        // Get category IDs from product - try different possible fields
+        let categoryIds: string[] = [];
+        if (Array.isArray(product.category_ids)) {
+          categoryIds = product.category_ids;
+        } else if (typeof product.category_ids === "string") {
+          categoryIds = product.category_ids.split(",").filter(Boolean);
+        }
+
+        console.log(
+          "Loading campaigns for product:",
+          product.id,
+          "categories:",
+          categoryIds
+        );
+
+        const response = await apiService.getCampaignsForProduct(
+          product.id,
+          categoryIds
+        );
+
+        console.log("Campaign response:", response);
+
+        if (response && response.data && Array.isArray(response.data)) {
+          // Filter active campaigns
+          const now = new Date();
+          const activeCampaigns = response.data.filter(
+            (campaign: {
+              id: string;
+              name: string;
+              status?: string;
+              is_active?: boolean;
+              start_date: string;
+              end_date: string;
+            }) => {
+              const startDate = new Date(campaign.start_date);
+              const endDate = new Date(campaign.end_date);
+              return (
+                campaign.status === "active" &&
+                campaign.is_active &&
+                now >= startDate &&
+                now <= endDate
+              );
+            }
+          );
+
+          setProductCampaigns(activeCampaigns);
+
+          // Calculate discount on frontend
+          if (activeCampaigns.length > 0) {
+            const campaign = activeCampaigns[0]; // Use first applicable campaign
+            let discount = 0;
+            let discountedPrice = product.price;
+
+            if (campaign.discount_type === "percent") {
+              const discountPercent =
+                campaign.discount_value || campaign.discount_percent || 0;
+              discount = (product.price * discountPercent) / 100;
+              discountedPrice = product.price - discount;
+            } else if (campaign.discount_type === "amount") {
+              discount = campaign.discount_value || 0;
+              discountedPrice = Math.max(0, product.price - discount);
+            }
+
+            setDiscountInfo({
+              originalPrice: product.price,
+              discountedPrice: Math.max(0, discountedPrice),
+              discount: Math.max(0, discount),
+              campaign: {
+                id: campaign.id,
+                name: campaign.name,
+                label: campaign.label,
+                description: campaign.description,
+                discountType: campaign.discount_type || "percent",
+                discountValue:
+                  campaign.discount_value || campaign.discount_percent || 0,
+              },
+              discountBreakdown: [
+                {
+                  type: campaign.discount_type || "percent",
+                  value:
+                    campaign.discount_value || campaign.discount_percent || 0,
+                  amount: discount,
+                },
+              ],
+            });
+          } else {
+            setDiscountInfo(null);
+          }
+        } else {
+          console.log("No campaigns found or invalid response format");
+          setProductCampaigns([]);
+          setDiscountInfo(null);
+        }
+      } catch (error) {
+        console.error("Failed to load campaigns:", error);
+        setProductCampaigns([]);
+        setDiscountInfo(null);
+      }
+    };
+
+    loadCampaigns();
+  }, [product]);
+
   // Check scroll position for similar products
   useEffect(() => {
     const checkScrollPosition = () => {
@@ -464,7 +606,7 @@ export const ProductDetail = () => {
 
   const handleFavoriteToggle = async () => {
     if (!isAuthenticated) {
-      showToast("ログインが必要です", "warning");
+      navigate("/login", { state: { from: `/product/${id}` } });
       return;
     }
 
@@ -495,7 +637,7 @@ export const ProductDetail = () => {
 
   const handleAddToCart = async () => {
     if (!isAuthenticated) {
-      showToast("ログインが必要です", "warning");
+      navigate("/login", { state: { from: `/product/${id}` } });
       return;
     }
 
@@ -519,7 +661,7 @@ export const ProductDetail = () => {
 
   const handleBuyNow = async () => {
     if (!isAuthenticated) {
-      showToast("ログインが必要です", "warning");
+      navigate("/login", { state: { from: `/product/${id}` } });
       return;
     }
 
@@ -659,9 +801,13 @@ export const ProductDetail = () => {
   const averageRating = Number(product.average_rating) || 0; // Ensure it's a number
   const reviewCount = Number(product.review_count) || 0; // Ensure it's a number
 
-  // Active campaigns
-  const activeCampaigns =
-    product.campaigns?.filter((campaign) => campaign.is_active) || [];
+  // Active campaigns (for display)
+  const activeCampaigns = productCampaigns.filter((campaign) => {
+    const now = new Date();
+    const startDate = new Date(campaign.start_date);
+    const endDate = new Date(campaign.end_date);
+    return campaign.is_active && now >= startDate && now <= endDate;
+  });
 
   // Shipping time estimate (出荷目安)
   const getShippingEstimate = () => {
@@ -882,30 +1028,70 @@ export const ProductDetail = () => {
             {/* Price Section */}
             <div className="space-y-2">
               {/* Base Price (通常価格) - Only show if different from sale price */}
-              {isOnSale && (
+              {(isOnSale ||
+                (discountInfo &&
+                  discountInfo.discountedPrice <
+                    discountInfo.originalPrice)) && (
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-gray-500">通常価格:</span>
                   <span className="text-lg text-gray-400 line-through">
-                    ¥{basePrice.toLocaleString()}
+                    ¥
+                    {(
+                      discountInfo?.originalPrice || basePrice
+                    ).toLocaleString()}
                   </span>
                 </div>
               )}
 
-              {/* Sale Price / Current Price */}
+              {/* Sale Price / Current Price with Campaign Discount */}
               <div className="flex items-baseline gap-2">
                 <span className="text-3xl font-bold text-[#e2603f]">
-                  ¥{salePrice.toLocaleString()}
+                  ¥
+                  {(
+                    discountInfo?.discountedPrice || salePrice
+                  ).toLocaleString()}
                 </span>
                 <span className="text-sm text-gray-500">税込</span>
-                {isOnSale && discountRate > 0 && (
+                {discountInfo && discountInfo.campaign && (
+                  <span className="ml-2 px-2 py-1 bg-red-100 text-red-600 text-sm font-bold rounded">
+                    {discountInfo.campaign.discountType === "percent"
+                      ? `${discountInfo.campaign.discountValue}%OFF`
+                      : discountInfo.campaign.discountType === "amount"
+                      ? `-¥${discountInfo.campaign.discountValue.toLocaleString()}`
+                      : "キャンペーン適用中"}
+                  </span>
+                )}
+                {!discountInfo && isOnSale && discountRate > 0 && (
                   <span className="ml-2 px-2 py-1 bg-red-100 text-red-600 text-sm font-bold rounded">
                     {discountRate}%OFF
                   </span>
                 )}
               </div>
 
+              {/* Campaign Discount Info */}
+              {discountInfo && discountInfo.campaign && (
+                <div className="bg-green-50 border border-green-200 p-2 rounded">
+                  <div className="text-sm text-green-800">
+                    <span className="font-medium">
+                      {discountInfo.campaign.label ||
+                        discountInfo.campaign.name}
+                    </span>
+                    {discountInfo.discount > 0 && (
+                      <span className="ml-2">
+                        (¥{discountInfo.discount.toLocaleString()}割引)
+                      </span>
+                    )}
+                  </div>
+                  {discountInfo.campaign.description && (
+                    <div className="text-xs text-green-700 mt-1">
+                      {discountInfo.campaign.description}
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Discount Rate Badge */}
-              {isOnSale && discountRate > 0 && (
+              {!discountInfo && isOnSale && discountRate > 0 && (
                 <div className="flex items-center gap-2 text-sm">
                   <span className="text-gray-600">割引率:</span>
                   <span className="text-red-600 font-bold">

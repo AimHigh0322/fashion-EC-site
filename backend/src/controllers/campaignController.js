@@ -1,4 +1,5 @@
 const campaignModel = require("../model/campaignModel");
+const campaignService = require("../services/campaignService");
 const { logAudit } = require("../middleware/auditLogger");
 
 async function createCampaign(req, res) {
@@ -15,7 +16,29 @@ async function getCampaigns(req, res) {
   try {
     const campaigns = await campaignModel.getCampaigns({
       is_active: req.query.is_active !== undefined ? req.query.is_active === "true" : undefined,
+      status: req.query.status,
     });
+    res.json({ success: true, data: campaigns });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+}
+
+async function getActiveCampaigns(req, res) {
+  try {
+    const campaigns = await campaignService.getActiveCampaigns();
+    res.json({ success: true, data: campaigns });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+}
+
+async function getCampaignsForProduct(req, res) {
+  try {
+    const { productId } = req.params;
+    const categoryIds = req.query.category_ids ? req.query.category_ids.split(",") : [];
+    
+    const campaigns = await campaignService.getCampaignsForProduct(productId, categoryIds);
     res.json({ success: true, data: campaigns });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -59,6 +82,8 @@ async function deleteCampaign(req, res) {
 module.exports = {
   createCampaign,
   getCampaigns,
+  getActiveCampaigns,
+  getCampaignsForProduct,
   getCampaignById,
   updateCampaign,
   deleteCampaign,

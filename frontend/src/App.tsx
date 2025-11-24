@@ -28,11 +28,19 @@ import { ShippingAddresses } from "./app/user/ShippingAddresses";
 import { Profile } from "./app/user/Profile";
 import { StockAlerts } from "./app/admin/StockAlerts";
 import { Reviews as AdminReviews } from "./app/admin/Reviews";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { useState } from "react";
+import { Campaigns } from "./app/admin/Campaigns";
+import { CampaignForm } from "./app/admin/CampaignForm";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+  useLocation,
+} from "react-router-dom";
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, loading } = useAuth();
+  const location = useLocation();
 
   if (loading) {
     return (
@@ -43,9 +51,15 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    // Save the current location so we can redirect back after login
+    return <Navigate to="/login" state={{ from: location.pathname }} replace />;
   }
 
+  return <>{children}</>;
+};
+
+// Route that allows browsing without authentication
+const PublicRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
@@ -71,20 +85,6 @@ const AdminRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
-const AuthPages = () => {
-  const [showRegister, setShowRegister] = useState(false);
-
-  return (
-    <>
-      {showRegister ? (
-        <Register onSwitchToLogin={() => setShowRegister(false)} />
-      ) : (
-        <Login onSwitchToRegister={() => setShowRegister(true)} />
-      )}
-    </>
-  );
-};
-
 function App() {
   return (
     <ToastProvider>
@@ -94,13 +94,14 @@ function App() {
             <CartProvider>
               <BrowserRouter>
                 <Routes>
-                  <Route path="/login" element={<AuthPages />} />
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/register" element={<Register />} />
                   <Route
                     path="/"
                     element={
-                      <ProtectedRoute>
+                      <PublicRoute>
                         <HomePage />
-                      </ProtectedRoute>
+                      </PublicRoute>
                     }
                   />
                   <Route
@@ -122,9 +123,9 @@ function App() {
                   <Route
                     path="/product/:id"
                     element={
-                      <ProtectedRoute>
+                      <PublicRoute>
                         <ProductDetail />
-                      </ProtectedRoute>
+                      </PublicRoute>
                     }
                   />
                   <Route
@@ -183,7 +184,6 @@ function App() {
                       </ProtectedRoute>
                     }
                   />
-                  <Route path="/favorites" element={<Favorites />} />
                   <Route
                     path="/admin"
                     element={
@@ -277,6 +277,30 @@ function App() {
                     element={
                       <AdminRoute>
                         <BannerEdit />
+                      </AdminRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/campaigns"
+                    element={
+                      <AdminRoute>
+                        <Campaigns />
+                      </AdminRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/campaigns/create"
+                    element={
+                      <AdminRoute>
+                        <CampaignForm />
+                      </AdminRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/campaigns/:id/edit"
+                    element={
+                      <AdminRoute>
+                        <CampaignForm />
                       </AdminRoute>
                     }
                   />

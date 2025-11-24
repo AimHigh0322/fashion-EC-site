@@ -15,9 +15,36 @@ interface CartItem {
   name: string;
   sku: string;
   price: number;
+  originalPrice?: number;
+  discountedPrice?: number;
+  discount?: number;
+  itemTotal?: number;
+  itemDiscount?: number;
+  campaign?: {
+    id: string;
+    name: string;
+    label?: string;
+    description?: string;
+    discountType: string;
+    discountValue: number;
+  };
   main_image_url: string;
   status: string;
   stock_quantity: number;
+}
+
+interface CartDiscounts {
+  subtotal: number;
+  totalDiscount: number;
+  freeShipping: boolean;
+  appliedCampaigns: Array<{
+    id: string;
+    name: string;
+    label?: string;
+    type?: string;
+    discount?: number;
+  }>;
+  finalTotal: number;
 }
 
 export const Cart = () => {
@@ -26,27 +53,99 @@ export const Cart = () => {
   const { refreshCart } = useCart();
   const { success, error } = useToast();
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [cartDiscounts, setCartDiscounts] = useState<CartDiscounts | null>(
+    null
+  );
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState<string | null>(null);
   const [removing, setRemoving] = useState<string | null>(null);
 
-  const loadCart = useCallback(async () => {
-    try {
-      setLoading(true);
-      const response = await apiService.getCart();
-      if (response.error) {
-        error(response.error);
+  const loadCart = useCallback(
+    async (applyCampaigns = true) => {
+      try {
+        setLoading(true);
+        const response = await apiService.getCart();
+        if (response.error) {
+          error(response.error);
+          setCartItems([]);
+          setCartDiscounts(null);
+        } else if (response.data) {
+          setCartItems(response.data);
+
+          // Apply campaigns if requested
+          if (applyCampaigns && response.data.length > 0) {
+            try {
+              const campaignResponse = await apiService.applyCampaignsToCart();
+              if (campaignResponse.data) {
+                // Map campaign response items to CartItem format
+                const campaignItems: CartItem[] =
+                  campaignResponse.data.items.map(
+                    (item: {
+                      id: string;
+                      product_id: string;
+                      quantity: number;
+                      name?: string;
+                      sku?: string;
+                      price?: number;
+                      originalPrice?: number;
+                      discountedPrice?: number;
+                      discount?: number;
+                      itemTotal?: number;
+                      itemDiscount?: number;
+                      campaign?: {
+                        id: string;
+                        name: string;
+                        label?: string;
+                        description?: string;
+                        discountType: string;
+                        discountValue: number;
+                      };
+                      main_image_url?: string;
+                      status?: string;
+                      stock_quantity?: number;
+                    }) => ({
+                      id: item.id,
+                      product_id: item.product_id,
+                      quantity: item.quantity,
+                      name: item.name || "",
+                      sku: item.sku || "",
+                      price: item.originalPrice || item.price || 0,
+                      originalPrice: item.originalPrice,
+                      discountedPrice: item.discountedPrice,
+                      discount: item.discount,
+                      itemTotal: item.itemTotal,
+                      itemDiscount: item.itemDiscount,
+                      campaign: item.campaign,
+                      main_image_url: item.main_image_url || "",
+                      status: item.status || "active",
+                      stock_quantity: item.stock_quantity || 0,
+                    })
+                  );
+                setCartItems(campaignItems);
+                setCartDiscounts({
+                  subtotal: campaignResponse.data.subtotal,
+                  totalDiscount: campaignResponse.data.totalDiscount,
+                  freeShipping: campaignResponse.data.freeShipping,
+                  appliedCampaigns: campaignResponse.data.appliedCampaigns,
+                  finalTotal: campaignResponse.data.finalTotal,
+                });
+              }
+            } catch (campaignError) {
+              console.error("Failed to apply campaigns:", campaignError);
+              // Continue without campaign discounts
+            }
+          }
+        }
+      } catch {
+        error("カートの読み込みに失敗しました");
         setCartItems([]);
-      } else if (response.data) {
-        setCartItems(response.data);
+        setCartDiscounts(null);
+      } finally {
+        setLoading(false);
       }
-    } catch {
-      error("カートの読み込みに失敗しました");
-      setCartItems([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [error]);
+    },
+    [error]
+  );
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -111,13 +210,20 @@ export const Cart = () => {
     return `${baseUrl}${cleanPath}`;
   };
 
-  const subtotal = cartItems.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
-  );
-  const tax = Math.floor(subtotal * 0.1); // 10% tax
-  const shipping = subtotal > 5000 ? 0 : 500; // Free shipping over 5000 yen
-  const total = subtotal + tax + shipping;
+  // Calculate totals with campaign discounts
+  const subtotal = cartDiscounts
+    ? cartDiscounts.subtotal
+    : cartItems.reduce(
+        (sum, item) =>
+          sum + (item.discountedPrice || item.price) * item.quantity,
+        0
+      );
+  const totalDiscount = cartDiscounts?.totalDiscount || 0;
+  const freeShipping = cartDiscounts?.freeShipping || false;
+  const discountedSubtotal = subtotal - totalDiscount;
+  const tax = Math.floor(discountedSubtotal * 0.1); // 10% tax on discounted amount
+  const shipping = freeShipping || discountedSubtotal > 5000 ? 0 : 500; // Free shipping over 5000 yen or campaign
+  const total = discountedSubtotal + tax + shipping;
 
   if (loading) {
     return (
@@ -134,19 +240,13 @@ export const Cart = () => {
     <UserLayout>
       <div className="bg-gray-50 min-h-screen">
         {/* Page Header */}
-        <div className="bg-white border-b border-gray-200">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-            <Breadcrumbs
-              items={[
-                { label: "商品一覧", path: "/" },
-                { label: "ショッピングカート" },
-              ]}
-            />
-            <h1 className="text-2xl font-bold text-gray-900 flex items-center mt-4">
-              <ShoppingCart className="w-6 h-6 mr-2 text-[#e2603f]" />
-              ショッピングカート
-            </h1>
-          </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center">
+          <Breadcrumbs
+            items={[
+              { label: "商品一覧", path: "/" },
+              { label: "ショッピングカート" },
+            ]}
+          />
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
@@ -200,10 +300,33 @@ export const Cart = () => {
                         </p>
                         <div className="flex items-center justify-between mb-4">
                           <div>
-                            <p className="text-2xl font-bold text-red-600">
-                              ¥{item.price.toLocaleString()}
-                            </p>
+                            <div className="flex items-baseline gap-2">
+                              <p className="text-2xl font-bold text-red-600">
+                                ¥
+                                {(
+                                  item.discountedPrice || item.price
+                                ).toLocaleString()}
+                              </p>
+                              {item.discountedPrice &&
+                                item.discountedPrice < item.price && (
+                                  <p className="text-sm text-gray-400 line-through">
+                                    ¥{item.price.toLocaleString()}
+                                  </p>
+                                )}
+                            </div>
                             <p className="text-xs text-gray-500">(税込)</p>
+                            {item.campaign && (
+                              <div className="mt-1">
+                                <span className="inline-block px-2 py-0.5 bg-green-100 text-green-700 text-xs font-medium rounded">
+                                  {item.campaign.label || item.campaign.name}
+                                </span>
+                                {item.discount && item.discount > 0 && (
+                                  <span className="ml-1 text-xs text-green-600">
+                                    (¥{item.discount.toLocaleString()}割引)
+                                  </span>
+                                )}
+                              </div>
+                            )}
                           </div>
                           {item.stock_quantity > 0 && (
                             <p className="text-sm text-gray-600">
@@ -292,6 +415,28 @@ export const Cart = () => {
                       <span>小計</span>
                       <span>¥{subtotal.toLocaleString()}</span>
                     </div>
+                    {totalDiscount > 0 && (
+                      <div className="flex justify-between text-green-600">
+                        <span>キャンペーン割引</span>
+                        <span className="font-bold">
+                          -¥{totalDiscount.toLocaleString()}
+                        </span>
+                      </div>
+                    )}
+                    {cartDiscounts &&
+                      cartDiscounts.appliedCampaigns.length > 0 && (
+                        <div className="text-xs text-gray-500 bg-green-50 p-2 rounded">
+                          {cartDiscounts.appliedCampaigns.map((campaign) => (
+                            <div
+                              key={campaign.id}
+                              className="flex items-center gap-1 mb-1"
+                            >
+                              <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                              <span>{campaign.label || campaign.name}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     <div className="flex justify-between text-gray-600">
                       <span>消費税 (10%)</span>
                       <span>¥{tax.toLocaleString()}</span>
@@ -308,9 +453,15 @@ export const Cart = () => {
                           : `¥${shipping.toLocaleString()}`}
                       </span>
                     </div>
-                    {subtotal < 5000 && (
+                    {!freeShipping && discountedSubtotal < 5000 && (
                       <div className="text-xs text-gray-500 bg-blue-50 p-2 rounded">
-                        ¥{(5000 - subtotal).toLocaleString()}以上で送料無料
+                        ¥{(5000 - discountedSubtotal).toLocaleString()}
+                        以上で送料無料
+                      </div>
+                    )}
+                    {freeShipping && (
+                      <div className="text-xs text-green-600 bg-green-50 p-2 rounded font-medium">
+                        キャンペーンで送料無料
                       </div>
                     )}
                   </div>

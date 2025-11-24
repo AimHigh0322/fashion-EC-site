@@ -135,7 +135,7 @@ export function StockAlerts() {
         </div>
         <button
           onClick={loadLowStockProducts}
-          className="flex items-center px-4 py-2 bg-[#e2603f] hover:bg-[#c95a42] text-white font-medium  transition-colors"
+          className="flex items-center px-4 py-2 bg-[#e2603f] hover:bg-[#c95a42] text-white font-medium  transition-colors cursor-pointer"
         >
           <RefreshCw className="w-4 h-4 mr-2" />
           更新
@@ -301,7 +301,7 @@ export function StockAlerts() {
                         <div className="flex justify-center space-x-2">
                           <button
                             onClick={() => handleOpenModal(product)}
-                            className="inline-flex items-center px-3 py-1.5 bg-[#e2603f] hover:bg-[#c95a42] text-white text-sm font-medium rounded transition-colors"
+                            className="inline-flex items-center px-3 py-1.5 bg-[#e2603f] hover:bg-[#c95a42] text-white text-sm font-medium rounded transition-colors cursor-pointer"
                           >
                             <Edit className="w-3 h-3 mr-1" />
                             在庫更新
@@ -310,7 +310,7 @@ export function StockAlerts() {
                             onClick={() =>
                               navigate(`/admin/products/${product.id}`)
                             }
-                            className="inline-flex items-center px-3 py-1.5 bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm font-medium rounded transition-colors"
+                            className="inline-flex items-center px-3 py-1.5 bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm font-medium rounded transition-colors cursor-pointer"
                           >
                             詳細
                           </button>
@@ -375,7 +375,7 @@ export function StockAlerts() {
                         ),
                       })
                     }
-                    className="px-3 py-2 bg-gray-200 hover:bg-gray-300  transition-colors"
+                    className="px-3 py-2 bg-gray-200 hover:bg-gray-300  transition-colors cursor-pointer"
                   >
                     <Minus className="w-4 h-4" />
                   </button>
@@ -398,7 +398,7 @@ export function StockAlerts() {
                         quantityChange: stockForm.quantityChange + 10,
                       })
                     }
-                    className="px-3 py-2 bg-gray-200 hover:bg-gray-300  transition-colors"
+                    className="px-3 py-2 bg-gray-200 hover:bg-gray-300  transition-colors cursor-pointer"
                   >
                     <Plus className="w-4 h-4" />
                   </button>
@@ -434,14 +434,14 @@ export function StockAlerts() {
               <button
                 onClick={() => setShowModal(false)}
                 disabled={submitting}
-                className="flex-1 px-4 py-2 bg-gray-200 hover:bg-gray-300 disabled:bg-gray-100 text-gray-700 font-medium  transition-colors"
+                className="flex-1 px-4 py-2 bg-gray-200 hover:bg-gray-300 disabled:bg-gray-100 text-gray-700 font-medium  transition-colors cursor-pointer"
               >
                 キャンセル
               </button>
               <button
                 onClick={handleSubmitStockUpdate}
                 disabled={submitting || stockForm.quantityChange === 0}
-                className="flex-1 px-4 py-2 bg-[#e2603f] hover:bg-[#c95a42] disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-medium  transition-colors"
+                className="flex-1 px-4 py-2 bg-[#e2603f] hover:bg-[#c95a42] disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-medium  transition-colors cursor-pointer"
               >
                 {submitting ? "更新中..." : "更新"}
               </button>

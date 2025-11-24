@@ -359,7 +359,7 @@ export const Products = () => {
             {selectedProducts.size > 0 && (
               <button
                 onClick={handleDeleteSelected}
-                className="flex items-center justify-center space-x-2 px-4 py-2 bg-red-600 text-white  hover:bg-red-700"
+                className="flex items-center justify-center space-x-2 px-4 py-2 bg-red-600 text-white  hover:bg-red-700 cursor-pointer"
               >
                 <Trash2 className="w-5 h-5" />
                 <span>選択した商品を削除 ({selectedProducts.size})</span>
@@ -367,21 +367,21 @@ export const Products = () => {
             )}
             <button
               onClick={() => setShowBulkUpload(true)}
-              className="flex items-center justify-center space-x-2 px-4 py-2 border border-gray-300  hover:bg-gray-50"
+              className="flex items-center justify-center space-x-2 px-4 py-2 border border-gray-300  hover:bg-gray-50 cursor-pointer"
             >
               <Upload className="w-5 h-5" />
               <span>CSV一括登録</span>
             </button>
             <button
               onClick={() => setShowBulkStatus(true)}
-              className="flex items-center justify-center space-x-2 px-4 py-2 border border-gray-300  hover:bg-gray-50"
+              className="flex items-center justify-center space-x-2 px-4 py-2 border border-gray-300  hover:bg-gray-50 cursor-pointer"
             >
               <Upload className="w-5 h-5" />
               <span>ステータス一括更新</span>
             </button>
             <button
               onClick={handleExport}
-              className="flex items-center justify-center space-x-2 px-4 py-2 border border-gray-300  hover:bg-gray-50"
+              className="flex items-center justify-center space-x-2 px-4 py-2 border border-gray-300  hover:bg-gray-50 cursor-pointer"
             >
               <Download className="w-5 h-5" />
               <span>CSVエクスポート</span>
@@ -391,7 +391,7 @@ export const Products = () => {
                 setEditingProduct(null);
                 setShowModal(true);
               }}
-              className="flex items-center justify-center space-x-2 px-4 py-2 bg-blue-600 text-white  hover:bg-blue-700"
+              className="flex items-center justify-center space-x-2 px-4 py-2 bg-blue-600 text-white  hover:bg-blue-700 cursor-pointer"
             >
               <Plus className="w-5 h-5" />
               <span>商品追加</span>
@@ -715,13 +715,13 @@ export const Products = () => {
                               onClick={() => {
                                 navigate(`/admin/products/${product.id}`);
                               }}
-                              className="text-gray-600 hover:text-gray-900 p-1"
+                              className="text-gray-600 hover:text-gray-900 p-1 cursor-pointer"
                             >
                               <Edit className="w-3 h-3 sm:w-4 sm:h-4" />
                             </button>
                             <button
                               onClick={() => handleDeleteClick(product.id)}
-                              className="text-red-600 hover:text-red-900 p-1"
+                              className="text-red-600 hover:text-red-900 p-1 cursor-pointer"
                             >
                               <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
                             </button>
@@ -839,10 +839,10 @@ const BulkUploadModal = ({
       <div className="bg-white  max-w-md w-full">
         <div className="flex items-center justify-between p-6 border-b">
           <h2 className="text-xl font-bold">{title}</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600"
-          >
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-600 cursor-pointer"
+            >
             <X className="w-6 h-6" />
           </button>
         </div>
@@ -861,14 +861,14 @@ const BulkUploadModal = ({
           <div className="flex justify-end space-x-3">
             <button
               onClick={onClose}
-              className="px-4 py-2 border border-gray-300  hover:bg-gray-50"
+              className="px-4 py-2 border border-gray-300  hover:bg-gray-50 cursor-pointer"
             >
               キャンセル
             </button>
             <button
               onClick={handleUpload}
               disabled={!file || uploading}
-              className="px-4 py-2 bg-blue-600 text-white  hover:bg-blue-700 disabled:opacity-50"
+              className="px-4 py-2 bg-blue-600 text-white  hover:bg-blue-700 disabled:opacity-50 cursor-pointer"
             >
               {uploading ? "アップロード中..." : "アップロード"}
             </button>

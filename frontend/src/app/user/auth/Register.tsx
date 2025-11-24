@@ -1,20 +1,29 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "../../../contexts/AuthContext";
 import { Mail, Lock, User } from "lucide-react";
 import { useToast } from "../../../contexts/ToastContext";
+import { useNavigate, Link } from "react-router-dom";
 
-interface RegisterProps {
-  onSwitchToLogin?: () => void;
-}
-
-export const Register = ({ onSwitchToLogin }: RegisterProps) => {
-  const { register } = useAuth();
+export const Register = () => {
+  const { register, isAuthenticated, isAdmin } = useAuth();
   const { success, error: showError } = useToast();
+  const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // Redirect after successful authentication
+  useEffect(() => {
+    if (isAuthenticated) {
+      if (isAdmin) {
+        navigate("/admin", { replace: true });
+      } else {
+        navigate("/", { replace: true });
+      }
+    }
+  }, [isAuthenticated, isAdmin, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -143,6 +152,12 @@ export const Register = ({ onSwitchToLogin }: RegisterProps) => {
       {/* Right Section - Register Form */}
       <div className="w-full md:w-1/2 flex items-center justify-center bg-white px-4 sm:px-6 md:px-8 py-8 sm:py-12">
         <div className="w-full max-w-md">
+          <Link
+            to="/"
+            className="inline-block text-sm text-gray-500 hover:text-blue-600 mb-4 transition-colors duration-200"
+          >
+            ← ホームに戻る
+          </Link>
           <h2 className="text-2xl sm:text-3xl font-bold text-blue-600 mb-2">
             新規登録
           </h2>
@@ -167,7 +182,7 @@ export const Register = ({ onSwitchToLogin }: RegisterProps) => {
                   type="text"
                   autoComplete="username"
                   required
-                  className="w-full pl-12 pr-4 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#e2603f] focus:border-transparent"
+                  className="w-full pl-12 pr-4 py-2 border border-gray-300 focus:outline-none focus:border-blue-500"
                   placeholder="ユーザー名を入力（3文字以上）"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
@@ -191,7 +206,7 @@ export const Register = ({ onSwitchToLogin }: RegisterProps) => {
                   type="email"
                   autoComplete="email"
                   required
-                  className="w-full pl-12 pr-4 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#e2603f] focus:border-transparent"
+                  className="w-full pl-12 pr-4 py-2 border border-gray-300 focus:outline-none focus:border-blue-500"
                   placeholder="メールアドレスを入力"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -215,7 +230,7 @@ export const Register = ({ onSwitchToLogin }: RegisterProps) => {
                   type="password"
                   autoComplete="new-password"
                   required
-                  className="w-full pl-12 pr-4 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#e2603f] focus:border-transparent"
+                  className="w-full pl-12 pr-4 py-2 border border-gray-300 focus:outline-none focus:border-blue-500"
                   placeholder="パスワードを入力（8文字以上）"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -239,7 +254,7 @@ export const Register = ({ onSwitchToLogin }: RegisterProps) => {
                   type="password"
                   autoComplete="new-password"
                   required
-                  className="w-full pl-12 pr-4 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#e2603f] focus:border-transparent"
+                  className="w-full pl-12 pr-4 py-2 border border-gray-300 focus:outline-none focus:border-blue-500"
                   placeholder="パスワードを再入力"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
@@ -249,15 +264,13 @@ export const Register = ({ onSwitchToLogin }: RegisterProps) => {
 
             {/* Options */}
             <div className="flex items-center justify-end">
-              {onSwitchToLogin && (
-                <button
-                  type="button"
-                  onClick={onSwitchToLogin}
-                  className="text-sm text-blue-600 hover:text-blue-700 font-medium"
-                >
-                  すでにアカウントをお持ちの方
-                </button>
-              )}
+              <button
+                type="button"
+                onClick={() => navigate("/login")}
+                className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+              >
+                すでにアカウントをお持ちの方
+              </button>
             </div>
 
             {/* Submit Button */}

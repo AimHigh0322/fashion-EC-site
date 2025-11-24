@@ -6,6 +6,8 @@ const http = require("http");
 const { Server } = require("socket.io");
 const authRoutes = require("./router/auth/auth");
 const { configureSocketIo } = require("./socket/socket");
+const campaignModel = require("./model/campaignModel");
+const pool = require("./db/db");
 // Initialize database connection
 require("./db/db");
 
@@ -82,6 +84,10 @@ app.use("/api/orders", orderRoutes);
 // Campaign routes
 const campaignRoutes = require("./router/campaigns/campaigns");
 app.use("/api/campaigns", campaignRoutes);
+
+// Admin dashboard routes
+const dashboardRoutes = require("./router/admin/dashboard");
+app.use("/api/admin/dashboard", dashboardRoutes);
 
 // Image routes
 const imageController = require("./controllers/imageController");
@@ -165,8 +171,49 @@ const io = new Server(server, {
 
 configureSocketIo(io);
 
+// Campaign auto-activation/deactivation cron job
+async function runCampaignCronJob() {
+  try {
+    const now = new Date();
+    
+    // Activate campaigns that should be active (start_date <= now < end_date and status = 'inactive')
+    await pool.query(
+      `UPDATE campaigns 
+       SET status = 'active', is_active = TRUE 
+       WHERE status = 'inactive' 
+       AND start_date <= ? 
+       AND end_date > ? 
+       AND is_active = FALSE`,
+      [now, now]
+    );
+    
+    // Deactivate expired campaigns (end_date < now and status = 'active')
+    await pool.query(
+      `UPDATE campaigns 
+       SET status = 'inactive', is_active = FALSE 
+       WHERE status = 'active' 
+       AND end_date < ?`,
+      [now]
+    );
+    
+    // Also run the existing deactivateExpiredCampaigns function
+    await campaignModel.deactivateExpiredCampaigns();
+    
+    console.log("✅ Campaign cron job executed successfully");
+  } catch (error) {
+    console.error("❌ Campaign cron job error:", error.message);
+  }
+}
+
+// Run campaign cron job every hour (3600000 ms)
+setInterval(runCampaignCronJob, 60 * 60 * 1000);
+
+// Run immediately on startup
+runCampaignCronJob();
+
 const port = Number(process.env.PORT || 8888);
 
 server.listen(port, () => {
   console.log(`API listening on http://localhost:${port}`);
+  console.log("✅ Campaign cron job initialized (runs every hour)");
 });

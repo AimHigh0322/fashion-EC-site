@@ -479,21 +479,66 @@ async function initializeDatabase() {
         id VARCHAR(255) PRIMARY KEY,
         name VARCHAR(255) NOT NULL,
         description TEXT,
+        label VARCHAR(255),
         type ENUM('discount_percent', 'fixed_price', 'buy_one_get_one') DEFAULT 'discount_percent',
+        target_type ENUM('product', 'category', 'all') DEFAULT 'product',
+        discount_type ENUM('percent', 'amount', 'freeShipping', 'points') DEFAULT 'percent',
         discount_percent DECIMAL(5, 2),
+        discount_value DECIMAL(10, 2),
         fixed_price DECIMAL(10, 2),
+        minimum_purchase DECIMAL(10, 2) DEFAULT 0,
+        usage_limit INT DEFAULT NULL,
+        user_limit INT DEFAULT NULL,
+        current_usage INT DEFAULT 0,
         start_date DATETIME NOT NULL,
         end_date DATETIME NOT NULL,
         is_active BOOLEAN DEFAULT TRUE,
+        status ENUM('active', 'inactive') DEFAULT 'active',
         createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         INDEX idx_dates (start_date, end_date),
-        INDEX idx_active (is_active)
+        INDEX idx_active (is_active),
+        INDEX idx_status (status),
+        INDEX idx_target_type (target_type)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     `);
     console.log("✅ Campaigns table initialized");
 
-    // Product-Campaign many-to-many relationship
+    // Add new columns if they don't exist (for existing databases)
+    const campaignColumnsToAdd = [
+      { name: "target_type", type: "ENUM('product', 'category', 'all') DEFAULT 'product'" },
+      { name: "discount_type", type: "ENUM('percent', 'amount', 'freeShipping', 'points') DEFAULT 'percent'" },
+      { name: "discount_value", type: "DECIMAL(10, 2)" },
+      { name: "minimum_purchase", type: "DECIMAL(10, 2) DEFAULT 0" },
+      { name: "usage_limit", type: "INT DEFAULT NULL" },
+      { name: "user_limit", type: "INT DEFAULT NULL" },
+      { name: "current_usage", type: "INT DEFAULT 0" },
+      { name: "status", type: "ENUM('active', 'inactive') DEFAULT 'active'" },
+      { name: "label", type: "VARCHAR(255)" },
+    ];
+
+    for (const column of campaignColumnsToAdd) {
+      try {
+        const [columns] = await pool.query(
+          `SELECT COLUMN_NAME 
+           FROM INFORMATION_SCHEMA.COLUMNS 
+           WHERE TABLE_SCHEMA = ? 
+           AND TABLE_NAME = 'campaigns' 
+           AND COLUMN_NAME = ?`,
+          [dbConfig.database, column.name]
+        );
+        if (columns.length === 0) {
+          await pool.query(`ALTER TABLE campaigns ADD COLUMN ${column.name} ${column.type}`);
+          console.log(`✅ Added ${column.name} column to campaigns table`);
+        }
+      } catch (error) {
+        if (!error.message.includes("Duplicate column name")) {
+          console.warn(`Warning adding ${column.name} column:`, error.message);
+        }
+      }
+    }
+
+    // Product-Campaign many-to-many relationship (kept for backward compatibility)
     await pool.query(`
       CREATE TABLE IF NOT EXISTS product_campaigns (
         id VARCHAR(255) PRIMARY KEY,
@@ -508,6 +553,41 @@ async function initializeDatabase() {
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     `);
     console.log("✅ Product campaigns table initialized");
+
+    // Campaign targets table (for storing target IDs - products/categories)
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS campaign_targets (
+        id VARCHAR(255) PRIMARY KEY,
+        campaign_id VARCHAR(255) NOT NULL,
+        target_id VARCHAR(255) NOT NULL,
+        target_type ENUM('product', 'category') NOT NULL,
+        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        INDEX idx_campaign (campaign_id),
+        INDEX idx_target (target_id, target_type),
+        FOREIGN KEY (campaign_id) REFERENCES campaigns(id) ON DELETE CASCADE,
+        UNIQUE KEY unique_campaign_target (campaign_id, target_id, target_type)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    `);
+    console.log("✅ Campaign targets table initialized");
+
+    // Campaign usage tracking table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS campaign_usage (
+        id VARCHAR(255) PRIMARY KEY,
+        campaign_id VARCHAR(255) NOT NULL,
+        user_id VARCHAR(255) NOT NULL,
+        usage_count INT DEFAULT 1,
+        last_used_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        INDEX idx_campaign (campaign_id),
+        INDEX idx_user (user_id),
+        INDEX idx_campaign_user (campaign_id, user_id),
+        FOREIGN KEY (campaign_id) REFERENCES campaigns(id) ON DELETE CASCADE,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+        UNIQUE KEY unique_campaign_user (campaign_id, user_id)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    `);
+    console.log("✅ Campaign usage table initialized");
 
     // Banners table (simplified schema)
     await pool.query(`

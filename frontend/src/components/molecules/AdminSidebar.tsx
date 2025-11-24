@@ -13,6 +13,7 @@ import {
   User,
   Image as ImageIcon,
   MessageSquare,
+  Tag,
 } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 
@@ -30,6 +31,7 @@ const navigation: NavItem[] = [
   { name: "レビュー管理", href: "/admin/reviews", icon: MessageSquare },
   { name: "カテゴリ管理", href: "/admin/categories", icon: FolderTree },
   { name: "バナー管理", href: "/admin/banners", icon: ImageIcon },
+  { name: "キャンペーン管理", href: "/admin/campaigns", icon: Tag },
   { name: "設定", href: "/admin/settings", icon: Settings },
 ];
 

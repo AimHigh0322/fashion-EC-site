@@ -296,7 +296,7 @@ export const Categories = () => {
           </div>
           <button
             onClick={handleCreate}
-            className="flex items-center justify-center space-x-2 px-4 py-2 bg-blue-600 text-white  hover:bg-blue-700 transition-colors"
+            className="flex items-center justify-center space-x-2 px-4 py-2 bg-blue-600 text-white  hover:bg-blue-700 transition-colors cursor-pointer"
           >
             <Plus className="w-5 h-5" />
             <span>カテゴリ追加</span>
@@ -311,7 +311,7 @@ export const Categories = () => {
                 setViewMode("major");
                 setCategoryTypeFilter("all");
               }}
-              className={`flex-1 px-4 py-2 text-sm font-medium  transition-colors ${
+              className={`flex-1 px-4 py-2 text-sm font-medium  transition-colors cursor-pointer ${
                 viewMode === "major"
                   ? "bg-blue-600 text-white"
                   : "text-gray-700 hover:bg-gray-100"
@@ -324,7 +324,7 @@ export const Categories = () => {
                 setViewMode("sub");
                 setCategoryTypeFilter("all");
               }}
-              className={`flex-1 px-4 py-2 text-sm font-medium  transition-colors ${
+              className={`flex-1 px-4 py-2 text-sm font-medium  transition-colors cursor-pointer ${
                 viewMode === "sub"
                   ? "bg-blue-600 text-white"
                   : "text-gray-700 hover:bg-gray-100"
@@ -461,7 +461,7 @@ export const Categories = () => {
                                 <div className="flex items-center justify-end space-x-1 sm:space-x-2">
                                   <button
                                     onClick={() => handleEdit(category)}
-                                    className="text-blue-600 hover:text-blue-900 p-1"
+                                    className="text-blue-600 hover:text-blue-900 p-1 cursor-pointer"
                                     title="編集"
                                   >
                                     <Edit className="w-3 h-3 sm:w-4 sm:h-4" />
@@ -470,7 +470,7 @@ export const Categories = () => {
                                     onClick={() =>
                                       handleDeleteClick(category.id)
                                     }
-                                    className="text-red-600 hover:text-red-900 p-1"
+                                    className="text-red-600 hover:text-red-900 p-1 cursor-pointer"
                                     title="削除"
                                   >
                                     <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />

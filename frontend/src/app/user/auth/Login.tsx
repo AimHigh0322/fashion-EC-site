@@ -2,20 +2,20 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../../../contexts/AuthContext";
 import { Mail, Lock } from "lucide-react";
 import { useToast } from "../../../contexts/ToastContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 
-interface LoginProps {
-  onSwitchToRegister?: () => void;
-}
-
-export const Login = ({ onSwitchToRegister }: LoginProps) => {
+export const Login = () => {
   const { login, isAuthenticated, isAdmin } = useAuth();
   const { success, error: showError } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [keepSignedIn, setKeepSignedIn] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  // Get the page the user was trying to access before login
+  const from = (location.state as { from?: string })?.from || "/";
 
   // Redirect after successful authentication
   useEffect(() => {
@@ -23,10 +23,11 @@ export const Login = ({ onSwitchToRegister }: LoginProps) => {
       if (isAdmin) {
         navigate("/admin", { replace: true });
       } else {
-        navigate("/", { replace: true });
+        // Redirect to the page they were trying to access, or home
+        navigate(from, { replace: true });
       }
     }
-  }, [isAuthenticated, isAdmin, navigate]);
+  }, [isAuthenticated, isAdmin, navigate, from]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -130,6 +131,12 @@ export const Login = ({ onSwitchToRegister }: LoginProps) => {
       {/* Right Section - Login Form */}
       <div className="w-full md:w-1/2 flex items-center justify-center bg-white px-4 sm:px-6 md:px-8 py-8 sm:py-12">
         <div className="w-full max-w-md">
+          <Link
+            to="/"
+            className="inline-block text-sm text-gray-500 hover:text-blue-600 mb-4 transition-colors duration-200"
+          >
+            ← ホームに戻る
+          </Link>
           <h2 className="text-2xl sm:text-3xl font-bold text-blue-600 mb-2">
             ログイン
           </h2>
@@ -154,7 +161,7 @@ export const Login = ({ onSwitchToRegister }: LoginProps) => {
                   type="email"
                   autoComplete="email"
                   required
-                  className="w-full pl-12 pr-4 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#e2603f] focus:border-transparent"
+                  className="w-full pl-12 pr-4 py-2 border border-gray-300 focus:outline-none focus:border-blue-500"
                   placeholder="メールアドレスを入力"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -178,7 +185,7 @@ export const Login = ({ onSwitchToRegister }: LoginProps) => {
                   type="password"
                   autoComplete="current-password"
                   required
-                  className="w-full pl-12 pr-4 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#e2603f] focus:border-transparent"
+                  className="w-full pl-12 pr-4 py-2 border border-gray-300 focus:outline-none focus:border-blue-500"
                   placeholder="パスワードを入力"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -199,15 +206,13 @@ export const Login = ({ onSwitchToRegister }: LoginProps) => {
                   ログイン状態を保持
                 </span>
               </label>
-              {onSwitchToRegister && (
-                <button
-                  type="button"
-                  onClick={onSwitchToRegister}
-                  className="text-sm text-blue-600 hover:text-blue-700 font-medium"
-                >
-                  アカウントをお持ちでない方
-                </button>
-              )}
+              <button
+                type="button"
+                onClick={() => navigate("/register")}
+                className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+              >
+                アカウントをお持ちでない方
+              </button>
             </div>
 
             {/* Submit Button */}

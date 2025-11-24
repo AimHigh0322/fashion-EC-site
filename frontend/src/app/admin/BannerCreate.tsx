@@ -272,7 +272,7 @@ export const BannerCreate = () => {
                   <button
                     type="button"
                     onClick={() => handleRemoveBanner(index)}
-                    className="text-red-600 hover:text-red-700 p-1 transition-colors"
+                    className="text-red-600 hover:text-red-700 p-1 transition-colors cursor-pointer"
                   >
                     <Trash2 className="w-4 h-4 sm:w-5 sm:h-5" />
                   </button>
@@ -374,7 +374,7 @@ export const BannerCreate = () => {
                               onClick={() =>
                                 handleBannerChange(index, "image", null)
                               }
-                              className="absolute top-1 right-1 sm:top-2 sm:right-2 bg-red-500 text-white rounded-full p-1 sm:p-1.5 md:p-2 hover:bg-red-600 shadow-lg transition-all hover:scale-110 z-10"
+                              className="absolute top-1 right-1 sm:top-2 sm:right-2 bg-red-500 text-white rounded-full p-1 sm:p-1.5 md:p-2 hover:bg-red-600 shadow-lg transition-all hover:scale-110 z-10 cursor-pointer"
                               aria-label="画像を削除"
                             >
                               <X className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5" />
@@ -464,7 +464,7 @@ export const BannerCreate = () => {
                               e.target.value
                             )
                           }
-                          className="flex-1 min-w-0 px-3 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors text-xs"
+                          className="flex-1 min-w-0 px-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors text-xs"
                           pattern="^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
                         />
                       </div>
@@ -562,7 +562,7 @@ export const BannerCreate = () => {
                               e.target.value
                             )
                           }
-                          className="flex-1 min-w-0 px-3 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors text-xs"
+                          className="flex-1 min-w-0 px-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors text-xs"
                           pattern="^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
                         />
                       </div>
@@ -637,7 +637,7 @@ export const BannerCreate = () => {
                             value
                           );
                         }}
-                        className="w-full sm:max-w-xs md:max-w-sm px-2 sm:px-3 py-2 text-sm border border-gray-300  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full sm:max-w-xs md:max-w-sm px-4 py-2 text-sm border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors"
                       >
                         <option value="top">上</option>
                         <option value="middle">中央</option>
@@ -730,7 +730,7 @@ export const BannerCreate = () => {
                     };
                     input.click();
                   }}
-                  className="flex flex-col items-center justify-center space-y-2 sm:space-y-3 w-full h-full"
+                  className="flex flex-col items-center justify-center space-y-2 sm:space-y-3 w-full h-full cursor-pointer"
                 >
                   <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full border-2 border-red-500 flex items-center justify-center">
                     <Plus className="w-6 h-6 sm:w-8 sm:h-8 text-red-500" />
@@ -749,14 +749,14 @@ export const BannerCreate = () => {
               <button
                 type="button"
                 onClick={() => navigate("/admin/banners")}
-                className="w-full sm:w-auto px-6 sm:px-8 py-2.5 sm:py-3 text-sm sm:text-base text-gray-700 bg-white border-2 border-gray-300  font-medium shadow-sm hover:bg-gray-50 hover:border-gray-400 hover:shadow-md transition-all duration-200 transform hover:-translate-y-0.5 active:translate-y-0"
+                className="w-full sm:w-auto px-6 sm:px-8 py-2.5 sm:py-3 text-sm sm:text-base text-gray-700 bg-white border-2 border-gray-300  font-medium shadow-sm hover:bg-gray-50 hover:border-gray-400 hover:shadow-md transition-all duration-200 transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
               >
                 キャンセル
               </button>
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full sm:w-auto px-6 sm:px-8 py-2.5 sm:py-3 text-sm sm:text-base text-white font-medium  bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-sm"
+                className="w-full sm:w-auto px-6 sm:px-8 py-2.5 sm:py-3 text-sm sm:text-base text-white font-medium  bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-sm cursor-pointer"
               >
                 {submitting ? (
                   <span className="flex items-center justify-center">

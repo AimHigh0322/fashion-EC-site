@@ -86,7 +86,7 @@ export const Favorites = () => {
 
         const products = await Promise.all(productPromises);
         const validProducts = products.filter(
-          (p): p is FavoriteProduct => p !== null
+          (p: FavoriteProduct | null): p is FavoriteProduct => p !== null
         );
         setFavoriteProducts(validProducts);
       } else {
@@ -104,7 +104,7 @@ export const Favorites = () => {
     try {
       const cartResponse = await apiService.getCart();
       if (cartResponse.data && Array.isArray(cartResponse.data)) {
-        const productIds = new Set(
+        const productIds = new Set<string>(
           cartResponse.data.map(
             (item: { product_id: string }) => item.product_id
           )
@@ -163,30 +163,10 @@ export const Favorites = () => {
   return (
     <UserLayout>
       <div className="bg-gray-50 min-h-screen">
-        <div className="bg-white border-b border-gray-200">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-            <Breadcrumbs
-              items={[
-                { label: "商品一覧", path: "/" },
-                { label: "お気に入り" },
-              ]}
-            />
-            <div className="flex items-center justify-between mt-4">
-              <h1 className="text-2xl font-bold text-gray-900 flex items-center">
-                <Heart className="w-6 h-6 mr-2 text-[#e2603f] fill-current" />
-                お気に入り
-              </h1>
-              {!loading && favoriteProducts.length > 0 && (
-                <div className="text-right">
-                  <p className="text-sm text-gray-600 mb-1">お気に入り商品数</p>
-                  <p className="text-xl font-bold text-gray-900">
-                    {favoriteProducts.length}
-                    <span className="text-base text-gray-600 ml-1">件</span>
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <Breadcrumbs
+            items={[{ label: "商品一覧", path: "/" }, { label: "お気に入り" }]}
+          />
         </div>
 
         {/* Content Section */}

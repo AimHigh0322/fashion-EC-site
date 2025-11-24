@@ -312,7 +312,7 @@ export const BannerEdit = () => {
                 <button
                   type="button"
                   onClick={() => handleBannerChange("image", null)}
-                  className="text-red-600 hover:text-red-700 text-sm font-medium flex items-center gap-1"
+                  className="text-red-600 hover:text-red-700 text-sm font-medium flex items-center gap-1 cursor-pointer"
                 >
                   <X className="w-4 h-4" />
                   画像を削除
@@ -489,7 +489,7 @@ export const BannerEdit = () => {
                       onChange={(e) =>
                         handleBannerChange("title_color", e.target.value)
                       }
-                      className="flex-1 px-3 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors text-sm font-mono"
+                      className="flex-1 px-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors text-sm font-mono"
                       pattern="^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
                     />
                   </div>
@@ -505,7 +505,7 @@ export const BannerEdit = () => {
                     onChange={(e) =>
                       handleBannerChange("title_font_size", e.target.value)
                     }
-                    className="w-full px-3 py-2.5 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors bg-white"
+                    className="w-full px-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors bg-white"
                   >
                     <option value="text-2xl">小 (text-2xl)</option>
                     <option value="text-3xl">中 (text-3xl)</option>
@@ -525,7 +525,7 @@ export const BannerEdit = () => {
                     onChange={(e) =>
                       handleBannerChange("title_position", e.target.value)
                     }
-                    className="w-full px-3 py-2.5 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors bg-white"
+                    className="w-full px-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors bg-white"
                   >
                     <option value="left">左</option>
                     <option value="center">中央</option>
@@ -576,7 +576,7 @@ export const BannerEdit = () => {
                       onChange={(e) =>
                         handleBannerChange("description_color", e.target.value)
                       }
-                      className="flex-1 px-3 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors text-sm font-mono"
+                      className="flex-1 px-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors text-sm font-mono"
                       pattern="^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
                     />
                   </div>
@@ -595,7 +595,7 @@ export const BannerEdit = () => {
                         e.target.value
                       )
                     }
-                    className="w-full px-3 py-2.5 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors bg-white"
+                    className="w-full px-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors bg-white"
                   >
                     <option value="text-sm">小 (text-sm)</option>
                     <option value="text-base">中 (text-base)</option>
@@ -615,7 +615,7 @@ export const BannerEdit = () => {
                     onChange={(e) =>
                       handleBannerChange("description_position", e.target.value)
                     }
-                    className="w-full px-3 py-2.5 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors bg-white"
+                    className="w-full px-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors bg-white"
                   >
                     <option value="left">左</option>
                     <option value="center">中央</option>
@@ -719,14 +719,14 @@ export const BannerEdit = () => {
             <button
               type="button"
               onClick={() => navigate("/admin/banners")}
-              className="px-6 py-3 text-gray-700 bg-white border border-gray-300  font-medium hover:bg-gray-50 transition-all duration-200"
+              className="px-6 py-3 text-gray-700 bg-white border border-gray-300  font-medium hover:bg-gray-50 transition-all duration-200 cursor-pointer"
             >
               キャンセル
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="px-8 py-3 text-white font-medium  bg-purple-600 hover:bg-purple-700 shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-8 py-3 text-white font-medium  bg-purple-600 hover:bg-purple-700 shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
               {submitting ? (
                 <span className="flex items-center">

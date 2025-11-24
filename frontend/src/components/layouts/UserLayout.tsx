@@ -12,6 +12,8 @@ import {
   Mail,
   Phone,
   Clock,
+  LogIn,
+  UserPlus,
 } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import { useFavorites } from "../../contexts/FavoritesContext";
@@ -141,18 +143,29 @@ export const UserLayout = ({ children }: UserLayoutProps) => {
                 />
               </Link>
               {!isAuthenticated ? (
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-2.5">
                   <Link
                     to="/register"
-                    className="text-xs font-medium text-white hover:text-[#faf5f3] transition-all duration-300 uppercase tracking-wide cursor-pointer px-2 py-1.5  hover:bg-white/20"
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-white hover:text-[#faf5f3] transition-all duration-300 cursor-pointer group relative"
+                    title="新規登録"
                   >
-                    新規登録
+                    <div className="absolute inset-0 bg-white/5 rounded-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <UserPlus className="w-4 h-4 relative z-10 transition-all duration-300 group-hover:opacity-80" strokeWidth={1.5} />
+                    <span className="text-xs font-light tracking-wider relative z-10">
+                      新規登録
+                    </span>
                   </Link>
+                  <span className="text-white/30 text-xs">|</span>
                   <Link
                     to="/login"
-                    className="text-xs font-medium text-white hover:text-[#faf5f3] transition-all duration-300 uppercase tracking-wide cursor-pointer px-2 py-1.5  hover:bg-white/20"
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-white hover:text-[#faf5f3] transition-all duration-300 cursor-pointer group relative"
+                    title="ログイン"
                   >
-                    ログイン
+                    <div className="absolute inset-0 bg-white/5 rounded-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <LogIn className="w-4 h-4 relative z-10 transition-all duration-300 group-hover:opacity-80" strokeWidth={1.5} />
+                    <span className="text-xs font-light tracking-wider relative z-10">
+                      ログイン
+                    </span>
                   </Link>
                 </div>
               ) : (
@@ -224,20 +237,31 @@ export const UserLayout = ({ children }: UserLayoutProps) => {
             </div>
 
             {/* Right Actions */}
-            <div className="flex items-center space-x-3 flex-shrink-0">
+            <div className="flex items-center space-x-4 flex-shrink-0">
               {!isAuthenticated ? (
                 <>
                   <Link
                     to="/register"
-                    className="text-sm font-medium text-white hover:text-[#faf5f3] transition-all duration-300 uppercase tracking-wide cursor-pointer px-3 py-1.5  hover:bg-white/20 hover:scale-105"
+                    className="flex items-center gap-2 px-4 py-2 text-white hover:text-[#faf5f3] transition-all duration-300 cursor-pointer group relative"
+                    title="新規登録"
                   >
-                    新規登録
+                    <div className="absolute inset-0 bg-white/5 rounded-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <UserPlus className="w-4 h-4 relative z-10 transition-all duration-300 group-hover:opacity-80" strokeWidth={1.5} />
+                    <span className="text-sm font-light tracking-wider relative z-10">
+                      新規登録
+                    </span>
                   </Link>
+                  <span className="text-white/30 text-sm">|</span>
                   <Link
                     to="/login"
-                    className="text-sm font-medium text-white hover:text-[#faf5f3] transition-all duration-300 uppercase tracking-wide cursor-pointer px-3 py-1.5  hover:bg-white/20 hover:scale-105"
+                    className="flex items-center gap-2 px-4 py-2 text-white hover:text-[#faf5f3] transition-all duration-300 cursor-pointer group relative"
+                    title="ログイン"
                   >
-                    ログイン
+                    <div className="absolute inset-0 bg-white/5 rounded-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <LogIn className="w-4 h-4 relative z-10 transition-all duration-300 group-hover:opacity-80" strokeWidth={1.5} />
+                    <span className="text-sm font-light tracking-wider relative z-10">
+                      ログイン
+                    </span>
                   </Link>
                 </>
               ) : (

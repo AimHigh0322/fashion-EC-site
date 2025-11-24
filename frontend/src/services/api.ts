@@ -113,10 +113,25 @@ interface Campaign {
   id: string;
   name: string;
   description?: string;
+  label?: string;
   type: string;
+  target_type?: "product" | "category" | "all";
+  discount_type?: "percent" | "amount" | "freeShipping" | "points";
+  discount_percent?: number;
+  discount_value?: number;
+  fixed_price?: number;
+  minimum_purchase?: number;
+  usage_limit?: number;
+  user_limit?: number;
+  current_usage?: number;
+  status?: "active" | "inactive";
   start_date: string;
   end_date: string;
   is_active: boolean;
+  target_ids?: string[];
+  target_count?: number | string;
+  products?: unknown[];
+  categories?: unknown[];
   [key: string]: unknown;
 }
 
@@ -550,8 +565,31 @@ class ApiService {
   }
 
   // Campaign endpoints
-  async getCampaigns() {
-    return this.request<Campaign[]>("/campaigns");
+  async getCampaigns(params?: { is_active?: boolean; status?: string }) {
+    const queryParams = new URLSearchParams();
+    if (params?.is_active !== undefined) {
+      queryParams.append("is_active", params.is_active.toString());
+    }
+    if (params?.status) {
+      queryParams.append("status", params.status);
+    }
+    const query = queryParams.toString();
+    return this.request<Campaign[]>(`/campaigns${query ? `?${query}` : ""}`);
+  }
+
+  async getActiveCampaigns() {
+    return this.request<Campaign[]>("/campaigns/active");
+  }
+
+  async getCampaignsForProduct(productId: string, categoryIds?: string[]) {
+    const queryParams = new URLSearchParams();
+    if (categoryIds && categoryIds.length > 0) {
+      queryParams.append("category_ids", categoryIds.join(","));
+    }
+    const query = queryParams.toString();
+    return this.request<Campaign[]>(
+      `/campaigns/apply-to-product/${productId}${query ? `?${query}` : ""}`
+    );
   }
 
   async createCampaign(campaign: Partial<Campaign>) {
@@ -566,6 +604,106 @@ class ApiService {
       method: "PUT",
       body: JSON.stringify(campaign),
     });
+  }
+
+  async deleteCampaign(id: string) {
+    return this.request(`/campaigns/${id}`, {
+      method: "DELETE",
+    });
+  }
+
+  // Cart campaign endpoints
+  async applyCampaignsToCart() {
+    return this.request<{
+      items: Array<{
+        id: string;
+        product_id: string;
+        quantity: number;
+        originalPrice: number;
+        discountedPrice: number;
+        discount: number;
+        itemTotal: number;
+        itemDiscount: number;
+        campaign?: {
+          id: string;
+          name: string;
+          label?: string;
+          description?: string;
+          discountType: string;
+          discountValue: number;
+        };
+      }>;
+      subtotal: number;
+      totalDiscount: number;
+      freeShipping: boolean;
+      appliedCampaigns: Array<{
+        id: string;
+        name: string;
+        label?: string;
+        type?: string;
+        discount?: number;
+      }>;
+      finalTotal: number;
+    }>("/cart/apply-campaigns", {
+      method: "POST",
+    });
+  }
+
+  // Checkout campaign endpoints
+  async validateCampaigns() {
+    return this.request<{
+      success: boolean;
+      valid: boolean;
+      errors: string[];
+      validationResults: Array<{
+        campaignId: string;
+        campaignName: string;
+        productId: string;
+        valid: boolean;
+        error?: string;
+      }>;
+      discounts: {
+        subtotal: number;
+        totalDiscount: number;
+        freeShipping: boolean;
+        appliedCampaigns: Array<{
+          id: string;
+          name: string;
+          label?: string;
+        }>;
+        finalTotal: number;
+      };
+    }>("/checkout/validate-campaigns", {
+      method: "POST",
+    });
+  }
+
+  // Dashboard endpoints
+  async getDashboardStats() {
+    return this.request<{
+      totalSales: number;
+      totalOrders: number;
+      totalProducts: number;
+      totalCustomers: number;
+      salesChange: number;
+      ordersChange: number;
+      productsChange: number;
+      customersChange: number;
+    }>("/admin/dashboard/stats");
+  }
+
+  async getRecentOrders(limit: number = 5) {
+    return this.request<
+      Array<{
+        id: string;
+        orderNumber: string;
+        customer: string;
+        amount: number;
+        status: string;
+        paymentStatus: string;
+        createdAt: string;
+      }>
+    >(`/admin/dashboard/recent-orders?limit=${limit}`);
   }
 
   // Image upload

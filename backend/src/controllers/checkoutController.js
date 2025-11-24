@@ -1,6 +1,7 @@
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const orderModel = require("../model/orderModel");
 const shippingAddressModel = require("../model/shippingAddressModel");
+const campaignService = require("../services/campaignService");
 const pool = require("../db/db");
 const { v4: uuidv4 } = require("uuid");
 
@@ -48,25 +49,42 @@ async function createCheckoutSession(req, res) {
       }
     }
 
-    // Calculate totals
-    const subtotal = cartItems.reduce(
-      (sum, item) => sum + item.price * item.quantity,
-      0
-    );
-    const shippingCost = shippingAddressModel.calculateShippingCost(
-      shippingAddress.prefecture,
-      subtotal
-    );
-    const tax = Math.floor(subtotal * 0.1); // 10% tax
-    const totalAmount = subtotal + tax + shippingCost;
+    // Validate campaigns before checkout
+    const campaignValidation = await campaignService.validateCampaignsForCheckout(cartItems, userId);
+    if (!campaignValidation.valid) {
+      return res.status(400).json({
+        success: false,
+        message: "キャンペーンの適用に問題があります",
+        errors: campaignValidation.errors,
+        validationResults: campaignValidation.results,
+      });
+    }
+
+    // Apply campaigns to cart
+    const cartWithDiscounts = await campaignService.applyCampaignsToCart(cartItems, userId);
+    
+    // Calculate totals with campaign discounts
+    const subtotal = cartWithDiscounts.subtotal;
+    const totalDiscount = cartWithDiscounts.totalDiscount;
+    const freeShipping = cartWithDiscounts.freeShipping;
+    
+    // Calculate shipping (free if campaign applies)
+    const shippingCost = freeShipping 
+      ? 0 
+      : shippingAddressModel.calculateShippingCost(
+          shippingAddress.prefecture,
+          subtotal
+        );
+    const tax = Math.floor((subtotal - totalDiscount) * 0.1); // 10% tax on discounted amount
+    const totalAmount = subtotal - totalDiscount + tax + shippingCost;
 
     // Get base URL for images - ensure it's publicly accessible
     // Stripe requires publicly accessible image URLs
     const baseUrl = process.env.API_URL || process.env.BACKEND_URL || "http://localhost:8888";
     const cleanBaseUrl = baseUrl.replace(/\/api$/, "").replace(/\/$/, "");
 
-    // Create line items for Stripe
-    const line_items = cartItems.map((item) => {
+    // Create line items for Stripe (use discounted prices)
+    const line_items = cartWithDiscounts.items.map((item) => {
       let imageUrl = null;
       if (item.main_image_url) {
         if (item.main_image_url.startsWith("http://") || item.main_image_url.startsWith("https://")) {
@@ -98,7 +116,7 @@ async function createCheckoutSession(req, res) {
             description: `SKU: ${item.sku}`,
             images: imageUrl ? [imageUrl] : [],
           },
-          unit_amount: Math.round(item.price),
+          unit_amount: Math.round(item.discountedPrice || item.price),
         },
         quantity: item.quantity,
       };
@@ -445,8 +463,65 @@ async function handleStripeWebhook(req, res) {
   res.json({ received: true });
 }
 
+// Validate campaigns for checkout
+async function validateCampaigns(req, res) {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: "認証が必要です",
+      });
+    }
+
+    // Get cart items
+    const [cartItems] = await pool.query(
+      `SELECT c.*, p.name, p.sku, p.price, p.main_image_url, p.stock_quantity
+       FROM cart c
+       JOIN products p ON c.product_id = p.id
+       WHERE c.user_id = ? AND p.status = 'active'`,
+      [userId]
+    );
+
+    if (cartItems.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "カートが空です",
+      });
+    }
+
+    // Validate campaigns
+    const validation = await campaignService.validateCampaignsForCheckout(cartItems, userId);
+    
+    // Also get discount calculation
+    const cartWithDiscounts = await campaignService.applyCampaignsToCart(cartItems, userId);
+
+    res.json({
+      success: validation.valid,
+      valid: validation.valid,
+      errors: validation.errors,
+      validationResults: validation.results,
+      discounts: {
+        subtotal: cartWithDiscounts.subtotal,
+        totalDiscount: cartWithDiscounts.totalDiscount,
+        freeShipping: cartWithDiscounts.freeShipping,
+        appliedCampaigns: cartWithDiscounts.appliedCampaigns,
+        finalTotal: cartWithDiscounts.subtotal - cartWithDiscounts.totalDiscount,
+      },
+    });
+  } catch (error) {
+    console.error("Validate campaigns error:", error);
+    res.status(500).json({
+      success: false,
+      message: "キャンペーンのバリデーションに失敗しました",
+      error: error.message,
+    });
+  }
+}
+
 module.exports = {
   createCheckoutSession,
   verifyPaymentAndCreateOrder,
   handleStripeWebhook,
+  validateCampaigns,
 };

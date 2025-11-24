@@ -1,4 +1,5 @@
 const cartModel = require("../model/cartModel");
+const campaignService = require("../services/campaignService");
 const { logAudit } = require("../middleware/auditLogger");
 
 // Add product to cart
@@ -160,6 +161,23 @@ async function getUserCart(req, res) {
     }
 
     const cartItems = await cartModel.getUserCart(userId);
+    
+    // Apply campaigns if requested
+    const applyCampaigns = req.query.apply_campaigns === "true";
+    if (applyCampaigns) {
+      const cartWithDiscounts = await campaignService.applyCampaignsToCart(cartItems, userId);
+      return res.json({
+        success: true,
+        data: cartWithDiscounts.items,
+        discounts: {
+          subtotal: cartWithDiscounts.subtotal,
+          totalDiscount: cartWithDiscounts.totalDiscount,
+          freeShipping: cartWithDiscounts.freeShipping,
+          appliedCampaigns: cartWithDiscounts.appliedCampaigns,
+        },
+      });
+    }
+    
     res.json({
       success: true,
       data: cartItems,
@@ -169,6 +187,41 @@ async function getUserCart(req, res) {
     res.status(500).json({
       success: false,
       message: "カートの取得に失敗しました",
+      error: error.message,
+    });
+  }
+}
+
+// Apply campaigns to cart
+async function applyCampaignsToCart(req, res) {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: "認証が必要です",
+      });
+    }
+
+    const cartItems = await cartModel.getUserCart(userId);
+    const cartWithDiscounts = await campaignService.applyCampaignsToCart(cartItems, userId);
+    
+    res.json({
+      success: true,
+      data: {
+        items: cartWithDiscounts.items,
+        subtotal: cartWithDiscounts.subtotal,
+        totalDiscount: cartWithDiscounts.totalDiscount,
+        freeShipping: cartWithDiscounts.freeShipping,
+        appliedCampaigns: cartWithDiscounts.appliedCampaigns,
+        finalTotal: cartWithDiscounts.subtotal - cartWithDiscounts.totalDiscount,
+      },
+    });
+  } catch (error) {
+    console.error("Apply campaigns to cart error:", error);
+    res.status(500).json({
+      success: false,
+      message: "キャンペーンの適用に失敗しました",
       error: error.message,
     });
   }
@@ -234,5 +287,6 @@ module.exports = {
   getUserCart,
   getCartCount,
   clearCart,
+  applyCampaignsToCart,
 };
 

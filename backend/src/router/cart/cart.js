@@ -18,6 +18,9 @@ router.put("/:product_id", cartController.updateCartQuantity);
 // Get user's cart
 router.get("/", cartController.getUserCart);
 
+// Apply campaigns to cart
+router.post("/apply-campaigns", cartController.applyCampaignsToCart);
+
 // Get cart count
 router.get("/count", cartController.getCartCount);
 

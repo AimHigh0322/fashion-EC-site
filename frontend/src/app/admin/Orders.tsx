@@ -134,7 +134,7 @@ export const Orders = () => {
           </div>
           <button
             onClick={handleExport}
-            className="flex items-center justify-center space-x-2 px-4 py-2 border border-gray-300  hover:bg-gray-50"
+            className="flex items-center justify-center space-x-2 px-4 py-2 border border-gray-300  hover:bg-gray-50 cursor-pointer"
           >
             <Download className="w-5 h-5" />
             <span>エクスポート</span>
@@ -306,7 +306,7 @@ export const Orders = () => {
                       <td className="px-4 py-4 whitespace-nowrap text-right">
                         <button
                           onClick={() => setSelectedOrder(order)}
-                          className="text-blue-600 hover:text-blue-900 p-1"
+                          className="text-blue-600 hover:text-blue-900 p-1 cursor-pointer"
                         >
                           <Eye className="w-4 h-4" />
                         </button>
@@ -509,7 +509,7 @@ const OrderDetailModal = ({
           </h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 text-2xl leading-none"
+            className="text-gray-400 hover:text-gray-600 text-2xl leading-none cursor-pointer"
           >
             ×
           </button>
@@ -684,7 +684,7 @@ const OrderDetailModal = ({
                   !trackingNumber ||
                   !(carrier === "その他" ? customCarrier : carrier)
                 }
-                className="w-full px-4 py-2 bg-blue-600 text-white  hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center"
+                className="w-full px-4 py-2 bg-blue-600 text-white  hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center cursor-pointer"
               >
                 {loading ? (
                   <>

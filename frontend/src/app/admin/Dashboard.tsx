@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { useAuth } from "../../contexts/AuthContext";
 import { AdminLayout } from "../../components/layouts/AdminLayout";
 import {
@@ -9,50 +10,131 @@ import {
   TrendingDown,
 } from "lucide-react";
 import { Breadcrumbs } from "../../components/molecules/Breadcrumbs";
+import { apiService } from "../../services/api";
+import { useToast } from "../../contexts/ToastContext";
+
+interface DashboardStats {
+  totalSales: number;
+  totalOrders: number;
+  totalProducts: number;
+  totalCustomers: number;
+  salesChange: number;
+  ordersChange: number;
+  productsChange: number;
+  customersChange: number;
+}
+
+interface RecentOrder {
+  id: string;
+  orderNumber: string;
+  customer: string;
+  amount: number;
+  status: string;
+  paymentStatus: string;
+  createdAt: string;
+}
 
 export const Dashboard = () => {
   const { user } = useAuth();
+  const { showToast } = useToast();
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [recentOrders, setRecentOrders] = useState<RecentOrder[]>([]);
 
-  const stats = [
-    {
-      name: "総売上",
-      value: "¥12,345,678",
-      change: "+12.5%",
-      changeType: "positive",
-      icon: DollarSign,
-      color: "text-green-600",
-    },
-    {
-      name: "総注文数",
-      value: "1,234",
-      change: "+8.2%",
-      changeType: "positive",
-      icon: ShoppingCart,
-      color: "text-blue-600",
-    },
-    {
-      name: "総商品数",
-      value: "456",
-      change: "+5.1%",
-      changeType: "positive",
-      icon: Package,
-      color: "text-purple-600",
-    },
-    {
-      name: "総顧客数",
-      value: "5,678",
-      change: "+15.3%",
-      changeType: "positive",
-      icon: Users,
-      color: "text-[#e2603f]",
-    },
-  ];
+  useEffect(() => {
+    const loadDashboardData = async () => {
+      try {
+        setLoading(true);
+        const [statsResponse, ordersResponse] = await Promise.all([
+          apiService.getDashboardStats(),
+          apiService.getRecentOrders(5),
+        ]);
 
-  const recentOrders = [
-    { id: "ORD-001", customer: "田中太郎", amount: 19800, status: "pending" },
-    { id: "ORD-002", customer: "佐藤花子", amount: 5980, status: "processing" },
-    { id: "ORD-003", customer: "鈴木一郎", amount: 3980, status: "shipped" },
-  ];
+        if (statsResponse.data) {
+          setStats(statsResponse.data);
+        }
+
+        if (ordersResponse.data) {
+          setRecentOrders(ordersResponse.data);
+        }
+      } catch (error) {
+        console.error("Failed to load dashboard data:", error);
+        showToast("ダッシュボードデータの読み込みに失敗しました", "error");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadDashboardData();
+  }, [showToast]);
+
+  const formatCurrency = (amount: number) => {
+    return `¥${Math.round(amount).toLocaleString()}`;
+  };
+
+  const formatChange = (change: number) => {
+    const sign = change >= 0 ? "+" : "";
+    return `${sign}${change.toFixed(1)}%`;
+  };
+
+  const getStatusLabel = (status: string) => {
+    const statusMap: { [key: string]: string } = {
+      pending: "保留中",
+      processing: "処理中",
+      shipped: "発送済み",
+      delivered: "配送済み",
+      cancelled: "キャンセル",
+    };
+    return statusMap[status] || status;
+  };
+
+  const getStatusColor = (status: string) => {
+    const colorMap: { [key: string]: string } = {
+      pending: "bg-yellow-100 text-yellow-800",
+      processing: "bg-blue-100 text-blue-800",
+      shipped: "bg-purple-100 text-purple-800",
+      delivered: "bg-green-100 text-green-800",
+      cancelled: "bg-red-100 text-red-800",
+    };
+    return colorMap[status] || "bg-gray-100 text-gray-800";
+  };
+
+  const dashboardStats = stats
+    ? [
+        {
+          name: "総売上",
+          value: formatCurrency(stats.totalSales),
+          change: formatChange(stats.salesChange),
+          changeType: stats.salesChange >= 0 ? "positive" : "negative",
+          icon: DollarSign,
+          color: "text-green-600",
+        },
+        {
+          name: "総注文数",
+          value: stats.totalOrders.toLocaleString(),
+          change: formatChange(stats.ordersChange),
+          changeType: stats.ordersChange >= 0 ? "positive" : "negative",
+          icon: ShoppingCart,
+          color: "text-blue-600",
+        },
+        {
+          name: "総商品数",
+          value: stats.totalProducts.toLocaleString(),
+          change: formatChange(stats.productsChange),
+          changeType: stats.productsChange >= 0 ? "positive" : "negative",
+          icon: Package,
+          color: "text-purple-600",
+        },
+        {
+          name: "総顧客数",
+          value: stats.totalCustomers.toLocaleString(),
+          change: formatChange(stats.customersChange),
+          changeType: stats.customersChange >= 0 ? "positive" : "negative",
+          icon: Users,
+          color: "text-[#e2603f]",
+        },
+      ]
+    : [];
 
   return (
     <AdminLayout>
@@ -70,34 +152,53 @@ export const Dashboard = () => {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {stats.map((stat) => {
-            const Icon = stat.icon;
-            return (
-              <div key={stat.name} className="bg-white  shadow p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className={`p-2 bg-gray-100 `}>
-                    <Icon className={`w-6 h-6 ${stat.color}`} />
-                  </div>
-                  <span className="text-sm font-medium text-green-600 flex items-center">
-                    {stat.changeType === "positive" ? (
-                      <TrendingUp className="w-4 h-4 mr-1" />
-                    ) : (
-                      <TrendingDown className="w-4 h-4 mr-1" />
-                    )}
-                    {stat.change}
-                  </span>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600 mb-1">{stat.name}</p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {stat.value}
-                  </p>
+        {loading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="bg-white shadow p-6">
+                <div className="animate-pulse">
+                  <div className="h-4 bg-gray-200 rounded w-3/4 mb-4"></div>
+                  <div className="h-8 bg-gray-200 rounded w-1/2"></div>
                 </div>
               </div>
-            );
-          })}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {dashboardStats.map((stat) => {
+              const Icon = stat.icon;
+              return (
+                <div key={stat.name} className="bg-white shadow p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className={`p-2 bg-gray-100`}>
+                      <Icon className={`w-6 h-6 ${stat.color}`} />
+                    </div>
+                    <span
+                      className={`text-sm font-medium flex items-center ${
+                        stat.changeType === "positive"
+                          ? "text-green-600"
+                          : "text-red-600"
+                      }`}
+                    >
+                      {stat.changeType === "positive" ? (
+                        <TrendingUp className="w-4 h-4 mr-1" />
+                      ) : (
+                        <TrendingDown className="w-4 h-4 mr-1" />
+                      )}
+                      {stat.change}
+                    </span>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600 mb-1">{stat.name}</p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {stat.value}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
 
         {/* Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -143,47 +244,60 @@ export const Dashboard = () => {
           </div>
 
           {/* Recent Orders */}
-          <div className="bg-white  shadow p-6">
+          <div className="bg-white shadow p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">
               最近の注文
             </h2>
-            <div className="space-y-3">
-              {recentOrders.map((order) => (
-                <div
-                  key={order.id}
-                  className="flex items-center justify-between p-3 bg-gray-50 "
-                >
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">
-                      {order.id}
-                    </p>
-                    <p className="text-xs text-gray-500">{order.customer}</p>
+            {loading ? (
+              <div className="space-y-3">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="animate-pulse">
+                    <div className="h-16 bg-gray-200 rounded"></div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-sm font-medium text-gray-900">
-                      ¥{order.amount.toLocaleString()}
-                    </p>
-                    <span
-                      className={`text-xs px-2 py-1  ${
-                        order.status === "pending"
-                          ? "bg-yellow-100 text-yellow-800"
-                          : order.status === "processing"
-                          ? "bg-blue-100 text-blue-800"
-                          : "bg-purple-100 text-purple-800"
-                      }`}
-                    >
-                      {order.status === "pending"
-                        ? "保留中"
-                        : order.status === "processing"
-                        ? "処理中"
-                        : order.status === "shipped"
-                        ? "発送済み"
-                        : order.status}
-                    </span>
+                ))}
+              </div>
+            ) : recentOrders.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                <p>注文がありません</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {recentOrders.map((order) => (
+                  <div
+                    key={order.id}
+                    className="flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 transition-colors"
+                  >
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">
+                        {order.orderNumber}
+                      </p>
+                      <p className="text-xs text-gray-500">{order.customer}</p>
+                      <p className="text-xs text-gray-400 mt-1">
+                        {new Date(order.createdAt).toLocaleDateString("ja-JP", {
+                          year: "numeric",
+                          month: "short",
+                          day: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-medium text-gray-900">
+                        {formatCurrency(order.amount)}
+                      </p>
+                      <span
+                        className={`text-xs px-2 py-1 rounded ${getStatusColor(
+                          order.status
+                        )}`}
+                      >
+                        {getStatusLabel(order.status)}
+                      </span>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>

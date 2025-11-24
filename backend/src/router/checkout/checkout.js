@@ -9,6 +9,11 @@ router.post(
   authenticateRequest,
   checkoutController.createCheckoutSession
 );
+router.post(
+  "/validate-campaigns",
+  authenticateRequest,
+  checkoutController.validateCampaigns
+);
 router.get(
   "/verify-payment",
   authenticateRequest,

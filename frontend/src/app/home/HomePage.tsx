@@ -6,12 +6,14 @@ import { useFavorites } from "../../contexts/FavoritesContext";
 import { useCart } from "../../contexts/CartContext";
 import { useToast } from "../../contexts/ToastContext";
 import { useCategory } from "../../contexts/CategoryContext";
+import { useNavigate } from "react-router-dom";
 import { apiService } from "../../services/api";
 import { AddToCartButton } from "../../components/molecules/AddToCartButton";
 import { UserLayout } from "../../components/layouts/UserLayout";
 
 export const HomePage = () => {
   const [cartProductIds, setCartProductIds] = useState<Set<string>>(new Set());
+  const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
   const { isFavorited, toggleFavorite } = useFavorites();
   const { addToCart: addToCartContext, removeFromCart: removeFromCartContext } =
@@ -1239,7 +1241,7 @@ export const HomePage = () => {
                             e.preventDefault();
                             e.stopPropagation();
                             if (!isAuthenticated) {
-                              showToast("ログインが必要です", "warning");
+                              navigate("/login", { state: { from: window.location.pathname } });
                               return;
                             }
                             const wasFavorited = isFavorited(product.id);
@@ -1316,7 +1318,7 @@ export const HomePage = () => {
                             isInCart={cartProductIds.has(product.id)}
                             onAddToCart={async (productId) => {
                               if (!isAuthenticated) {
-                                showToast("ログインが必要です", "warning");
+                                openLoginModal();
                                 return;
                               }
                               setAddingToCart(productId);
@@ -1455,7 +1457,7 @@ export const HomePage = () => {
         </div>
 
         {/* Flash Sale Section */}
-        <div className="mb-12 bg-gradient-to-r from-red-500 to-pink-500 rounded-2xl p-6 sm:p-8 text-white">
+        <div className="mb-12   p-6 sm:p-8 text-white">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6">
             <div>
               <h2 className="text-2xl sm:text-3xl font-bold mb-2">

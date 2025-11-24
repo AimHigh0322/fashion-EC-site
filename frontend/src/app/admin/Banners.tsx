@@ -170,7 +170,7 @@ export const Banners = () => {
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => navigate("/admin/banners/create")}
-              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white  hover:bg-blue-700 transition-colors"
+              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white  hover:bg-blue-700 transition-colors cursor-pointer"
             >
               <Plus className="w-5 h-5" />
               <span>バナー作成</span>
@@ -364,14 +364,14 @@ export const Banners = () => {
                                         `/admin/banners/edit/${banner.id}`
                                       )
                                     }
-                                    className="text-blue-600 hover:text-blue-900 p-1"
+                                    className="text-blue-600 hover:text-blue-900 p-1 cursor-pointer"
                                     title="編集"
                                   >
                                     <Edit className="w-3 h-3 sm:w-4 sm:h-4" />
                                   </button>
                                   <button
                                     onClick={() => handleDeleteClick(banner.id)}
-                                    className="text-red-600 hover:text-red-900 p-1"
+                                    className="text-red-600 hover:text-red-900 p-1 cursor-pointer"
                                     title="削除"
                                   >
                                     <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />

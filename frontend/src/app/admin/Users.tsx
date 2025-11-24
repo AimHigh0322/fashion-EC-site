@@ -292,7 +292,7 @@ export const Users = () => {
                                 <button
                                   onClick={() => handleBlock(user.id)}
                                   disabled={blocking && userToBlock === user.id}
-                                  className={`p-1 ${
+                                  className={`p-1 cursor-pointer ${
                                     user.status === "blocked"
                                       ? "text-green-600 hover:text-green-900"
                                       : "text-[#e2603f] hover:text-[#8a3d2a]"
@@ -311,7 +311,7 @@ export const Users = () => {
                                 </button>
                                 <button
                                   onClick={() => handleDelete(user.id)}
-                                  className="text-red-600 hover:text-red-900 p-1"
+                                  className="text-red-600 hover:text-red-900 p-1 cursor-pointer"
                                   title="削除"
                                 >
                                   <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
@@ -337,7 +337,7 @@ export const Users = () => {
                     <button
                       onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                       disabled={currentPage === 1}
-                      className="px-3 py-1 border border-gray-300  disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                      className="px-3 py-1 border border-gray-300  disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 cursor-pointer"
                     >
                       前へ
                     </button>
@@ -349,7 +349,7 @@ export const Users = () => {
                         setCurrentPage((p) => Math.min(totalPages, p + 1))
                       }
                       disabled={currentPage === totalPages}
-                      className="px-3 py-1 border border-gray-300  disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                      className="px-3 py-1 border border-gray-300  disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 cursor-pointer"
                     >
                       次へ
                     </button>
