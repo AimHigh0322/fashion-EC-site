@@ -136,14 +136,14 @@ export const Register = () => {
           {/* Welcome Content - Centered */}
           <div className="space-y-6 md:space-y-10 text-center px-4">
             <p className="text-2xl md:text-3xl lg:text-4xl font-light">
-              新生活、始めませんか
+              新しいスタイル、始めませんか
             </p>
             <h1 className="text-5xl md:text-6xl lg:text-8xl font-bold uppercase tracking-tight">
               ようこそ
             </h1>
             <div className="w-16 md:w-24 h-1 md:h-1.5 bg-white mx-auto"></div>
             <p className="text-base md:text-lg lg:text-xl font-light leading-relaxed max-w-2xl mx-auto">
-              最新トレンドから定番まで、あなたにぴったりのファッションアイテムがきっと見つかります。さあ、新しいスタイルを見つけましょう。
+              トレンドのファッションアイテムから、あなただけのスタイルを見つけませんか？会員登録で、限定セール情報や新商品情報をいち早くお届けします。
             </p>
           </div>
         </div>
@@ -162,7 +162,7 @@ export const Register = () => {
             新規登録
           </h2>
           <p className="text-gray-500 text-xs sm:text-sm mb-6 sm:mb-8">
-            アカウントを作成して、あなただけのファッションスタイルを見つけましょう。
+            会員登録で、お気に入り商品の保存、注文履歴の確認、限定セール情報の受信など、便利な機能をご利用いただけます。
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-6">

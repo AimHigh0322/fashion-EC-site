@@ -1520,6 +1520,102 @@ class ApiService {
       body: JSON.stringify(trackingData),
     });
   }
+
+  // Sales analytics endpoints
+  async getDailySales(params?: {
+    start_date?: string;
+    end_date?: string;
+    product_id?: string;
+    category_id?: string;
+  }) {
+    const queryParams = new URLSearchParams();
+    if (params?.start_date) queryParams.append("start_date", params.start_date);
+    if (params?.end_date) queryParams.append("end_date", params.end_date);
+    if (params?.product_id) queryParams.append("product_id", params.product_id);
+    if (params?.category_id)
+      queryParams.append("category_id", params.category_id);
+    return this.request<
+      Array<{
+        date: string;
+        order_count: number;
+        total_sales: number;
+        avg_order_amount: number;
+        unique_products_sold: number;
+        total_items_sold: number;
+      }>
+    >(`/sales/daily?${queryParams.toString()}`);
+  }
+
+  async getMonthlySales(params?: {
+    start_month?: string;
+    end_month?: string;
+    product_id?: string;
+    category_id?: string;
+  }) {
+    const queryParams = new URLSearchParams();
+    if (params?.start_month)
+      queryParams.append("start_month", params.start_month);
+    if (params?.end_month) queryParams.append("end_month", params.end_month);
+    if (params?.product_id) queryParams.append("product_id", params.product_id);
+    if (params?.category_id)
+      queryParams.append("category_id", params.category_id);
+    return this.request<
+      Array<{
+        month: string;
+        order_count: number;
+        total_sales: number;
+        avg_order_amount: number;
+        unique_products_sold: number;
+        total_items_sold: number;
+      }>
+    >(`/sales/monthly?${queryParams.toString()}`);
+  }
+
+  async getProductSales(params?: {
+    start_date?: string;
+    end_date?: string;
+    limit?: number;
+  }) {
+    const queryParams = new URLSearchParams();
+    if (params?.start_date) queryParams.append("start_date", params.start_date);
+    if (params?.end_date) queryParams.append("end_date", params.end_date);
+    if (params?.limit) queryParams.append("limit", params.limit.toString());
+    return this.request<
+      Array<{
+        id: string;
+        sku: string;
+        name: string;
+        category_names: string;
+        order_count: number;
+        total_quantity_sold: number;
+        total_sales: number;
+        avg_price: number;
+        min_price: number;
+        max_price: number;
+      }>
+    >(`/sales/products?${queryParams.toString()}`);
+  }
+
+  async getCategorySales(params?: {
+    start_date?: string;
+    end_date?: string;
+  }) {
+    const queryParams = new URLSearchParams();
+    if (params?.start_date) queryParams.append("start_date", params.start_date);
+    if (params?.end_date) queryParams.append("end_date", params.end_date);
+    return this.request<
+      Array<{
+        id: string;
+        name: string;
+        slug: string;
+        order_count: number;
+        unique_products: number;
+        total_quantity_sold: number;
+        total_sales: number;
+        avg_order_value: number;
+      }>
+    >(`/sales/categories?${queryParams.toString()}`);
+  }
 }
 
 export const apiService = new ApiService();

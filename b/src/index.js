@@ -89,6 +89,10 @@ app.use("/api/campaigns", campaignRoutes);
 const dashboardRoutes = require("./router/admin/dashboard");
 app.use("/api/admin/dashboard", dashboardRoutes);
 
+// Sales analytics routes
+const salesRoutes = require("./router/sales/sales");
+app.use("/api/sales", salesRoutes);
+
 // Image routes
 const imageController = require("./controllers/imageController");
 const {

@@ -5,7 +5,6 @@ import { AdminLayout } from "../../components/layouts/AdminLayout";
 import { apiService } from "../../services/api";
 import { useToast } from "../../contexts/ToastContext";
 import { ConfirmModal } from "../../components/molecules/modals/ConfirmModal";
-import { Pagination } from "../../components/atom/Pagination";
 import { Breadcrumbs } from "../../components/molecules/Breadcrumbs";
 
 interface Banner {
@@ -35,23 +34,16 @@ export const Banners = () => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [bannerToDelete, setBannerToDelete] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalItems, setTotalItems] = useState(0);
-  const itemsPerPage = 6;
   const { showToast } = useToast();
 
   const loadBanners = useCallback(async () => {
     setLoading(true);
     try {
-      const offset = (currentPage - 1) * itemsPerPage;
-      const response = await apiService.getBanners({
-        limit: itemsPerPage,
-        offset: offset,
-      });
+      // すべてのバナーを取得（ページネーションなし）
+      const response = await apiService.getBanners();
 
       if (response.data) {
         let bannersData: Banner[] = [];
-        let total = 0;
 
         if (Array.isArray(response.data)) {
           bannersData = response.data;
@@ -60,8 +52,6 @@ export const Banners = () => {
             success?: boolean;
             data?: Banner[];
             banners?: Banner[];
-            total?: number;
-            count?: number;
           };
 
           if (Array.isArray(responseObj.data)) {
@@ -69,8 +59,6 @@ export const Banners = () => {
           } else if (Array.isArray(responseObj.banners)) {
             bannersData = responseObj.banners;
           }
-
-          total = responseObj.total || 0;
         }
 
         // Filter by search term if provided
@@ -88,18 +76,13 @@ export const Banners = () => {
         }
 
         setBanners(bannersData);
-        setTotalItems(total > 0 ? total : bannersData.length);
       }
     } catch {
       showToast("バナーの読み込みに失敗しました", "error");
     } finally {
       setLoading(false);
     }
-  }, [searchTerm, currentPage, itemsPerPage, showToast]);
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchTerm]);
+  }, [searchTerm, showToast]);
 
   useEffect(() => {
     loadBanners();
@@ -286,25 +269,7 @@ export const Banners = () => {
                                 </div>
                               )}
                             </div>
-                            <div className="lg:hidden xl:table-cell hidden mt-1">
-                              {banner.page_url || banner.link_url ? (
-                                <div className="text-[10px] text-gray-500 truncate max-w-xs">
-                                  <a
-                                    href={
-                                      (banner.page_url ||
-                                        banner.link_url) as string
-                                    }
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-blue-600 hover:text-blue-800 hover:underline"
-                                  >
-                                    {banner.display_text ||
-                                      banner.page_url ||
-                                      banner.link_url}
-                                  </a>
-                                </div>
-                              ) : null}
-                            </div>
+                           
                             <div className="xl:hidden mt-1">
                               <div className="text-[10px] text-gray-400">
                                 {banner.createdAt
@@ -412,17 +377,6 @@ export const Banners = () => {
               </table>
             </div>
           )}
-          {!loading &&
-            totalItems > itemsPerPage &&
-            Math.ceil(totalItems / itemsPerPage) > 1 && (
-              <Pagination
-                currentPage={currentPage}
-                totalPages={Math.ceil(totalItems / itemsPerPage)}
-                totalItems={totalItems}
-                itemsPerPage={itemsPerPage}
-                onPageChange={setCurrentPage}
-              />
-            )}
         </div>
 
         {/* Delete Confirmation Modal */}

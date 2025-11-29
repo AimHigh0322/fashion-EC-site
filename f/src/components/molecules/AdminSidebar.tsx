@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
-  LayoutDashboard,
   Package,
   ShoppingCart,
   Users,
@@ -14,6 +13,7 @@ import {
   Image as ImageIcon,
   MessageSquare,
   Tag,
+  TrendingUp,
 } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 
@@ -24,7 +24,7 @@ interface NavItem {
 }
 
 const navigation: NavItem[] = [
-  { name: "ダッシュボード", href: "/admin", icon: LayoutDashboard },
+  { name: "売上分析", href: "/admin/dashboard", icon: TrendingUp },
   { name: "ユーザー管理", href: "/admin/users", icon: Users },
   { name: "商品管理", href: "/admin/products", icon: Package },
   { name: "注文管理", href: "/admin/orders", icon: ShoppingCart },

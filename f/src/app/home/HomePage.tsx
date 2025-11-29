@@ -1131,7 +1131,7 @@ export const HomePage = () => {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <h2 className="text-lg sm:text-xl md:text-2xl font-bold">
-                おすすめ商品
+                商品リスト
               </h2>
               {selectedCategoryName && (
                 <div className="flex items-center gap-2">
@@ -1146,93 +1146,13 @@ export const HomePage = () => {
                   </button>
                 </div>
               )}
+              <Link
+                to="/products"
+                className="text-sm sm:text-base text-[#e2603f] hover:text-[#c95a42] font-medium underline transition-colors"
+              >
+                すべて見る
+              </Link>
             </div>
-            {filteredRecommendedProducts.length > 0 && (
-              <div className="hidden sm:flex space-x-2">
-                <button
-                  onClick={() => {
-                    if (recommendedProductsRef.current) {
-                      // Calculate scroll amount for 5 products
-                      const firstChild = recommendedProductsRef.current
-                        .firstElementChild as HTMLElement;
-                      if (firstChild) {
-                        const productWidth = firstChild.offsetWidth;
-                        const gap = 16; // space-x-4 = 16px
-                        // Scroll by 5 products: (productWidth + gap) * 5 - gap (last product doesn't need gap)
-                        const scrollAmount = (productWidth + gap) * 5 - gap;
-                        recommendedProductsRef.current.scrollBy({
-                          left: -scrollAmount,
-                          behavior: "smooth",
-                        });
-                      } else {
-                        // Fallback to container width
-                        const scrollAmount =
-                          recommendedProductsRef.current.clientWidth * 0.8;
-                        recommendedProductsRef.current.scrollBy({
-                          left: -scrollAmount,
-                          behavior: "smooth",
-                        });
-                      }
-                    }
-                  }}
-                  disabled={!canScrollLeft}
-                  className={`group w-8 h-8 sm:w-10 sm:h-10 border border-gray-300 bg-white flex items-center justify-center  shadow-sm transition-all duration-200 ${
-                    !canScrollLeft
-                      ? "opacity-50 cursor-not-allowed"
-                      : "cursor-pointer hover:bg-[#e2603f] hover:border-[#e2603f] hover:scale-110 active:scale-95"
-                  }`}
-                >
-                  <ChevronLeft
-                    className={`w-4 h-4 sm:w-5 sm:h-5 transition-colors duration-200 ${
-                      !canScrollLeft
-                        ? "text-gray-700"
-                        : "text-gray-700 group-hover:text-white"
-                    } cursor-pointer`}
-                  />
-                </button>
-                <button
-                  onClick={() => {
-                    if (recommendedProductsRef.current) {
-                      // Calculate scroll amount for 5 products
-                      const firstChild = recommendedProductsRef.current
-                        .firstElementChild as HTMLElement;
-                      if (firstChild) {
-                        const productWidth = firstChild.offsetWidth;
-                        const gap = 16; // space-x-4 = 16px
-                        // Scroll by 5 products: (productWidth + gap) * 5 - gap (last product doesn't need gap)
-                        const scrollAmount = (productWidth + gap) * 5 - gap;
-                        recommendedProductsRef.current.scrollBy({
-                          left: scrollAmount,
-                          behavior: "smooth",
-                        });
-                      } else {
-                        // Fallback to container width
-                        const scrollAmount =
-                          recommendedProductsRef.current.clientWidth * 0.8;
-                        recommendedProductsRef.current.scrollBy({
-                          left: scrollAmount,
-                          behavior: "smooth",
-                        });
-                      }
-                    }
-                  }}
-                  disabled={!canScrollRight}
-                  className={`group w-8 h-8 sm:w-10 sm:h-10 border border-gray-300 bg-white flex items-center justify-center  shadow-sm transition-all duration-200 ${
-                    !canScrollRight
-                      ? "opacity-50 cursor-not-allowed"
-                      : "cursor-pointer hover:bg-[#e2603f] hover:border-[#e2603f] hover:scale-110 active:scale-95"
-                  }`}
-                >
-                  <ChevronRight
-                    className={`w-4 h-4 sm:w-5 sm:h-5 transition-colors duration-200 ${
-                      !canScrollRight
-                        ? "text-gray-700"
-                        : "text-gray-700 group-hover:text-white"
-                    } cursor-pointer`}
-                  />
-                </button>
-              </div>
-            )}
           </div>
           <div className="relative">
             {loadingProducts ? (
@@ -1245,6 +1165,40 @@ export const HomePage = () => {
               </div>
             ) : (
               <div className="relative">
+                {/* Left Navigation Button */}
+                {filteredRecommendedProducts.length > 0 && (
+                  <button
+                    onClick={() => {
+                      if (recommendedProductsRef.current) {
+                        const firstChild = recommendedProductsRef.current
+                          .firstElementChild as HTMLElement;
+                        if (firstChild) {
+                          const productWidth = firstChild.offsetWidth;
+                          const gap = 16;
+                          const scrollAmount = (productWidth + gap) * 5 - gap;
+                          recommendedProductsRef.current.scrollBy({
+                            left: -scrollAmount,
+                            behavior: "smooth",
+                          });
+                        }
+                      }
+                    }}
+                    disabled={!canScrollLeft}
+                    className={`absolute left-2 sm:left-4 top-1/2 transform -translate-y-1/2 z-20 w-8 h-8 sm:w-10 sm:h-10 border border-gray-300 bg-white flex items-center justify-center shadow-sm transition-all duration-200 ${
+                      !canScrollLeft
+                        ? "opacity-50 cursor-not-allowed"
+                        : "cursor-pointer hover:bg-[#e2603f] hover:border-[#e2603f] hover:scale-110 active:scale-95"
+                    }`}
+                  >
+                    <ChevronLeft
+                      className={`w-4 h-4 sm:w-5 sm:h-5 transition-colors duration-200 ${
+                        !canScrollLeft
+                          ? "text-gray-700"
+                          : "text-gray-700 group-hover:text-white"
+                      }`}
+                    />
+                  </button>
+                )}
                 <div
                   ref={recommendedProductsRef}
                   className="flex space-x-3 sm:space-x-4 overflow-x-auto pb-4 scrollbar-hide scroll-smooth"
@@ -1432,6 +1386,40 @@ export const HomePage = () => {
                     </Link>
                   ))}
                 </div>
+                {/* Right Navigation Button */}
+                {filteredRecommendedProducts.length > 0 && (
+                  <button
+                    onClick={() => {
+                      if (recommendedProductsRef.current) {
+                        const firstChild = recommendedProductsRef.current
+                          .firstElementChild as HTMLElement;
+                        if (firstChild) {
+                          const productWidth = firstChild.offsetWidth;
+                          const gap = 16;
+                          const scrollAmount = (productWidth + gap) * 5 - gap;
+                          recommendedProductsRef.current.scrollBy({
+                            left: scrollAmount,
+                            behavior: "smooth",
+                          });
+                        }
+                      }
+                    }}
+                    disabled={!canScrollRight}
+                    className={`absolute right-2 sm:right-4 top-1/2 transform -translate-y-1/2 z-20 w-8 h-8 sm:w-10 sm:h-10 border border-gray-300 bg-white flex items-center justify-center shadow-sm transition-all duration-200 ${
+                      !canScrollRight
+                        ? "opacity-50 cursor-not-allowed"
+                        : "cursor-pointer hover:bg-[#e2603f] hover:border-[#e2603f] hover:scale-110 active:scale-95"
+                    }`}
+                  >
+                    <ChevronRight
+                      className={`w-4 h-4 sm:w-5 sm:h-5 transition-colors duration-200 ${
+                        !canScrollRight
+                          ? "text-gray-700"
+                          : "text-gray-700 group-hover:text-white"
+                      }`}
+                    />
+                  </button>
+                )}
               </div>
             )}
           </div>

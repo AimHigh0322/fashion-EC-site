@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { X, Upload } from "lucide-react";
 import { AdminLayout } from "../../components/layouts/AdminLayout";
@@ -23,6 +23,9 @@ interface BannerFormData {
   image: File | null;
   preview: string | null;
   existing_image_url: string | null;
+  imageWidth?: number;
+  imageHeight?: number;
+  sizeRatio?: number;
 }
 
 export const BannerEdit = () => {
@@ -49,6 +52,89 @@ export const BannerEdit = () => {
   });
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const previewRef = useRef<HTMLDivElement>(null);
+  const [sizeRatio, setSizeRatio] = useState<number>(1);
+
+  // タイトル・説明の縦位置を同時に変更するヘルパー
+  const handleVerticalPositionChange = (value: string) => {
+    setBanner((prev) => ({
+      ...prev,
+      title_vertical_position: value,
+      description_vertical_position: value,
+    }));
+  };
+
+  // Get adjusted font size for preview based on ratio
+  const getAdjustedFontSize = (
+    fontSize: string,
+    ratio: number
+  ): string => {
+    // Map Tailwind font sizes to approximate pixel values
+    const fontSizeMap: { [key: string]: number } = {
+      "text-xs": 12,
+      "text-sm": 14,
+      "text-base": 16,
+      "text-lg": 18,
+      "text-xl": 20,
+      "text-2xl": 24,
+      "text-3xl": 30,
+      "text-4xl": 36,
+      "text-5xl": 48,
+      "text-6xl": 60,
+    };
+
+    const baseSize = fontSizeMap[fontSize] || 16;
+    const adjustedSize = baseSize / ratio;
+
+    // Find closest Tailwind class
+    const closestSize = Object.entries(fontSizeMap).reduce(
+      (prev, [key, value]) =>
+        Math.abs(value - adjustedSize) < Math.abs(prev[1] - adjustedSize)
+          ? [key, value]
+          : prev,
+      ["text-base", 16] as [string, number]
+    );
+
+    return closestSize[0];
+  };
+
+  // Calculate size ratio when preview dimensions change
+  useEffect(() => {
+    const calculateRatio = () => {
+      if (!previewRef.current || !banner.imageWidth || !banner.imageHeight) {
+        return;
+      }
+
+      const previewContainer = previewRef.current;
+      const previewWidth = previewContainer.offsetWidth;
+      const previewHeight = previewContainer.offsetHeight;
+
+      // Actual banner display size on homepage
+      // Banner takes 2/3 of max-width 1440px = ~960px width on large screens
+      // Height = 960 / (950/370) ≈ 374px
+      const actualBannerWidth = 960;
+      const actualBannerHeight = actualBannerWidth / (950 / 370);
+
+      // Calculate scale factors
+      const previewScale = Math.min(
+        previewWidth / banner.imageWidth,
+        previewHeight / banner.imageHeight
+      );
+      const actualScale = Math.min(
+        actualBannerWidth / banner.imageWidth,
+        actualBannerHeight / banner.imageHeight
+      );
+
+      // Ratio: how much larger the actual display is compared to preview
+      const ratio = actualScale / previewScale;
+      setSizeRatio(ratio);
+      setBanner((prev) => ({ ...prev, sizeRatio: ratio }));
+    };
+
+    calculateRatio();
+    window.addEventListener("resize", calculateRatio);
+    return () => window.removeEventListener("resize", calculateRatio);
+  }, [banner.imageWidth, banner.imageHeight]);
 
   useEffect(() => {
     const loadBanner = async () => {
@@ -166,6 +252,19 @@ export const BannerEdit = () => {
 
         console.log("Banner edit - Setting banner state:", updatedBanner);
         setBanner(updatedBanner);
+
+        // Load image to get dimensions
+        if (imageUrl) {
+          const img = new Image();
+          img.onload = () => {
+            setBanner((prev) => ({
+              ...prev,
+              imageWidth: img.width,
+              imageHeight: img.height,
+            }));
+          };
+          img.src = imageUrl;
+        }
       } catch (error) {
         console.error("Error loading banner:", error);
         showToast("バナーの読み込みに失敗しました", "error");
@@ -191,10 +290,22 @@ export const BannerEdit = () => {
     if (field === "image" && value instanceof File) {
       const reader = new FileReader();
       reader.onloadend = () => {
+        const previewUrl = reader.result as string;
         setBanner((prev) => ({
           ...prev,
-          preview: reader.result as string,
+          preview: previewUrl,
         }));
+        
+        // Load image to get dimensions
+        const img = new Image();
+        img.onload = () => {
+          setBanner((prev) => ({
+            ...prev,
+            imageWidth: img.width,
+            imageHeight: img.height,
+          }));
+        };
+        img.src = previewUrl;
       };
       reader.readAsDataURL(value);
     } else if (field === "image" && value === null) {
@@ -202,6 +313,9 @@ export const BannerEdit = () => {
         ...prev,
         preview: prev.existing_image_url,
         image: null,
+        imageWidth: undefined,
+        imageHeight: undefined,
+        sizeRatio: undefined,
       }));
     }
   };
@@ -323,6 +437,7 @@ export const BannerEdit = () => {
             {banner.preview ? (
               <div className="relative group">
                 <div
+                  ref={previewRef}
                   className="relative w-full"
                   style={{ aspectRatio: "2.56/1", maxHeight: "400px" }}
                 >
@@ -356,7 +471,12 @@ export const BannerEdit = () => {
                         >
                           <h2
                             className={`${
-                              banner.title_font_size || "text-4xl"
+                              banner.title_font_size
+                                ? getAdjustedFontSize(
+                                    banner.title_font_size,
+                                    sizeRatio
+                                  )
+                                : "text-4xl"
                             } font-bold leading-tight drop-shadow-lg`}
                             style={{
                               color: banner.title_color || "#FFFFFF",
@@ -380,7 +500,12 @@ export const BannerEdit = () => {
                         >
                           <p
                             className={`${
-                              banner.description_font_size || "text-lg"
+                              banner.description_font_size
+                                ? getAdjustedFontSize(
+                                    banner.description_font_size,
+                                    sizeRatio
+                                  )
+                                : "text-lg"
                             } leading-relaxed drop-shadow-lg`}
                             style={{
                               color: banner.description_color || "#FFFFFF",
@@ -636,8 +761,7 @@ export const BannerEdit = () => {
                 value={banner.title_vertical_position}
                 onChange={(e) => {
                   const value = e.target.value;
-                  handleBannerChange("title_vertical_position", value);
-                  handleBannerChange("description_vertical_position", value);
+                  handleVerticalPositionChange(value);
                 }}
                 className="w-full px-4 py-2 border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors bg-white"
               >

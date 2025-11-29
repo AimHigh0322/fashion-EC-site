@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { X, Upload, Trash2, Plus } from "lucide-react";
 import { AdminLayout } from "../../components/layouts/AdminLayout";
@@ -21,6 +21,9 @@ interface BannerFormData {
   status: "active" | "inactive";
   image: File | null;
   preview: string | null;
+  imageWidth?: number;
+  imageHeight?: number;
+  sizeRatio?: number;
 }
 
 export const BannerCreate = () => {
@@ -28,6 +31,111 @@ export const BannerCreate = () => {
   const { showToast } = useToast();
   const [banners, setBanners] = useState<BannerFormData[]>([]);
   const [submitting, setSubmitting] = useState(false);
+  const previewRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  // タイトル・説明の縦位置を同時に変更するヘルパー
+  const handleVerticalPositionChange = (index: number, value: string) => {
+    setBanners((prev) =>
+      prev.map((banner, i) =>
+        i === index
+          ? {
+              ...banner,
+              title_vertical_position: value,
+              description_vertical_position: value,
+            }
+          : banner
+      )
+    );
+  };
+
+  // フォントサイズをプレビュー用に補正
+  const getAdjustedFontSize = (fontSize: string, ratio: number): string => {
+    // Tailwind のフォントサイズを概算 px にマッピング
+    const fontSizeMap: { [key: string]: number } = {
+      "text-xs": 12,
+      "text-sm": 14,
+      "text-base": 16,
+      "text-lg": 18,
+      "text-xl": 20,
+      "text-2xl": 24,
+      "text-3xl": 30,
+      "text-4xl": 36,
+      "text-5xl": 48,
+      "text-6xl": 60,
+    };
+
+    const baseSize = fontSizeMap[fontSize] || 16;
+    const adjustedSize = baseSize / (ratio || 1);
+
+    // 最も近い Tailwind クラスを探す
+    const closestSize = Object.entries(fontSizeMap).reduce(
+      (prev, [key, value]) =>
+        Math.abs(value - adjustedSize) < Math.abs(prev[1] - adjustedSize)
+          ? [key, value]
+          : prev,
+      ["text-base", 16] as [string, number]
+    );
+
+    return closestSize[0];
+  };
+
+  // 画像の拡大率に応じてプレビュー用のサイズ比率を計算
+  useEffect(() => {
+    const calculateRatios = () => {
+      setBanners((prevBanners) => {
+        const updated = prevBanners.map((banner, index) => {
+          const ref = previewRefs.current[index];
+          if (
+            !ref ||
+            !banner.imageWidth ||
+            !banner.imageHeight ||
+            banner.imageWidth === 0 ||
+            banner.imageHeight === 0
+          ) {
+            return banner;
+          }
+
+          const previewWidth = ref.offsetWidth;
+          const previewHeight = ref.offsetHeight;
+
+          if (previewWidth === 0 || previewHeight === 0) {
+            return banner;
+          }
+
+          // 実際のホームページでのバナー表示サイズ（HomePage.tsx の想定に合わせる）
+          const actualBannerWidth = 960;
+          const actualBannerHeight = actualBannerWidth / (950 / 370);
+
+          // スケール係数を計算
+          const previewScale = Math.min(
+            previewWidth / banner.imageWidth,
+            previewHeight / banner.imageHeight
+          );
+          const actualScale = Math.min(
+            actualBannerWidth / banner.imageWidth,
+            actualBannerHeight / banner.imageHeight
+          );
+
+          if (previewScale === 0) {
+            return banner;
+          }
+
+          const ratio = actualScale / previewScale;
+
+          return {
+            ...banner,
+            sizeRatio: ratio,
+          };
+        });
+
+        return updated;
+      });
+    };
+
+    calculateRatios();
+    window.addEventListener("resize", calculateRatios);
+    return () => window.removeEventListener("resize", calculateRatios);
+  }, []);
 
   const handleRemoveBanner = (index: number) => {
     setBanners(banners.filter((_, i) => i !== index));
@@ -49,8 +157,17 @@ export const BannerCreate = () => {
       if (value instanceof File) {
         const reader = new FileReader();
         reader.onloadend = () => {
-          updatedBanners[index].preview = reader.result as string;
-          setBanners(updatedBanners);
+          const previewUrl = reader.result as string;
+          updatedBanners[index].preview = previewUrl;
+
+          // 画像の実サイズを取得して保存
+          const img = new Image();
+          img.onload = () => {
+            updatedBanners[index].imageWidth = img.width;
+            updatedBanners[index].imageHeight = img.height;
+            setBanners([...updatedBanners]);
+          };
+          img.src = previewUrl;
         };
         reader.readAsDataURL(value);
       } else if (value === null) {
@@ -93,12 +210,23 @@ export const BannerCreate = () => {
           preview: reader.result as string,
         };
 
-        setBanners((prev) => {
-          // Check if this banner already exists (avoid duplicates)
-          const exists = prev.some((b) => b.image === file);
-          if (exists) return prev;
-          return [...prev, newBanner];
-        });
+        // 画像の実サイズを取得
+        const img = new Image();
+        img.onload = () => {
+          const bannerWithSize: BannerFormData = {
+            ...newBanner,
+            imageWidth: img.width,
+            imageHeight: img.height,
+          };
+
+          setBanners((prev) => {
+            // Check if this banner already exists (avoid duplicates)
+            const exists = prev.some((b) => b.image === file);
+            if (exists) return prev;
+            return [...prev, bannerWithSize];
+          });
+        };
+        img.src = reader.result as string;
       };
       reader.readAsDataURL(file);
     });
@@ -293,6 +421,9 @@ export const BannerCreate = () => {
                               aspectRatio: "2.56/1",
                               minHeight: "120px",
                             }}
+                            ref={(el) => {
+                              previewRefs.current[index] = el;
+                            }}
                           >
                             <img
                               src={banner.preview}
@@ -324,8 +455,12 @@ export const BannerCreate = () => {
                                   >
                                     <h2
                                       className={`${
-                                        banner.title_font_size ||
-                                        "text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl"
+                                        banner.title_font_size
+                                          ? getAdjustedFontSize(
+                                              banner.title_font_size,
+                                              banner.sizeRatio || 1
+                                            )
+                                          : "text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl"
                                       } font-bold leading-tight drop-shadow-lg px-2 sm:px-3 md:px-4 lg:px-5 xl:px-6 break-words`}
                                       style={{
                                         color: banner.title_color || "#FFFFFF",
@@ -353,8 +488,12 @@ export const BannerCreate = () => {
                                   >
                                     <p
                                       className={`${
-                                        banner.description_font_size ||
-                                        "text-xs sm:text-sm md:text-base lg:text-lg"
+                                        banner.description_font_size
+                                          ? getAdjustedFontSize(
+                                              banner.description_font_size,
+                                              banner.sizeRatio || 1
+                                            )
+                                          : "text-xs sm:text-sm md:text-base lg:text-lg"
                                       } leading-relaxed drop-shadow-lg px-2 sm:px-3 md:px-4 lg:px-5 xl:px-6 break-words`}
                                       style={{
                                         color:
@@ -623,20 +762,9 @@ export const BannerCreate = () => {
                       </label>
                       <select
                         value={banner.title_vertical_position}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          handleBannerChange(
-                            index,
-                            "title_vertical_position",
-                            value
-                          );
-                          // 説明の縦位置も同じ値に設定
-                          handleBannerChange(
-                            index,
-                            "description_vertical_position",
-                            value
-                          );
-                        }}
+                        onChange={(e) =>
+                          handleVerticalPositionChange(index, e.target.value)
+                        }
                         className="w-full sm:max-w-xs md:max-w-sm px-4 py-2 text-sm border border-gray-300  focus:outline-none focus:border-blue-500 transition-colors"
                       >
                         <option value="top">上</option>

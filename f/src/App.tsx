@@ -6,8 +6,7 @@ import { ToastProvider } from "./contexts/ToastContext";
 import { CategoryProvider } from "./contexts/CategoryContext";
 import { Login } from "./app/user/auth/Login";
 import { Register } from "./app/user/auth/Register";
-import { Dashboard } from "./app/admin/Dashboard";
-import { Products } from "./app/admin/Products";
+import { Products as AdminProducts } from "./app/admin/Products";
 import { Orders as AdminOrders } from "./app/admin/Orders";
 import { Users } from "./app/admin/Users";
 import { Categories } from "./app/admin/Categories";
@@ -19,6 +18,7 @@ import { BannerEdit } from "./app/admin/BannerEdit";
 import { HomePage } from "./app/home/HomePage";
 import { Cart } from "./app/user/Cart";
 import { Favorites } from "./app/user/Favorites";
+import { Products } from "./app/user/Products";
 import { ProductDetail } from "./app/user/ProductDetail";
 import { Checkout } from "./app/user/Checkout";
 import { CheckoutSuccess } from "./app/user/CheckoutSuccess";
@@ -30,6 +30,7 @@ import { StockAlerts } from "./app/admin/StockAlerts";
 import { Reviews as AdminReviews } from "./app/admin/Reviews";
 import { Campaigns } from "./app/admin/Campaigns";
 import { CampaignForm } from "./app/admin/CampaignForm";
+import { SalesAnalytics } from "./app/admin/SalesAnalytics";
 import {
   BrowserRouter,
   Routes,
@@ -121,6 +122,14 @@ function App() {
                     }
                   />
                   <Route
+                    path="/products"
+                    element={
+                      <PublicRoute>
+                        <Products />
+                      </PublicRoute>
+                    }
+                  />
+                  <Route
                     path="/product/:id"
                     element={
                       <PublicRoute>
@@ -188,7 +197,7 @@ function App() {
                     path="/admin"
                     element={
                       <AdminRoute>
-                        <Dashboard />
+                        <Navigate to="/admin/dashboard" replace />
                       </AdminRoute>
                     }
                   />
@@ -196,7 +205,7 @@ function App() {
                     path="/admin/products"
                     element={
                       <AdminRoute>
-                        <Products />
+                        <AdminProducts />
                       </AdminRoute>
                     }
                   />
@@ -213,6 +222,14 @@ function App() {
                     element={
                       <AdminRoute>
                         <AdminOrders />
+                      </AdminRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/dashboard"
+                    element={
+                      <AdminRoute>
+                        <SalesAnalytics />
                       </AdminRoute>
                     }
                   />
